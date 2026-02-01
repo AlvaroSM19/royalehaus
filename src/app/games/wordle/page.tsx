@@ -6,6 +6,7 @@ import { baseCards, getRandomCard } from '@/data';
 import { ClashCard } from '@/types/card';
 import { Home, RotateCcw, Trophy, Gamepad2, Delete, Sparkles, Droplets, Sword, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
 import { RARITY_COLORS } from '@/types/card';
+import { recordWordleSession } from '@/lib/progress';
 
 const MAX_GUESSES = 8;
 const KEYBOARD_ROWS = [
@@ -148,11 +149,15 @@ export default function WordlePage() {
           setGamesPlayed(newGames);
           localStorage.setItem('royalehaus-wordle-score', newScore.toString());
           localStorage.setItem('royalehaus-wordle-games', newGames.toString());
+          // Record session for XP
+          recordWordleSession(true, newGuesses.length, targetWord.length);
         } else if (newGuesses.length >= MAX_GUESSES) {
           setGameOver(true);
           const newGames = gamesPlayed + 1;
           setGamesPlayed(newGames);
           localStorage.setItem('royalehaus-wordle-games', newGames.toString());
+          // Record session for XP (loss)
+          recordWordleSession(false, newGuesses.length, targetWord.length);
         }
       }, targetWord.length * 150 + 300);
       
@@ -260,7 +265,7 @@ export default function WordlePage() {
                 <img 
                   src={`/images/cards/${targetCard.id}.png`}
                   alt={targetCard.name}
-                  className="w-32 h-32 object-contain mx-auto drop-shadow-2xl"
+                  className="w-24 h-[115px] object-cover mx-auto rounded-lg drop-shadow-2xl"
                 />
               </div>
               

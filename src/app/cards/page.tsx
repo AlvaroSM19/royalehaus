@@ -194,11 +194,11 @@ export default function CardsPage() {
                 style={{ boxShadow: `0 0 20px ${rarityColors.glow}20` }}
               >
                 {/* Card Image */}
-                <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-blue-900/50 to-blue-950/80">
+                <div className="aspect-[5/6] relative overflow-hidden bg-gradient-to-br from-blue-900/50 to-blue-950/80">
                   <img 
                     src={`/images/cards/${card.id}.png`}
                     alt={card.name}
-                    className="w-full h-full object-contain p-2"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 

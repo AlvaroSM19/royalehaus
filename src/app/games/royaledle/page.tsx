@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { ClashCard, RARITY_COLORS, CardType, CardRarity } from '@/types/card';
 import { Home, RotateCcw, Search } from 'lucide-react';
+import { recordRoyaledleSession } from '@/lib/progress';
 
 type AttributeMatch = 'correct' | 'partial' | 'wrong';
 
@@ -111,6 +112,8 @@ export default function RoyaledlePage() {
     if (isWin || newGuesses.length >= MAX_GUESSES) {
       setGameOver(true);
       setWon(isWin);
+      // Record session for XP
+      recordRoyaledleSession(newGuesses.length, isWin);
     }
   };
 
@@ -221,7 +224,7 @@ export default function RoyaledlePage() {
                       <img 
                         src={`/images/cards/${card.id}.png`}
                         alt={card.name}
-                        className="w-12 h-12 object-contain"
+                        className="w-10 h-12 object-cover rounded"
                       />
                       <span className="text-white font-medium text-lg">{card.name}</span>
                     </button>
@@ -241,7 +244,7 @@ export default function RoyaledlePage() {
                 <div className="flex items-center gap-2">
                   {/* Card Image */}
                   <div 
-                    className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-cyan-700/50"
+                    className="flex-shrink-0 w-12 h-[58px] rounded-lg overflow-hidden border-2 border-cyan-700/50"
                     style={{ 
                       animation: `slideInLeft 0.3s ease-out forwards`,
                       animationDelay: '0ms'
@@ -250,7 +253,7 @@ export default function RoyaledlePage() {
                     <img 
                       src={`/images/cards/${guess.card.id}.png`}
                       alt={guess.card.name}
-                      className="w-full h-full object-contain bg-gray-900/50"
+                      className="w-full h-full object-cover"
                     />
                   </div>
 
@@ -352,7 +355,7 @@ export default function RoyaledlePage() {
                     <img 
                       src={`/images/cards/${targetCard.id}.png`}
                       alt={targetCard.name}
-                      className="w-24 h-24 object-contain"
+                      className="w-20 h-24 object-cover rounded-lg"
                     />
                   </div>
                 </>

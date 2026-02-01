@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { baseCards, getCardsByType, getCardsByRarity } from '@/data';
 import { ClashCard, CardType, CardRarity } from '@/types/card';
 import { RotateCcw, Home, Trophy, Target, Clock, Award, Zap, TrendingUp } from 'lucide-react';
+import { recordImpostorSession } from '@/lib/progress';
 
 type GameMode = 'type' | 'rarity' | 'elixir';
 type Difficulty = 'easy' | 'medium' | 'hard';
@@ -159,6 +160,8 @@ export default function ImpostorPage() {
   const nextRound = () => {
     if (selectedIndex !== impostorIndex) {
       setGameActive(false);
+      // Record session for XP when game ends (wrong answer)
+      recordImpostorSession(streak, score);
       return;
     }
     generateRound();
@@ -331,11 +334,11 @@ export default function ImpostorPage() {
               style={{ width: '160px' }}
             >
               {/* Card Image */}
-              <div className="aspect-square bg-gradient-to-b from-blue-900/50 to-blue-950/50 p-2 border border-cyan-800/30 rounded-t-xl">
+              <div className="aspect-[5/6] bg-gradient-to-b from-blue-900/50 to-blue-950/50 border border-cyan-800/30 rounded-t-xl overflow-hidden">
                 <img 
                   src={`/images/cards/${card.id}.png`}
                   alt={card.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
               

@@ -5,6 +5,7 @@ import { RotateCcw, Home, TrendingUp, TrendingDown, Zap, Award, Calendar, Equal 
 import Link from 'next/link'
 import { getRandomCard } from '@/data'
 import type { ClashCard } from '@/types/card'
+import { recordHigherLowerSession } from '@/lib/progress'
 
 type CompareMode = 'elixir' | 'release_year'
 
@@ -94,6 +95,8 @@ export default function HigherLowerGame() {
         setShowResult(false)
       } else {
         setGameOver(true)
+        // Record session for XP
+        recordHigherLowerSession(streak)
       }
       setIsAnimating(false)
     }, 1500)
@@ -165,11 +168,11 @@ export default function HigherLowerGame() {
               <div className="bg-gray-900/95 rounded-2xl border-2 border-gray-600 overflow-hidden shadow-2xl">
                 {/* Card Image */}
                 <div className="p-8 flex justify-center">
-                  <div className="w-56 h-56 rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
+                  <div className="w-44 h-[211px] rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
                     <img 
                       src={`/images/cards/${currentCard.id}.png`}
                       alt={currentCard.name}
-                      className="w-full h-full object-contain p-2"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 </div>
@@ -275,11 +278,11 @@ export default function HigherLowerGame() {
               }`}>
                 {/* Card Image */}
                 <div className="p-8 flex justify-center">
-                  <div className="w-56 h-56 rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
+                  <div className="w-44 h-[211px] rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
                     <img 
                       src={`/images/cards/${nextCard.id}.png`}
                       alt={nextCard.name}
-                      className="w-full h-full object-contain p-2"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 </div>

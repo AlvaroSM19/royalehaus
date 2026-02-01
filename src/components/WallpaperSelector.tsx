@@ -142,8 +142,8 @@ export default function WallpaperSelector() {
       <button
         ref={buttonRef}
         onClick={handleToggleDropdown}
-        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-9 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 text-amber-100 hover:bg-white/20"
-        title="Change wallpaper"
+        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20"
+        title="Cambiar wallpaper"
         type="button"
       >
         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,0 +1,134 @@
+// Prisma schema - SHARED DATABASE with OnePieceHaus
+// Uses the SAME tables, differentiated by 'kind' field (e.g., 'royale:game:win')
+// Run: npx prisma generate (after changes)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// === SHARED TABLES (used by ALL apps in the universe) ===
+
+model User {
+  id              String        @id @default(cuid())
+  email           String        @unique
+  username        String        @unique
+  password        String
+  avatarId        String?       // OnePieceHaus avatar (character ID like 'op-luffy')
+  royaleAvatarId  String?       // RoyaleHaus avatar (card ID like '1', '25', etc.)
+  role            String        @default("user")
+  xpTotal         Int           @default(0)
+  level           Int           @default(1)
+  lastLevelUpAt   DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations to shared tables
+  sessions      Session[]
+  progress      Progress?
+  xpEvents      XpEvent[]
+  userCards     UserCard[]
+  rewardGrants  RewardGrant[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+// Progress for ALL apps - differentiate by parsing the JSON 'data' field
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  data      String   // JSON with app-specific progress
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+// XP events for ALL apps - use 'kind' to identify source app
+// e.g., 'royale:game:royaledle:win', 'onepiece:game:wordle:win'
+model XpEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // Prefixed with app: 'royale:game:win', 'onepiece:daily'
+  amount    Int
+  meta      Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([userId, kind, createdAt])
+}
+
+// === ONEPIECE-SPECIFIC TABLES (read-only from RoyaleHaus) ===
+
+model Card {
+  id          String     @id
+  title       String
+  subtitle    String?
+  description String
+  imageUrl    String
+  rarity      String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  userCards   UserCard[]
+}
+
+model UserCard {
+  id        String   @id @default(cuid())
+  userId    String
+  cardId    String
+  awardedAt DateTime @default(now())
+  source    String
+  meta      Json?
+  user      User     @relation(fields: [userId], references: [id])
+  card      Card     @relation(fields: [cardId], references: [id])
+
+  @@unique([userId, cardId])
+}
+
+model RewardGrant {
+  id         String   @id @default(cuid())
+  userId     String
+  rewardType String
+  refId      String?
+  meta       Json?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+// === SHARED UTILITY TABLES ===
+
+model SiteStat {
+  id            String   @id @default("main")
+  visits        Int      @default(0)
+  displayVisits Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  content   String
+  email     String?
+  username  String?
+  category  String   @default("suggestion")
+  status    String   @default("pending")
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
