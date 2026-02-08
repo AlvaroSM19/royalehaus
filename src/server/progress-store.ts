@@ -74,6 +74,15 @@ export interface WordleHighScoreEntry {
   updatedAt?: string;
 }
 
+export interface TapOneHighScoreEntry {
+  userId: string;
+  username: string;
+  avatarId: string | null;
+  bestRank: number;
+  bestScore: number;
+  updatedAt?: string;
+}
+
 interface Memory { items: ProgressRecord[] }
 const g: any = globalThis as any;
 if (!g.__ROYALE_PROGRESS_MEM__) g.__ROYALE_PROGRESS_MEM__ = { items: [] } as Memory;
@@ -384,6 +393,49 @@ export async function listTopWordle(limit = 10): Promise<WordleHighScoreEntry[]>
   return (await collect()).sort((a, b) => {
     if (a.bestAttempts !== b.bestAttempts) return a.bestAttempts - b.bestAttempts;
     return b.longestWordLength - a.longestWordLength;
+  }).slice(0, limit);
+}
+
+// TapOne leaderboard
+export async function listTopTapOne(limit = 10): Promise<TapOneHighScoreEntry[]> {
+  const collect = async (): Promise<TapOneHighScoreEntry[]> => {
+    if (useDb) {
+      const rows = await (prisma as any).progress.findMany({ 
+        include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
+      });
+      return rows.map((r: any) => {
+        let parsed: any = {}; 
+        try { parsed = JSON.parse(r.data); } catch {}
+        const hs = parsed?.highScores?.tapone;
+        return hs && typeof hs.bestRank === 'number' ? {
+          userId: r.userId,
+          username: (r as any).user?.username || parsed?.user?.username || 'player',
+          avatarId: (r as any).user?.royaleAvatarId || parsed?.user?.avatarId || null,
+          bestRank: hs.bestRank,
+          bestScore: hs.bestScore || 0,
+          updatedAt: hs.updatedAt
+        } : null;
+      }).filter(Boolean) as TapOneHighScoreEntry[];
+    }
+    
+    return readAll().map(rec => {
+      const p = rec.progress || {};
+      const hs = p?.highScores?.tapone;
+      return hs && typeof hs.bestRank === 'number' ? {
+        userId: rec.userId,
+        username: p?.user?.username || 'player',
+        avatarId: p?.user?.avatarId || null,
+        bestRank: hs.bestRank,
+        bestScore: hs.bestScore || 0,
+        updatedAt: hs.updatedAt
+      } : null;
+    }).filter(Boolean) as TapOneHighScoreEntry[];
+  };
+  
+  return (await collect()).sort((a, b) => {
+    // Better rank = lower number, then higher score as tiebreaker
+    if (a.bestRank !== b.bestRank) return a.bestRank - b.bestRank;
+    return b.bestScore - a.bestScore;
   }).slice(0, limit);
 }
 

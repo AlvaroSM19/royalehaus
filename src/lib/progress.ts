@@ -4,6 +4,7 @@ export interface HigherLowerHighScore { bestStreak: number; updatedAt: string }
 export interface RoyaledleHighScore { bestWinAttempts: number; updatedAt: string }
 export interface WordleHighScore { bestAttempts: number; longestWordLength: number; updatedAt: string }
 export interface ImpostorHighScore { bestStreak: number; bestScore: number; updatedAt: string }
+export interface TapOneHighScore { bestRank: number; bestScore: number; updatedAt: string }
 
 export interface UserProgress { 
   version: number; 
@@ -14,6 +15,7 @@ export interface UserProgress {
     royaledle?: RoyaledleHighScore; 
     wordle?: WordleHighScore; 
     impostor?: ImpostorHighScore; 
+    tapone?: TapOneHighScore;
     [k: string]: any 
   }; 
   stickers: string[]; 
@@ -200,6 +202,39 @@ export function recordImpostorSession(streak: number, score: number) {
   
   try { 
     const grant = computeGameXp('impostor', { streak, score }); 
+    if (grant) fetch('/api/xp', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      credentials: 'include', 
+      body: JSON.stringify(grant) 
+    }).then(() => { 
+      try { window.dispatchEvent(new Event('xp:updated')); } catch {} 
+    }).catch(() => {}); 
+  } catch {}
+}
+
+export function recordTapOneSession(score: number, rank: number) {
+  if (typeof window === 'undefined') return;
+  let p = getProgress() || initProgress();
+  p = ensureDaily(p)!;
+  p.stats.gamesPlayedTotal++;
+  p.stats.gamesPlayedById.tapone = (p.stats.gamesPlayedById.tapone || 0) + 1;
+  
+  const prev = p.highScores.tapone;
+  // Better rank = lower number, or same rank with higher score
+  if (!prev || rank < prev.bestRank || (rank === prev.bestRank && score > prev.bestScore)) {
+    p.highScores.tapone = { 
+      bestRank: rank, 
+      bestScore: score, 
+      updatedAt: new Date().toISOString() 
+    };
+  }
+  saveProgress(p);
+  scheduleServerSync();
+  scheduleServerSync(true);
+  
+  try { 
+    const grant = computeGameXp('tapone', { score, rank }); 
     if (grant) fetch('/api/xp', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 

@@ -18,7 +18,7 @@ interface Entry {
   longestWordLength?: number;
 }
 
-type FilterType = 'xp' | 'streak' | 'higherlower' | 'royaledle' | 'impostor' | 'wordle';
+type FilterType = 'xp' | 'streak' | 'higherlower' | 'royaledle' | 'impostor' | 'wordle' | 'tapone';
 
 // RoyaleHaus uses numeric card IDs (1-171). If avatarId is not numeric, it's from OnePieceHaus - use default
 function getCardImage(cardId: string | null): string {
@@ -130,6 +130,7 @@ export default function LeaderboardPage() {
                 { id: 'streak', label: '🔥 Day Streak' },
                 { id: 'higherlower', label: '📈 Higher/Lower' },
                 { id: 'impostor', label: '🎯 Impostor' },
+                { id: 'tapone', label: '🎰 Tap One' },
                 { id: 'wordle', label: '📝 Wordle' },
                 { id: 'royaledle', label: '👑 Royaledle' },
               ].map(b => {
@@ -185,6 +186,12 @@ export default function LeaderboardPage() {
                     {filter === 'impostor' && (
                       <>
                         <th className="px-3 py-2 font-bold">🎯 Best Streak</th>
+                        <th className="px-3 py-2 font-bold">Score</th>
+                      </>
+                    )}
+                    {filter === 'tapone' && (
+                      <>
+                        <th className="px-3 py-2 font-bold">🎰 Best Rank</th>
                         <th className="px-3 py-2 font-bold">Score</th>
                       </>
                     )}
@@ -265,6 +272,14 @@ export default function LeaderboardPage() {
                           <>
                             <td className="px-3 py-2 font-semibold text-emerald-300">
                               {e.bestStreak}
+                            </td>
+                            <td className="px-3 py-2 text-amber-100/70">{e.bestScore}</td>
+                          </>
+                        )}
+                        {filter === 'tapone' && (
+                          <>
+                            <td className="px-3 py-2 font-semibold text-emerald-300">
+                              #{e.bestRank}
                             </td>
                             <td className="px-3 py-2 text-amber-100/70">{e.bestScore}</td>
                           </>

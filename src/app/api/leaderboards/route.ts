@@ -6,7 +6,8 @@ import {
   listTopHigherLower, 
   listTopImpostor, 
   listTopRoyaledle, 
-  listTopWordle 
+  listTopWordle,
+  listTopTapOne 
 } from '@/server/progress-store';
 
 export const runtime = 'nodejs';
@@ -44,6 +45,9 @@ export async function GET(req: NextRequest) {
         break;
       case 'wordle':
         entries = await listTopWordle(limit);
+        break;
+      case 'tapone':
+        entries = await listTopTapOne(limit);
         break;
       default:
         entries = await listTopXp(limit);

@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 
@@ -14,6 +15,11 @@ export default function FeedbackModal() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,10 +75,10 @@ export default function FeedbackModal() {
         <span className="hidden sm:inline">SEND FEEDBACK</span>
       </button>
 
-      {/* Modal Backdrop */}
-      {isOpen && (
+      {/* Modal Backdrop - rendered via portal to escape header stacking context */}
+      {isOpen && mounted && createPortal(
         <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
           onClick={() => setIsOpen(false)}
         >
           {/* Modal Content */}
@@ -180,7 +186,8 @@ export default function FeedbackModal() {
               )}
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
