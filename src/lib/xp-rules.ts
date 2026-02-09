@@ -34,6 +34,13 @@ const XP_VALUES = {
     firstTry: 200,
     quickWin: 50,     // <= 3 attempts
   },
+  // Tap One
+  tapone: {
+    base: 10,         // Base XP per game
+    rank1: 200,       // Bonus for rank 1
+    rank5: 100,       // Bonus for top 5
+    rank10: 50,       // Bonus for top 10
+  },
 };
 
 export function computeGameXp(gameId: string, data: any): XpGrant | null {
@@ -78,6 +85,17 @@ export function computeGameXp(gameId: string, data: any): XpGrant | null {
       const wordLength = data.wordLength || 5;
       if (wordLength > 5) amount += (wordLength - 5) * 20;
       return { kind: `game:wordle:win`, amount };
+    }
+    
+    case 'tapone': {
+      const score = data.score || 0;
+      const rank = data.rank || 20;
+      let amount = XP_VALUES.tapone.base + Math.floor(score / 10);
+      // Add rank bonuses
+      if (rank === 1) amount += XP_VALUES.tapone.rank1;
+      else if (rank <= 5) amount += XP_VALUES.tapone.rank5;
+      else if (rank <= 10) amount += XP_VALUES.tapone.rank10;
+      return { kind: `game:tapone:complete`, amount };
     }
     
     default:

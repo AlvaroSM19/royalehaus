@@ -70,3 +70,56 @@ export async function GET(req: NextRequest) {
     return fail('Failed to fetch feedbacks', 500);
   }
 }
+
+// PATCH - Update feedback status (Admin only)
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, status } = body;
+
+    if (!id || typeof id !== 'string') {
+      return fail('Feedback ID is required');
+    }
+
+    if (!status || !['pending', 'read', 'resolved'].includes(status)) {
+      return fail('Invalid status. Must be pending, read, or resolved');
+    }
+
+    const updated = await (prisma as any).feedback.update({
+      where: { id },
+      data: { status }
+    });
+
+    return ok({ feedback: updated });
+  } catch (e: any) {
+    console.error('[FEEDBACK_PATCH_ERROR]', e);
+    if (e.code === 'P2025') {
+      return fail('Feedback not found', 404);
+    }
+    return fail('Failed to update feedback', 500);
+  }
+}
+
+// DELETE - Remove feedback (Admin only)
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id } = body;
+
+    if (!id || typeof id !== 'string') {
+      return fail('Feedback ID is required');
+    }
+
+    await (prisma as any).feedback.delete({
+      where: { id }
+    });
+
+    return ok({ message: 'Feedback deleted' });
+  } catch (e: any) {
+    console.error('[FEEDBACK_DELETE_ERROR]', e);
+    if (e.code === 'P2025') {
+      return fail('Feedback not found', 404);
+    }
+    return fail('Failed to delete feedback', 500);
+  }
+}

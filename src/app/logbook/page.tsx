@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { getProgress, updateUserProfile, syncProgressNowAsync, type UserProgress } from '@/lib/progress';
+import { MessageSquare } from 'lucide-react';
 import cards from '@/data/cards.json';
 
 const allCards = cards as { id: number; name: string; rarity: string }[];
@@ -206,6 +207,15 @@ export default function LogbookPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              {authUser?.role === 'admin' && (
+                <Link
+                  href="/admin/feedback"
+                  className="px-5 py-2.5 bg-gradient-to-b from-pink-500 to-rose-600 text-white font-bold text-sm rounded-lg hover:from-pink-400 hover:to-rose-500 transition-all border border-pink-400/50 shadow-lg shadow-pink-900/20 flex items-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Feedback
+                </Link>
+              )}
               <Link
                 href="/"
                 className="px-5 py-2.5 bg-gradient-to-b from-amber-500 to-amber-600 text-black font-bold text-sm rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all border border-amber-400/50 shadow-lg shadow-amber-900/20"

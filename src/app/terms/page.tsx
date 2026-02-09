@@ -78,7 +78,7 @@ export default function TermsPage() {
                 <li>Attempt to exploit bugs or vulnerabilities</li>
                 <li>Harass other users or use offensive usernames</li>
                 <li>Impersonate others or create fake accounts</li>
-                <li>Attempt to access other users' accounts</li>
+                <li>Attempt to access other users&apos; accounts</li>
               </ul>
             </div>
           </section>
@@ -119,7 +119,7 @@ export default function TermsPage() {
               Limitation of Liability
             </h2>
             <p className="text-amber-100/70 text-sm leading-relaxed">
-              RoyaleHaus is provided "as is" without warranties of any kind. We are not liable for any loss of data, progress, or account information. We reserve the right to modify, suspend, or discontinue the service at any time.
+              RoyaleHaus is provided &quot;as is&quot; without warranties of any kind. We are not liable for any loss of data, progress, or account information. We reserve the right to modify, suspend, or discontinue the service at any time.
             </p>
           </section>
 
