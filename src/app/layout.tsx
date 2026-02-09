@@ -5,6 +5,8 @@ import WallpaperSelector from '@/components/WallpaperSelector'
 import AuthNav from '@/components/AuthNav'
 import LevelBadge from '@/components/LevelBadge'
 import FeedbackModal from '@/components/FeedbackModal'
+import LanguageSelector from '@/components/LanguageSelector'
+import { LanguageProvider } from '@/lib/useLanguage'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -89,6 +91,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.variable} antialiased min-h-screen bg-black text-amber-100 relative overflow-x-hidden wallpaper-body`}>
+        <LanguageProvider>
         {/* Decorative overlays */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,225,150,0.15),transparent_60%)] z-10 wallpaper-global-overlay"/>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(255,180,80,0.12),transparent_55%)] z-10 wallpaper-global-overlay"/>
@@ -168,6 +171,7 @@ export default function RootLayout({
                   </a>
                 </div>
                 <nav className="flex items-center space-x-4">
+                  <LanguageSelector />
                   <WallpaperSelector />
                   <LevelBadge />
                   <FeedbackModal />
@@ -235,6 +239,7 @@ export default function RootLayout({
             </div>
           </footer>
         </div>
+        </LanguageProvider>
       </body>
     </html>
   )

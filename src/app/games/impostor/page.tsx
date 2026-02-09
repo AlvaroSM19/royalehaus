@@ -6,6 +6,7 @@ import { baseCards as allBaseCards, getCardsByAttackType, getCardsThatTargetAir 
 import { ClashCard, CardType, CardRarity } from '@/types/card';
 import { RotateCcw, Home, Clock, Award, Zap, Sparkles } from 'lucide-react';
 import { recordImpostorSession } from '@/lib/progress';
+import { useLanguage } from '@/lib/useLanguage';
 
 // Filter out Hero and Tower Troop - only keep standard card types for clean gameplay
 const gameCards = allBaseCards.filter(c => 
@@ -22,6 +23,7 @@ const DIFFICULTY_CONFIG = {
 };
 
 export default function ImpostorPage() {
+  const { getCardNameTranslated } = useLanguage();
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [gameMode, setGameMode] = useState<GameMode>('type');
   const [cards, setCards] = useState<ClashCard[]>([]);
@@ -538,12 +540,12 @@ export default function ImpostorPage() {
                   >
                     <img 
                       src={`/images/cards/${lastImpostor.id}.png`}
-                      alt={lastImpostor.name}
+                      alt={getCardNameTranslated(lastImpostor.id)}
                       className="w-full h-full object-contain p-1"
                     />
                   </div>
                   <div className="text-left">
-                    <p className="text-white text-xl font-black">{lastImpostor.name}</p>
+                    <p className="text-white text-xl font-black">{getCardNameTranslated(lastImpostor.id)}</p>
                     <p className="text-cyan-400 text-sm font-medium mt-1">{lastCondition}</p>
                   </div>
                 </div>
@@ -747,7 +749,7 @@ export default function ImpostorPage() {
                   >
                     <img 
                       src={`/images/cards/${card.id}.png`}
-                      alt={card.name}
+                      alt={getCardNameTranslated(card.id)}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -760,7 +762,7 @@ export default function ImpostorPage() {
                     <span className={`text-sm font-bold truncate block text-center ${
                       isCorrect ? 'text-amber-400' : 'text-white'
                     }`}>
-                      {card.name}
+                      {getCardNameTranslated(card.id)}
                     </span>
                   </div>
                   
@@ -822,7 +824,7 @@ export default function ImpostorPage() {
                     Wrong!
                   </p>
                   <p className="text-slate-300">
-                    The impostor was <span className="text-amber-400 font-bold">{cards[impostorIndex]?.name}</span>
+                    The impostor was <span className="text-amber-400 font-bold">{cards[impostorIndex] ? getCardNameTranslated(cards[impostorIndex].id) : ''}</span>
                   </p>
                   <p className="text-cyan-400 text-sm mt-2">{conditionText}</p>
                 </div>

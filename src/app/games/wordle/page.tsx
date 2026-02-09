@@ -7,6 +7,7 @@ import { ClashCard } from '@/types/card';
 import { Home, RotateCcw, Trophy, Gamepad2, Delete, Sparkles, Droplets, Sword, Lock, Unlock, Eye, EyeOff } from 'lucide-react';
 import { RARITY_COLORS } from '@/types/card';
 import { recordWordleSession } from '@/lib/progress';
+import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 8;
 const KEYBOARD_ROWS = [
@@ -18,6 +19,7 @@ const KEYBOARD_ROWS = [
 type LetterState = 'correct' | 'present' | 'absent' | 'empty';
 
 export default function WordlePage() {
+  const { getCardNameTranslated } = useLanguage();
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [targetWord, setTargetWord] = useState('');
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -264,7 +266,7 @@ export default function WordlePage() {
               <div className="mb-6">
                 <img 
                   src={`/images/cards/${targetCard.id}.png`}
-                  alt={targetCard.name}
+                  alt={getCardNameTranslated(targetCard.id)}
                   className="w-24 h-[115px] object-cover mx-auto rounded-lg drop-shadow-2xl"
                 />
               </div>
@@ -273,7 +275,7 @@ export default function WordlePage() {
                 <>
                   <h2 className="text-3xl font-black text-green-400 mb-2 tracking-wide">VICTORY!</h2>
                   <p className="text-gray-300 text-lg">
-                    You guessed <span className="text-yellow-400 font-bold">{targetCard.name}</span>
+                    You guessed <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span>
                   </p>
                   <p className="text-gray-400 mt-1">in {guesses.length} {guesses.length === 1 ? 'try' : 'tries'}</p>
                 </>
@@ -281,7 +283,7 @@ export default function WordlePage() {
                 <>
                   <h2 className="text-3xl font-black text-red-400 mb-2 tracking-wide">GAME OVER</h2>
                   <p className="text-gray-300 text-lg">
-                    The word was <span className="text-yellow-400 font-bold">{targetCard.name}</span>
+                    The word was <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span>
                   </p>
                 </>
               )}

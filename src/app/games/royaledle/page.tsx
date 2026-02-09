@@ -6,6 +6,7 @@ import { baseCards, getRandomCard } from '@/data';
 import { ClashCard, RARITY_COLORS, CardType, CardRarity, AttackType, AttackSpeed } from '@/types/card';
 import { Home, RotateCcw, Search } from 'lucide-react';
 import { recordRoyaledleSession } from '@/lib/progress';
+import { useLanguage } from '@/lib/useLanguage';
 
 type AttributeMatch = 'correct' | 'partial' | 'wrong';
 
@@ -33,6 +34,7 @@ type GuessResult = {
 const MAX_GUESSES = 8;
 
 export default function RoyaledlePage() {
+  const { getCardNameTranslated } = useLanguage();
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -172,7 +174,7 @@ export default function RoyaledlePage() {
 
   const filteredCards = baseCards
     .filter(card => 
-      card.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      getCardNameTranslated(card.id).toLowerCase().includes(searchTerm.toLowerCase()) &&
       !guesses.some(g => g.card.id === card.id)
     )
     .slice(0, 8);
@@ -299,10 +301,10 @@ export default function RoyaledlePage() {
                     >
                       <img 
                         src={`/images/cards/${card.id}.png`}
-                        alt={card.name}
+                        alt={getCardNameTranslated(card.id)}
                         className="w-10 h-12 object-cover rounded"
                       />
-                      <span className="text-white font-medium text-lg">{card.name}</span>
+                      <span className="text-white font-medium text-lg">{getCardNameTranslated(card.id)}</span>
                     </button>
                   ))}
                 </div>
@@ -344,7 +346,7 @@ export default function RoyaledlePage() {
                   >
                     <img 
                       src={`/images/cards/${guess.card.id}.png`}
-                      alt={guess.card.name}
+                      alt={getCardNameTranslated(guess.card.id)}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -495,19 +497,19 @@ export default function RoyaledlePage() {
                 <>
                   <h2 className="text-2xl font-bold text-green-400 mb-2">Victory!</h2>
                   <p className="text-gray-300">
-                    You found <span className="text-yellow-400 font-bold">{targetCard.name}</span> in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
+                    You found <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span> in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
                   </p>
                 </>
               ) : (
                 <>
                   <h2 className="text-2xl font-bold text-red-400 mb-2">Game Over</h2>
                   <p className="text-gray-300 mb-3">
-                    The card was <span className="text-yellow-400 font-bold">{targetCard.name}</span>
+                    The card was <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span>
                   </p>
                   <div className="flex items-center justify-center">
                     <img 
                       src={`/images/cards/${targetCard.id}.png`}
-                      alt={targetCard.name}
+                      alt={getCardNameTranslated(targetCard.id)}
                       className="w-20 h-24 object-cover rounded-lg"
                     />
                   </div>

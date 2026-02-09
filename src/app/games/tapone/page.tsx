@@ -7,6 +7,7 @@ import { categories, getRankByScore, RankInfo, TapOneCategory } from '@/data/tap
 import { useAuth } from '@/lib/useAuth';
 import { recordTapOneSession } from '@/lib/progress';
 import cards from '@/data/cards.json';
+import { useLanguage } from '@/lib/useLanguage';
 
 // Get random card IDs for spinning animation (only base cards, no evolutions)
 const baseCards = cards.filter(c => !c.type.includes('Evolution') && !c.type.includes('Hero') && !c.type.includes('Tower')).map(c => c.id);
@@ -25,6 +26,7 @@ const calculatePoints = (index: number): number => 110 - (index + 1) * 10;
 
 export default function TapOnePage() {
   const { user } = useAuth();
+  const { getCardNameTranslated } = useLanguage();
   
   // Game state
   const [phase, setPhase] = useState<'spinning' | 'reveal' | 'finished'>('spinning');
@@ -261,7 +263,7 @@ export default function TapOnePage() {
               // Revealed card
               <img
                 src={`/images/cards/${element.id}.png`}
-                alt={element.name}
+                alt={getCardNameTranslated(element.id)}
                 className="w-full h-full object-contain p-1 animate-fadeIn"
               />
             )}
@@ -496,7 +498,7 @@ export default function TapOnePage() {
                       <div className="aspect-square p-2">
                         <img
                           src={`/images/cards/${element.id}.png`}
-                          alt={element.name}
+                          alt={getCardNameTranslated(element.id)}
                           className="w-full h-full object-contain"
                         />
                       </div>

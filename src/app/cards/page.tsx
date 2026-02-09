@@ -5,11 +5,13 @@ import { Search, Filter, Sword, Sparkles, Castle, Trophy, ChevronDown } from 'lu
 import { cardsData } from '@/data'
 import type { ClashCard, CardType, CardRarity } from '@/types/card'
 import { RARITY_COLORS, TYPE_ICONS } from '@/types/card'
+import { useLanguage } from '@/lib/useLanguage'
 
 const cardTypes: CardType[] = ['Troop', 'Spell', 'Building', 'Champion', 'Tower Troop', 'Evolution', 'Hero']
 const cardRarities: CardRarity[] = ['Common', 'Rare', 'Epic', 'Legendary', 'Champion', 'Heroic']
 
 export default function CardsPage() {
+  const { getCardNameTranslated } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<CardType | 'all'>('all')
   const [selectedRarity, setSelectedRarity] = useState<CardRarity | 'all'>('all')
@@ -23,7 +25,7 @@ export default function CardsPage() {
     // Search filter
     if (searchQuery) {
       filtered = filtered.filter(card => 
-        card.name.toLowerCase().includes(searchQuery.toLowerCase())
+        getCardNameTranslated(card.id).toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
@@ -51,7 +53,7 @@ export default function CardsPage() {
     filtered = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'name':
-          return a.name.localeCompare(b.name)
+          return getCardNameTranslated(a.id).localeCompare(getCardNameTranslated(b.id))
         case 'elixir':
           return a.elixir - b.elixir
         case 'rarity':
@@ -65,7 +67,7 @@ export default function CardsPage() {
     })
 
     return filtered
-  }, [searchQuery, selectedType, selectedRarity, selectedElixir, showEvolutionsOnly, sortBy])
+  }, [searchQuery, selectedType, selectedRarity, selectedElixir, showEvolutionsOnly, sortBy, getCardNameTranslated])
 
   const getRarityColor = (rarity: CardRarity) => {
     const colors = RARITY_COLORS[rarity]
@@ -197,7 +199,7 @@ export default function CardsPage() {
                 <div className="aspect-[5/6] relative overflow-hidden bg-gradient-to-br from-blue-900/50 to-blue-950/80">
                   <img 
                     src={`/images/cards/${card.id}.png`}
-                    alt={card.name}
+                    alt={getCardNameTranslated(card.id)}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -205,7 +207,7 @@ export default function CardsPage() {
                 {/* Card Info */}
                 <div className="p-3">
                   <h3 className="text-sm font-bold text-blue-50 truncate group-hover:text-yellow-300 transition-colors">
-                    {card.name}
+                    {getCardNameTranslated(card.id)}
                   </h3>
                   <div className="flex items-center justify-between mt-1">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded ${rarityColors.bg} ${rarityColors.text}`}>

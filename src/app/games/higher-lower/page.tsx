@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getRandomCard } from '@/data'
 import type { ClashCard, AttackSpeed } from '@/types/card'
 import { recordHigherLowerSession } from '@/lib/progress'
+import { useLanguage } from '@/lib/useLanguage'
 
 type CompareMode = 'elixir' | 'release_year' | 'attack_speed'
 
@@ -26,6 +27,7 @@ const ATTACK_SPEED_LABELS: Record<AttackSpeed, string> = {
 }
 
 export default function HigherLowerGame() {
+  const { getCardNameTranslated } = useLanguage();
   const [currentCard, setCurrentCard] = useState<ClashCard | null>(null)
   const [nextCard, setNextCard] = useState<ClashCard | null>(null)
   const [score, setScore] = useState(0)
@@ -208,7 +210,7 @@ export default function HigherLowerGame() {
                   <div className="w-44 h-[211px] rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
                     <img 
                       src={`/images/cards/${currentCard.id}.png`}
-                      alt={currentCard.name}
+                      alt={getCardNameTranslated(currentCard.id)}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -216,7 +218,7 @@ export default function HigherLowerGame() {
                 
                 {/* Card Info */}
                 <div className="bg-gray-800/80 p-6 text-center border-t border-gray-700">
-                  <h3 className="text-2xl font-black text-yellow-400 mb-1">{currentCard.name}</h3>
+                  <h3 className="text-2xl font-black text-yellow-400 mb-1">{getCardNameTranslated(currentCard.id)}</h3>
                   <p className="text-red-400 text-sm uppercase tracking-widest font-semibold mb-5">{currentCard.type}</p>
                   
                   {/* Value */}
@@ -331,7 +333,7 @@ export default function HigherLowerGame() {
                   <div className="w-44 h-[211px] rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
                     <img 
                       src={`/images/cards/${nextCard.id}.png`}
-                      alt={nextCard.name}
+                      alt={getCardNameTranslated(nextCard.id)}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -339,7 +341,7 @@ export default function HigherLowerGame() {
                 
                 {/* Card Info */}
                 <div className="bg-gray-800/80 p-6 text-center border-t border-gray-700">
-                  <h3 className="text-2xl font-black text-yellow-400 mb-1">{nextCard.name}</h3>
+                  <h3 className="text-2xl font-black text-yellow-400 mb-1">{getCardNameTranslated(nextCard.id)}</h3>
                   <p className="text-red-400 text-sm uppercase tracking-widest font-semibold mb-5">{nextCard.type}</p>
                   
                   {/* Value - Hidden until revealed */}
@@ -379,7 +381,7 @@ export default function HigherLowerGame() {
                 <p className="text-green-400 font-bold mb-4 text-lg">New High Score!</p>
               )}
               <p className="text-gray-500 mb-8">
-                {nextCard.name} has <span className="text-cyan-400 font-bold">{getDisplayValue(nextCard)}</span> {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : 'release year'}
+                {getCardNameTranslated(nextCard.id)} has <span className="text-cyan-400 font-bold">{getDisplayValue(nextCard)}</span> {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : 'release year'}
               </p>
               <button
                 onClick={initGame}
