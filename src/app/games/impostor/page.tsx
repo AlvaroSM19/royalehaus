@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { baseCards, getCardsByType, getCardsByRarity } from '@/data';
+import { baseCards, getCardsByType, getCardsByRarity, getCardsByAttackType, getCardsThatTargetAir } from '@/data';
 import { ClashCard, CardType, CardRarity } from '@/types/card';
 import { RotateCcw, Home, Trophy, Target, Clock, Award, Zap, TrendingUp } from 'lucide-react';
 import { recordImpostorSession } from '@/lib/progress';
 
-type GameMode = 'type' | 'rarity' | 'elixir';
+type GameMode = 'type' | 'rarity' | 'elixir' | 'attackType' | 'targetAir';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 const DIFFICULTY_CONFIG = {
@@ -34,7 +34,8 @@ export default function ImpostorPage() {
     if (!difficulty) return;
     
     const config = DIFFICULTY_CONFIG[difficulty];
-    const mode = ['type', 'rarity', 'elixir'][Math.floor(Math.random() * 3)] as GameMode;
+    const modes: GameMode[] = ['type', 'rarity', 'elixir', 'attackType', 'targetAir'];
+    const mode = modes[Math.floor(Math.random() * modes.length)];
     setGameMode(mode);
     
     let majorityCards: ClashCard[] = [];
@@ -69,7 +70,7 @@ export default function ImpostorPage() {
       impostor = impostorOptions[Math.floor(Math.random() * impostorOptions.length)];
       hintText = majorityRarity + ' Cards';
     }
-    else {
+    else if (mode === 'elixir') {
       const elixirCosts = [2, 3, 4, 5, 6];
       const majorityElixir = elixirCosts[Math.floor(Math.random() * elixirCosts.length)];
       const otherElixir = elixirCosts.filter(e => e !== majorityElixir);
@@ -83,6 +84,36 @@ export default function ImpostorPage() {
       const impostorOptions = baseCards.filter(c => c.elixir === impostorElixir);
       impostor = impostorOptions[Math.floor(Math.random() * impostorOptions.length)];
       hintText = majorityElixir + ' Elixir Cards';
+    }
+    else if (mode === 'attackType') {
+      // Melee vs Ranged mode
+      const attackTypes: ('melee' | 'ranged')[] = ['melee', 'ranged'];
+      const majorityAttackType = attackTypes[Math.floor(Math.random() * attackTypes.length)];
+      const impostorAttackType = majorityAttackType === 'melee' ? 'ranged' : 'melee';
+      
+      majorityCards = getCardsByAttackType(majorityAttackType)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, config.cardCount - 1);
+      
+      const impostorOptions = getCardsByAttackType(impostorAttackType);
+      if (impostorOptions.length > 0 && majorityCards.length >= config.cardCount - 1) {
+        impostor = impostorOptions[Math.floor(Math.random() * impostorOptions.length)];
+        hintText = majorityAttackType === 'melee' ? 'Melee Cards' : 'Ranged Cards';
+      }
+    }
+    else if (mode === 'targetAir') {
+      // Can hit air vs Ground only mode
+      const majorityTargetsAir = Math.random() > 0.5;
+      
+      majorityCards = getCardsThatTargetAir(majorityTargetsAir)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, config.cardCount - 1);
+      
+      const impostorOptions = getCardsThatTargetAir(!majorityTargetsAir);
+      if (impostorOptions.length > 0 && majorityCards.length >= config.cardCount - 1) {
+        impostor = impostorOptions[Math.floor(Math.random() * impostorOptions.length)];
+        hintText = majorityTargetsAir ? 'Cards that Hit Air' : 'Ground-Only Cards';
+      }
     }
 
     if (!impostor || majorityCards.length < config.cardCount - 1) {

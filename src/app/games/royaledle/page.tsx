@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
-import { ClashCard, RARITY_COLORS, CardType, CardRarity } from '@/types/card';
+import { ClashCard, RARITY_COLORS, CardType, CardRarity, AttackType, AttackSpeed } from '@/types/card';
 import { Home, RotateCcw, Search } from 'lucide-react';
 import { recordRoyaledleSession } from '@/lib/progress';
 
@@ -18,10 +18,15 @@ type GuessResult = {
     rarity: AttributeMatch;
     year: AttributeMatch;
     evolution: AttributeMatch;
+    attackType: AttributeMatch;
+    targetAir: AttributeMatch;
+    attackSpeed: AttributeMatch;
+    heroMode: AttributeMatch;
   };
   hints: {
     elixir: 'higher' | 'lower' | 'equal';
     year: 'higher' | 'lower' | 'equal';
+    attackSpeed: 'faster' | 'slower' | 'equal' | 'na';
   };
 };
 
@@ -80,6 +85,49 @@ export default function RoyaledlePage() {
       rarityMatch = 'partial';
     }
 
+    // Attack Type comparison
+    let attackTypeMatch: AttributeMatch = 'wrong';
+    if (guess.attackType === target.attackType) {
+      attackTypeMatch = 'correct';
+    } else if (guess.attackType === null || target.attackType === null) {
+      attackTypeMatch = 'wrong';
+    }
+
+    // Target Air comparison
+    let targetAirMatch: AttributeMatch = 'wrong';
+    if (guess.targetAir === target.targetAir) {
+      targetAirMatch = 'correct';
+    } else if (guess.targetAir === null || target.targetAir === null) {
+      targetAirMatch = 'wrong';
+    }
+
+    // Attack Speed comparison
+    const speedOrder: (AttackSpeed | null)[] = ['very-fast', 'fast', 'medium', 'slow', 'very-slow'];
+    const guessSpeedIdx = guess.attackSpeed ? speedOrder.indexOf(guess.attackSpeed) : -1;
+    const targetSpeedIdx = target.attackSpeed ? speedOrder.indexOf(target.attackSpeed) : -1;
+    
+    let attackSpeedMatch: AttributeMatch = 'wrong';
+    let attackSpeedHint: 'faster' | 'slower' | 'equal' | 'na' = 'na';
+    
+    if (guess.attackSpeed === null && target.attackSpeed === null) {
+      attackSpeedMatch = 'correct';
+      attackSpeedHint = 'equal';
+    } else if (guess.attackSpeed === null || target.attackSpeed === null) {
+      attackSpeedMatch = 'wrong';
+      attackSpeedHint = 'na';
+    } else if (guess.attackSpeed === target.attackSpeed) {
+      attackSpeedMatch = 'correct';
+      attackSpeedHint = 'equal';
+    } else if (Math.abs(guessSpeedIdx - targetSpeedIdx) === 1) {
+      attackSpeedMatch = 'partial';
+      attackSpeedHint = guessSpeedIdx > targetSpeedIdx ? 'faster' : 'slower';
+    } else {
+      attackSpeedHint = guessSpeedIdx > targetSpeedIdx ? 'faster' : 'slower';
+    }
+
+    // Hero Mode comparison
+    let heroModeMatch: AttributeMatch = guess.hasHeroMode === target.hasHeroMode ? 'correct' : 'wrong';
+
     return {
       card: guess,
       matches: {
@@ -89,10 +137,15 @@ export default function RoyaledlePage() {
         rarity: rarityMatch,
         year: guessYear === targetYear ? 'correct' : Math.abs(guessYear - targetYear) <= 1 ? 'partial' : 'wrong',
         evolution: guess.evolution_available === target.evolution_available ? 'correct' : 'wrong',
+        attackType: attackTypeMatch,
+        targetAir: targetAirMatch,
+        attackSpeed: attackSpeedMatch,
+        heroMode: heroModeMatch,
       },
       hints: {
         elixir: guess.elixir === target.elixir ? 'equal' : guess.elixir > target.elixir ? 'lower' : 'higher',
         year: guessYear === targetYear ? 'equal' : guessYear > targetYear ? 'lower' : 'higher',
+        attackSpeed: attackSpeedHint,
       },
     };
   };
@@ -139,6 +192,29 @@ export default function RoyaledlePage() {
     if (hint === 'higher') return '↑';
     if (hint === 'lower') return '↓';
     return '';
+  };
+
+  const getSpeedArrow = (hint: 'faster' | 'slower' | 'equal' | 'na') => {
+    if (hint === 'faster') return '↑';
+    if (hint === 'slower') return '↓';
+    return '';
+  };
+
+  const formatAttackType = (type: string | null) => {
+    if (type === null) return 'N/A';
+    return type === 'melee' ? 'Melee' : 'Ranged';
+  };
+
+  const formatAttackSpeed = (speed: string | null) => {
+    if (speed === null) return 'N/A';
+    const labels: Record<string, string> = {
+      'very-fast': 'V.Fast',
+      'fast': 'Fast',
+      'medium': 'Med',
+      'slow': 'Slow',
+      'very-slow': 'V.Slow'
+    };
+    return labels[speed] || speed;
   };
 
   return (
@@ -235,13 +311,29 @@ export default function RoyaledlePage() {
           )}
 
           {/* Guesses */}
-          <div className="space-y-3 max-w-4xl mx-auto">
+          <div className="space-y-3 max-w-6xl mx-auto">
+            {/* Header Row */}
+            {guesses.length > 0 && (
+              <div className="hidden sm:flex items-center gap-1 px-3 text-[10px] text-gray-400 uppercase tracking-wider">
+                <div className="w-12 flex-shrink-0"></div>
+                <div className="flex-1 text-center">Type</div>
+                <div className="flex-1 text-center">Rarity</div>
+                <div className="flex-1 text-center">Elixir</div>
+                <div className="flex-1 text-center">Year</div>
+                <div className="flex-1 text-center">Evo</div>
+                <div className="flex-1 text-center">Attack</div>
+                <div className="flex-1 text-center">Air</div>
+                <div className="flex-1 text-center">Speed</div>
+                <div className="flex-1 text-center">Hero</div>
+              </div>
+            )}
+            
             {guesses.map((guess, guessIndex) => (
               <div 
                 key={guessIndex} 
-                className="bg-[#0d3b4c]/80 backdrop-blur-sm rounded-xl p-3 border border-cyan-800/30"
+                className="bg-[#0d3b4c]/80 backdrop-blur-sm rounded-xl p-2 border border-cyan-800/30"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   {/* Card Image */}
                   <div 
                     className="flex-shrink-0 w-12 h-[58px] rounded-lg overflow-hidden border-2 border-cyan-700/50"
@@ -259,58 +351,58 @@ export default function RoyaledlePage() {
 
                   {/* Type */}
                   <div 
-                    className={`flex-1 ${getMatchClass(guess.matches.type)} border-2 rounded-lg p-3 text-center`}
+                    className={`flex-1 ${getMatchClass(guess.matches.type)} border-2 rounded-lg p-2 text-center min-w-0`}
+                    style={{ 
+                      animation: `slideInLeft 0.3s ease-out forwards`,
+                      animationDelay: '50ms',
+                      opacity: 0
+                    }}
+                  >
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Type</div>
+                    <div className="text-white font-bold text-xs truncate">{guess.card.type}</div>
+                  </div>
+
+                  {/* Rarity */}
+                  <div 
+                    className={`flex-1 ${getMatchClass(guess.matches.rarity)} border-2 rounded-lg p-2 text-center min-w-0`}
                     style={{ 
                       animation: `slideInLeft 0.3s ease-out forwards`,
                       animationDelay: '100ms',
                       opacity: 0
                     }}
                   >
-                    <div className="text-[10px] text-white/70 uppercase tracking-wider mb-1">Type</div>
-                    <div className="text-white font-bold text-sm">{guess.card.type}</div>
-                  </div>
-
-                  {/* Rarity */}
-                  <div 
-                    className={`flex-1 ${getMatchClass(guess.matches.rarity)} border-2 rounded-lg p-3 text-center`}
-                    style={{ 
-                      animation: `slideInLeft 0.3s ease-out forwards`,
-                      animationDelay: '200ms',
-                      opacity: 0
-                    }}
-                  >
-                    <div className="text-[10px] text-white/70 uppercase tracking-wider mb-1">Rarity</div>
-                    <div className="text-white font-bold text-sm">{guess.card.rarity}</div>
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Rarity</div>
+                    <div className="text-white font-bold text-xs truncate">{guess.card.rarity}</div>
                   </div>
 
                   {/* Elixir */}
                   <div 
-                    className={`flex-1 ${getMatchClass(guess.matches.elixir)} border-2 rounded-lg p-3 text-center`}
+                    className={`flex-1 ${getMatchClass(guess.matches.elixir)} border-2 rounded-lg p-2 text-center min-w-0`}
                     style={{ 
                       animation: `slideInLeft 0.3s ease-out forwards`,
-                      animationDelay: '300ms',
+                      animationDelay: '150ms',
                       opacity: 0
                     }}
                   >
-                    <div className="text-[10px] text-white/70 uppercase tracking-wider mb-1">Elixir</div>
-                    <div className="text-white font-bold text-sm flex items-center justify-center gap-1">
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Elixir</div>
+                    <div className="text-white font-bold text-xs flex items-center justify-center gap-0.5">
                       {guess.card.elixir}
-                      <img src="/images/elixir.png" alt="elixir" className="w-4 h-4" />
+                      <img src="/images/elixir.png" alt="elixir" className="w-3 h-3" />
                       <span className="text-white/70">{getArrow(guess.hints.elixir)}</span>
                     </div>
                   </div>
 
                   {/* Year */}
                   <div 
-                    className={`flex-1 ${getMatchClass(guess.matches.year)} border-2 rounded-lg p-3 text-center`}
+                    className={`flex-1 ${getMatchClass(guess.matches.year)} border-2 rounded-lg p-2 text-center min-w-0`}
                     style={{ 
                       animation: `slideInLeft 0.3s ease-out forwards`,
-                      animationDelay: '400ms',
+                      animationDelay: '200ms',
                       opacity: 0
                     }}
                   >
-                    <div className="text-[10px] text-white/70 uppercase tracking-wider mb-1">Year</div>
-                    <div className="text-white font-bold text-sm flex items-center justify-center gap-1">
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Year</div>
+                    <div className="text-white font-bold text-xs flex items-center justify-center gap-0.5">
                       {getYear(guess.card.release_date)}
                       <span className="text-white/70">{getArrow(guess.hints.year)}</span>
                     </div>
@@ -318,16 +410,77 @@ export default function RoyaledlePage() {
 
                   {/* Evolution */}
                   <div 
-                    className={`flex-1 ${getMatchClass(guess.matches.evolution)} border-2 rounded-lg p-3 text-center`}
+                    className={`flex-1 ${getMatchClass(guess.matches.evolution)} border-2 rounded-lg p-2 text-center min-w-0`}
                     style={{ 
                       animation: `slideInLeft 0.3s ease-out forwards`,
-                      animationDelay: '500ms',
+                      animationDelay: '250ms',
                       opacity: 0
                     }}
                   >
-                    <div className="text-[10px] text-white/70 uppercase tracking-wider mb-1">Evolution</div>
-                    <div className="text-white font-bold text-sm">
-                      {guess.card.evolution_available ? 'Yes' : 'No'}
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Evo</div>
+                    <div className="text-white font-bold text-xs">
+                      {guess.card.evolution_available ? '✓' : '✗'}
+                    </div>
+                  </div>
+
+                  {/* Attack Type */}
+                  <div 
+                    className={`flex-1 ${getMatchClass(guess.matches.attackType)} border-2 rounded-lg p-2 text-center min-w-0`}
+                    style={{ 
+                      animation: `slideInLeft 0.3s ease-out forwards`,
+                      animationDelay: '300ms',
+                      opacity: 0
+                    }}
+                  >
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Attack</div>
+                    <div className="text-white font-bold text-xs truncate">
+                      {formatAttackType(guess.card.attackType)}
+                    </div>
+                  </div>
+
+                  {/* Target Air */}
+                  <div 
+                    className={`flex-1 ${getMatchClass(guess.matches.targetAir)} border-2 rounded-lg p-2 text-center min-w-0`}
+                    style={{ 
+                      animation: `slideInLeft 0.3s ease-out forwards`,
+                      animationDelay: '350ms',
+                      opacity: 0
+                    }}
+                  >
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Air</div>
+                    <div className="text-white font-bold text-xs">
+                      {guess.card.targetAir === null ? 'N/A' : guess.card.targetAir ? '✓' : '✗'}
+                    </div>
+                  </div>
+
+                  {/* Attack Speed */}
+                  <div 
+                    className={`flex-1 ${getMatchClass(guess.matches.attackSpeed)} border-2 rounded-lg p-2 text-center min-w-0`}
+                    style={{ 
+                      animation: `slideInLeft 0.3s ease-out forwards`,
+                      animationDelay: '400ms',
+                      opacity: 0
+                    }}
+                  >
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Speed</div>
+                    <div className="text-white font-bold text-xs flex items-center justify-center gap-0.5">
+                      {formatAttackSpeed(guess.card.attackSpeed)}
+                      <span className="text-white/70">{getSpeedArrow(guess.hints.attackSpeed)}</span>
+                    </div>
+                  </div>
+
+                  {/* Hero Mode */}
+                  <div 
+                    className={`flex-1 ${getMatchClass(guess.matches.heroMode)} border-2 rounded-lg p-2 text-center min-w-0`}
+                    style={{ 
+                      animation: `slideInLeft 0.3s ease-out forwards`,
+                      animationDelay: '450ms',
+                      opacity: 0
+                    }}
+                  >
+                    <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Hero</div>
+                    <div className="text-white font-bold text-xs">
+                      {guess.card.hasHeroMode ? '✓' : '✗'}
                     </div>
                   </div>
                 </div>

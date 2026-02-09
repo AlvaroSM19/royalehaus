@@ -11,11 +11,20 @@ export interface ClashCard {
   rarity: CardRarity
   release_date: string
   evolution_available: boolean
+  // Combat properties
+  attackType: AttackType | null
+  targetAir: boolean | null
+  attackSpeed: AttackSpeed | null
+  hasHeroMode: boolean
   // Optional fields for future expansion
   imageUrl?: string
   description?: string
   arena?: number
 }
+
+export type AttackType = 'melee' | 'ranged'
+
+export type AttackSpeed = 'very-fast' | 'fast' | 'medium' | 'slow' | 'very-slow'
 
 export type CardType = 'Troop' | 'Spell' | 'Building' | 'Champion' | 'Tower Troop' | 'Evolution' | 'Hero'
 

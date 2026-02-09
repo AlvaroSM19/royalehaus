@@ -19,6 +19,22 @@ export const getCardsByRarity = (rarity: ClashCard['rarity']): ClashCard[] =>
 export const getCardsByElixir = (elixir: number): ClashCard[] => 
   cardsData.filter(card => card.elixir === elixir)
 
+// Get cards by attack type (melee/ranged)
+export const getCardsByAttackType = (attackType: 'melee' | 'ranged'): ClashCard[] =>
+  cardsData.filter(card => card.attackType === attackType)
+
+// Get cards that can target air
+export const getCardsThatTargetAir = (canTarget: boolean): ClashCard[] =>
+  cardsData.filter(card => card.targetAir === canTarget)
+
+// Get cards by attack speed
+export const getCardsByAttackSpeed = (speed: ClashCard['attackSpeed']): ClashCard[] =>
+  cardsData.filter(card => card.attackSpeed === speed)
+
+// Get cards with hero mode
+export const getCardsWithHeroMode = (): ClashCard[] =>
+  cardsData.filter(card => card.hasHeroMode === true)
+
 // Get cards with evolutions
 export const getCardsWithEvolution = (): ClashCard[] => 
   cardsData.filter(card => card.evolution_available)
