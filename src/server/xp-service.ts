@@ -149,17 +149,30 @@ export async function grantXp(userId: string, amount: number, kind: string, meta
   return { userId, added: adj, xpTotal: newTotal, level, leveledUp: gained > 0, levelsGained: gained, cappedReason };
 }
 
+// Get XP summary for RoyaleHaus only (calculates from 'royale:' prefixed events)
 export async function getXpSummary(userId: string) {
   try {
-    const user: any = await (prisma as any).user.findUnique({ where: { id: userId } });
-    if (!user || user.level == null || user.xpTotal == null) {
-      return { level: 1, xpTotal: 0, toNext: xpForLevel(1), progress: 0, today: { total: 0, perGame: {} } };
-    }
-    const need = xpForLevel(user.level);
-    const have = user.xpTotal - totalXpForLevel(user.level);
+    // Sum XP only from royale: events
+    const xpResult = await prisma.$queryRaw<{ total: bigint }[]>`
+      SELECT COALESCE(SUM(amount), 0) AS total
+      FROM "XpEvent"
+      WHERE "userId" = ${userId} AND kind LIKE 'royale:%'
+    `;
+    const xpTotal = Number(xpResult[0]?.total || 0);
+    
+    // Calculate level from XP
+    const levelFromXp = (totalXp: number): number => {
+      let lvl = 1, acc = 0;
+      while (acc + xpForLevel(lvl) <= totalXp) { acc += xpForLevel(lvl); lvl++; }
+      return lvl;
+    };
+    const level = levelFromXp(xpTotal);
+    
+    const need = xpForLevel(level);
+    const have = xpTotal - totalXpForLevel(level);
     const progress = Math.max(0, Math.min(1, have / need));
     const counters = await getTodayCounters(userId);
-    return { level: user.level, xpTotal: user.xpTotal, toNext: need - have, progress, today: counters };
+    return { level, xpTotal, toNext: need - have, progress, today: counters };
   } catch {
     return { level: 1, xpTotal: 0, toNext: xpForLevel(1), progress: 0, today: { total: 0, perGame: {} } };
   }

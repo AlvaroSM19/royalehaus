@@ -64,12 +64,13 @@ export async function POST(request: NextRequest) {
       counted: true,
     });
 
-    // Set cookie for 24 hours to prevent recounting
+    // Set session cookie (no maxAge = expires when browser closes)
+    // This ensures we only count one visit per browser session
     response.cookies.set('royale_visited', 'true', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 24 hours
+      // No maxAge = session cookie, expires when browser closes
     });
 
     return response;

@@ -32,6 +32,24 @@ const games = [
     image: '/images/games/4.webp',
     href: '/games/wordle', 
   },
+  { 
+    id: 'pixel-royale', 
+    title: 'PIXEL ROYALE', 
+    image: '/images/games/6.webp',
+    href: '/games/pixel-royale', 
+  },
+  { 
+    id: 'emoji-riddle', 
+    title: 'EMOJI RIDDLE', 
+    image: '/images/games/7.webp',
+    href: '/games/emoji-riddle', 
+  },
+  { 
+    id: 'sound-quiz', 
+    title: 'SOUND QUIZ', 
+    image: '/images/games/8.webp',
+    href: '/games/sound-quiz', 
+  },
 ]
 
 export default function HomePage() {

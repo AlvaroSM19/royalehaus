@@ -7,8 +7,8 @@ const dataDir = process.env.DATA_DIR || path.join(process.cwd(), '.data');
 const progressFile = path.join(dataDir, 'royale-progress.json');
 const useDb = !!process.env.DATABASE_URL;
 
-// Known game IDs for RoyaleHaus
-const KNOWN_GAME_IDS = ['royaledle', 'higherlower', 'impostor', 'wordle'];
+// Known game IDs for RoyaleHaus (RoyaleHaus-specific, not shared with OnePieceHaus)
+const KNOWN_GAME_IDS = ['royaledle', 'higherlower', 'impostor', 'wordle', 'tapone', 'pixel-royale', 'emoji-riddle', 'sound-quiz'];
 
 interface ProgressRecord {
   userId: string;
@@ -204,18 +204,32 @@ export async function listTopProgress(limit = 50): Promise<LeaderboardEntry[]> {
   return records.sort((a, b) => b.totalGames - a.totalGames).slice(0, limit);
 }
 
-// XP leaderboard
+// XP leaderboard - RoyaleHaus only (sums XpEvent with 'royale:' prefix)
 export async function listTopXp(limit = 10): Promise<XpEntry[]> {
   if (useDb) {
     try {
-      type RawRow = { id: string; username: string; royaleAvatarId: string | null; lvl: number; xp: number };
+      // Calculate XP from XpEvent table filtering only 'royale:' prefixed events
+      type RawRow = { userId: string; username: string; royaleAvatarId: string | null; xp: bigint };
       const rows = await prisma.$queryRaw<RawRow[]>`
-        SELECT id, username, "royaleAvatarId", COALESCE("level", 1) AS lvl, COALESCE("xpTotal", 0) AS xp
-        FROM "User"
-        ORDER BY "level" DESC, "xpTotal" DESC
+        SELECT u.id AS "userId", u.username, u."royaleAvatarId", COALESCE(SUM(x.amount), 0) AS xp
+        FROM "User" u
+        LEFT JOIN "XpEvent" x ON x."userId" = u.id AND x.kind LIKE 'royale:%'
+        GROUP BY u.id, u.username, u."royaleAvatarId"
+        HAVING COALESCE(SUM(x.amount), 0) > 0
+        ORDER BY xp DESC
         LIMIT ${limit}
       `;
-      return rows.map((r: RawRow) => ({ userId: r.id, username: r.username, avatarId: r.royaleAvatarId, level: r.lvl, xpTotal: r.xp }));
+      // Calculate level from XP (same formula as xp-service)
+      const xpForLevel = (lv: number) => 100 + (lv - 1) * 50;
+      const levelFromXp = (totalXp: number): number => {
+        let lvl = 1, acc = 0;
+        while (acc + xpForLevel(lvl) <= totalXp) { acc += xpForLevel(lvl); lvl++; }
+        return lvl;
+      };
+      return rows.map((r: RawRow) => {
+        const xpNum = Number(r.xp);
+        return { userId: r.userId, username: r.username, avatarId: r.royaleAvatarId, level: levelFromXp(xpNum), xpTotal: xpNum };
+      });
     } catch {
       const rows = await prisma.user.findMany({ select: { id: true, username: true, royaleAvatarId: true }, take: limit });
       return rows.map((r: { id: string; username: string; royaleAvatarId: string | null }) => ({ userId: r.id, username: r.username, avatarId: r.royaleAvatarId || null, level: 1, xpTotal: 0 }));
