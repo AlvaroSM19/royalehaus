@@ -582,7 +582,7 @@ export default function RoyaledlePage() {
               )}
               
               <button
-                onClick={initGame}
+                onClick={() => initGame()}
                 className="mt-4 px-6 py-3 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors border-2 border-amber-500"
               >
                 Play Again
