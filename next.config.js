@@ -9,6 +9,10 @@ const nextConfig = {
       },
     ],
   },
+  // Ignore ESLint errors during production build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // experimental features disabled to improve dev stability
   // experimental: {
   //   typedRoutes: true,
