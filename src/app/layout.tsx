@@ -171,10 +171,10 @@ export default function RootLayout({
                   </a>
                 </div>
                 <nav className="flex items-center space-x-4">
-                  <LanguageSelector />
                   <WallpaperSelector />
                   <LevelBadge />
                   <FeedbackModal />
+                  <LanguageSelector />
                   <AuthNav />
                 </nav>
               </div>

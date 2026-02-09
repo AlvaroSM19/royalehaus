@@ -63,7 +63,7 @@ export default function LanguageSelector() {
       {/* Dropdown Menu */}
       {isOpen && (
         <div 
-          className="absolute right-0 mt-2 w-44 rounded-xl shadow-xl z-50 overflow-hidden"
+          className="absolute right-0 mt-2 w-44 rounded-xl shadow-xl z-[100] overflow-hidden"
           style={{
             background: 'linear-gradient(180deg, rgba(30, 27, 20, 0.98) 0%, rgba(20, 18, 12, 0.99) 100%)',
             border: '1px solid rgba(180, 140, 60, 0.25)',

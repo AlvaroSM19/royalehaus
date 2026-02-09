@@ -286,6 +286,12 @@ export default function RoyaledlePage() {
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredCards.length > 0 && searchTerm.length >= 2) {
+                      e.preventDefault();
+                      handleGuess(filteredCards[0]);
+                    }
+                  }}
                   placeholder="Type at least 2 letters..."
                   className="w-full pl-12 pr-4 py-4 bg-[#0d3b4c]/90 border-2 border-cyan-700/50 rounded-xl text-white placeholder-gray-400 focus:border-cyan-500 focus:outline-none transition-colors text-lg"
                 />
@@ -316,7 +322,7 @@ export default function RoyaledlePage() {
           <div className="space-y-3 max-w-6xl mx-auto">
             {/* Header Row */}
             {guesses.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1 px-3 text-[10px] text-gray-400 uppercase tracking-wider">
+              <div className="hidden sm:flex items-center gap-1 px-3 text-xs text-gray-200 uppercase tracking-wider font-bold">
                 <div className="w-12 flex-shrink-0"></div>
                 <div className="flex-1 text-center">Type</div>
                 <div className="flex-1 text-center">Rarity</div>
@@ -324,7 +330,7 @@ export default function RoyaledlePage() {
                 <div className="flex-1 text-center">Year</div>
                 <div className="flex-1 text-center">Evo</div>
                 <div className="flex-1 text-center">Attack</div>
-                <div className="flex-1 text-center">Air</div>
+                <div className="flex-1 text-center min-w-[70px]">Air Target</div>
                 <div className="flex-1 text-center">Speed</div>
                 <div className="flex-1 text-center">Hero</div>
               </div>
