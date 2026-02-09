@@ -147,7 +147,7 @@ export default function HigherLowerGame() {
       <div className="min-h-screen flex items-center justify-center bg-black/50">
         <div className="text-2xl text-amber-200">Loading...</div>
       </div>
-    )
+    );
   }
 
   return (
