@@ -6,6 +6,7 @@ import AuthNav from '@/components/AuthNav'
 import LevelBadge from '@/components/LevelBadge'
 import FeedbackModal from '@/components/FeedbackModal'
 import LanguageSelector from '@/components/LanguageSelector'
+import VisitCounter from '@/components/VisitCounter'
 import { LanguageProvider } from '@/lib/useLanguage'
 
 const inter = Inter({ 
@@ -97,7 +98,7 @@ export default function RootLayout({
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(255,180,80,0.12),transparent_55%)] z-10 wallpaper-global-overlay"/>
         
         <div className="relative flex min-h-screen flex-col z-20 wallpaper-content">
-          <header className="sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 relative overflow-hidden">
+          <header className="sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 relative">
             {/* Dark themed background */}
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 opacity-95 header-bg-overlay"></div>
             <div className="absolute inset-0 opacity-25 header-pattern-overlay" style={{
@@ -171,6 +172,7 @@ export default function RootLayout({
                   </a>
                 </div>
                 <nav className="flex items-center space-x-4">
+                  <VisitCounter />
                   <WallpaperSelector />
                   <LevelBadge />
                   <FeedbackModal />

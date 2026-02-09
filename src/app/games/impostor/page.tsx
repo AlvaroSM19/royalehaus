@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { baseCards as allBaseCards, getCardsByAttackType, getCardsThatTargetAir } from '@/data';
+import { baseCards as allBaseCards, getCardsByAttackType, getCardsThatTargetAir, getCardsByAttackSpeed, getCardsWithEvolution } from '@/data';
 import { ClashCard, CardType, CardRarity } from '@/types/card';
 import { RotateCcw, Home, Clock, Award, Zap, Sparkles } from 'lucide-react';
 import { recordImpostorSession } from '@/lib/progress';
@@ -13,7 +13,7 @@ const gameCards = allBaseCards.filter(c =>
   c.type === 'Troop' || c.type === 'Spell' || c.type === 'Building' || c.type === 'Champion'
 );
 
-type GameMode = 'type' | 'rarity' | 'elixir' | 'releaseYear' | 'attackType' | 'targetAir';
+type GameMode = 'type' | 'rarity' | 'elixir' | 'releaseYear' | 'attackType' | 'targetAir' | 'attackSpeed' | 'evolution';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 const DIFFICULTY_CONFIG = {
@@ -83,7 +83,8 @@ export default function ImpostorPage() {
     const lastWasCardAttribute = lastModeRef.current === 'type' || lastModeRef.current === 'rarity';
     
     // Build available modes with smart filtering
-    let allModes: GameMode[] = ['type', 'rarity', 'elixir', 'releaseYear', 'attackType', 'targetAir'];
+    // Prioritize new interesting modes: attackType, evolution, attackSpeed
+    let allModes: GameMode[] = ['attackType', 'evolution', 'attackSpeed', 'type', 'rarity', 'elixir', 'releaseYear', 'targetAir'];
     
     // If last was type or rarity, exclude BOTH type and rarity from next round
     // This prevents "Champions" followed by "Epic" or similar
@@ -98,7 +99,7 @@ export default function ImpostorPage() {
     const shuffledModes: GameMode[] = [...allModes].sort(() => Math.random() - 0.5);
     
     // Add fallback modes at the end (in case all preferred modes fail)
-    const allPossibleModes: GameMode[] = ['type', 'rarity', 'elixir', 'releaseYear', 'attackType', 'targetAir'];
+    const allPossibleModes: GameMode[] = ['attackType', 'evolution', 'attackSpeed', 'type', 'rarity', 'elixir', 'releaseYear', 'targetAir'];
     const fallbackModes = allPossibleModes
       .filter(m => !shuffledModes.includes(m))
       .sort(() => Math.random() - 0.5);
@@ -235,6 +236,51 @@ export default function ImpostorPage() {
           if (impPool.length === 0) continue;
           imp = impPool[Math.floor(Math.random() * impPool.length)];
           cond = canHitAir ? 'All others can hit air' : 'All others are ground-only';
+        }
+        else if (mode === 'attackSpeed') {
+          // ATTACK SPEED mode: group by attack speed
+          const speeds: ('slow' | 'medium' | 'fast' | 'very-fast' | 'very-slow')[] = ['slow', 'medium', 'fast', 'very-fast', 'very-slow'];
+          const speedGroups: { [key: string]: ClashCard[] } = {};
+          
+          speeds.forEach(speed => {
+            const cards = getCardsByAttackSpeed(speed);
+            if (cards.length >= needed) {
+              speedGroups[speed] = cards;
+            }
+          });
+          
+          const validSpeeds = Object.keys(speedGroups);
+          if (validSpeeds.length < 2) continue;
+          
+          const shuffledSpeeds = [...validSpeeds].sort(() => Math.random() - 0.5);
+          const majoritySpeed = shuffledSpeeds[0];
+          const impostorSpeed = shuffledSpeeds[1];
+          
+          majCards = speedGroups[majoritySpeed].sort(() => Math.random() - 0.5).slice(0, needed);
+          imp = speedGroups[impostorSpeed][Math.floor(Math.random() * speedGroups[impostorSpeed].length)];
+          
+          const speedDisplay = majoritySpeed.replace('-', ' ').replace(/^\w/, c => c.toUpperCase());
+          cond = `All others have ${speedDisplay} attack speed`;
+        }
+        else if (mode === 'evolution') {
+          // EVOLUTION mode: cards with evolution vs without
+          const hasEvolution = Math.random() > 0.5;
+          
+          const pool = hasEvolution 
+            ? gameCards.filter(c => c.evolution_available === true)
+            : gameCards.filter(c => c.evolution_available === false);
+          
+          if (pool.length < needed) continue;
+          
+          majCards = pool.sort(() => Math.random() - 0.5).slice(0, needed);
+          
+          const impPool = hasEvolution
+            ? gameCards.filter(c => c.evolution_available === false)
+            : gameCards.filter(c => c.evolution_available === true);
+          
+          if (impPool.length === 0) continue;
+          imp = impPool[Math.floor(Math.random() * impPool.length)];
+          cond = hasEvolution ? 'All others have Evolution' : 'All others have no Evolution';
         }
 
         if (!imp || majCards.length < needed) continue;

@@ -3,10 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
+import { getDailyCard, getRandomPracticeCard } from '@/lib/shuffle-bag';
 import { ClashCard, RARITY_COLORS, CardType, CardRarity, AttackType, AttackSpeed } from '@/types/card';
-import { Home, RotateCcw, Search } from 'lucide-react';
+import { Home, RotateCcw, Search, Calendar, Shuffle } from 'lucide-react';
 import { recordRoyaledleSession } from '@/lib/progress';
 import { useLanguage } from '@/lib/useLanguage';
+
+type GameMode = 'daily' | 'practice';
 
 type AttributeMatch = 'correct' | 'partial' | 'wrong';
 
@@ -35,15 +38,31 @@ const MAX_GUESSES = 8;
 
 export default function RoyaledlePage() {
   const { getCardNameTranslated } = useLanguage();
+  const [mode, setMode] = useState<GameMode>('daily');
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [dailyCompleted, setDailyCompleted] = useState(false);
 
-  const initGame = useCallback(() => {
-    const card = getRandomCard();
+  const initGame = useCallback((gameMode: GameMode = 'daily') => {
+    // For daily mode, check if already completed today
+    if (gameMode === 'daily') {
+      const today = new Date().toISOString().split('T')[0];
+      const lastDaily = localStorage.getItem('royaledle-last-daily');
+      const lastDailyResult = localStorage.getItem('royaledle-daily-result');
+      
+      if (lastDaily === today && lastDailyResult) {
+        setDailyCompleted(true);
+      } else {
+        setDailyCompleted(false);
+      }
+    }
+    
+    const card = gameMode === 'daily' ? getDailyCard() : getRandomPracticeCard();
+    setMode(gameMode);
     setTargetCard(card);
     setGuesses([]);
     setSearchTerm('');
@@ -52,7 +71,7 @@ export default function RoyaledlePage() {
   }, []);
 
   useEffect(() => {
-    initGame();
+    initGame('daily');
   }, [initGame]);
 
   const getYear = (dateString: string): number => {
@@ -169,6 +188,18 @@ export default function RoyaledlePage() {
       setWon(isWin);
       // Record session for XP
       recordRoyaledleSession(newGuesses.length, isWin);
+      
+      // Save daily result to prevent replaying
+      if (mode === 'daily') {
+        const today = new Date().toISOString().split('T')[0];
+        localStorage.setItem('royaledle-last-daily', today);
+        localStorage.setItem('royaledle-daily-result', JSON.stringify({
+          won: isWin,
+          guesses: newGuesses.length,
+          cardId: targetCard?.id
+        }));
+        setDailyCompleted(true);
+      }
     }
   };
 
@@ -239,16 +270,44 @@ export default function RoyaledlePage() {
             </div>
             
             <div className="flex items-center gap-4">
+              {/* Mode Toggle */}
+              <div className="flex rounded-lg overflow-hidden border border-gray-600">
+                <button
+                  onClick={() => initGame('daily')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                    mode === 'daily'
+                      ? 'bg-amber-500 text-gray-900'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  Daily
+                </button>
+                <button
+                  onClick={() => initGame('practice')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                    mode === 'practice'
+                      ? 'bg-amber-500 text-gray-900'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  Practice
+                </button>
+              </div>
+              
               <span className="text-gray-400 text-sm">
                 ATTEMPTS: <span className="text-white font-bold">{guesses.length}</span>
               </span>
-              <button
-                onClick={initGame}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
-              >
-                <RotateCcw className="w-4 h-4" />
-                New Game
-              </button>
+              {mode === 'practice' && (
+                <button
+                  onClick={() => initGame('practice')}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  New Game
+                </button>
+              )}
             </div>
           </div>
         </div>
