@@ -273,7 +273,6 @@ export default function HigherLowerGame() {
                   Speed
                 </button>
               </div>
-              </div>
 
               <p className="text-gray-300 text-center text-lg">
                 Is the next card&apos;s {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : 'release year'} <span className="text-yellow-400 font-bold">{compareMode === 'attack_speed' ? 'FASTER' : 'HIGHER'}</span> or <span className="text-red-400 font-bold">{compareMode === 'attack_speed' ? 'SLOWER' : 'LOWER'}</span>?
