@@ -50,6 +50,18 @@ const games = [
     image: '/images/games/8.webp',
     href: '/games/sound-quiz', 
   },
+  { 
+    id: 'memory', 
+    title: 'ROYALE MEMORY', 
+    image: '/images/games/9.webp',
+    href: '/games/memory', 
+  },
+  { 
+    id: 'stat-battle', 
+    title: 'STAT BATTLE', 
+    image: '/images/games/10.webp',
+    href: '/games/stat-battle', 
+  },
 ]
 
 export default function HomePage() {

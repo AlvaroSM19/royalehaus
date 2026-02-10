@@ -5,6 +5,8 @@ export interface RoyaledleHighScore { bestWinAttempts: number; updatedAt: string
 export interface WordleHighScore { bestAttempts: number; longestWordLength: number; updatedAt: string }
 export interface ImpostorHighScore { bestStreak: number; bestScore: number; updatedAt: string }
 export interface TapOneHighScore { bestRank: number; bestScore: number; updatedAt: string }
+export interface MemoryHighScore { bestMoves: number; bestTime: number; difficulty: string; updatedAt: string }
+export interface StatBattleHighScore { bestScore: number; bestStreak: number; updatedAt: string }
 
 export interface UserProgress { 
   version: number; 
@@ -16,6 +18,8 @@ export interface UserProgress {
     wordle?: WordleHighScore; 
     impostor?: ImpostorHighScore; 
     tapone?: TapOneHighScore;
+    memory?: MemoryHighScore;
+    statbattle?: StatBattleHighScore;
     [k: string]: any 
   }; 
   stickers: string[]; 
@@ -235,6 +239,72 @@ export function recordTapOneSession(score: number, rank: number) {
   
   try { 
     const grant = computeGameXp('tapone', { score, rank }); 
+    if (grant) fetch('/api/xp', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      credentials: 'include', 
+      body: JSON.stringify(grant) 
+    }).then(() => { 
+      try { window.dispatchEvent(new Event('xp:updated')); } catch {} 
+    }).catch(() => {}); 
+  } catch {}
+}
+
+export function recordMemorySession(moves: number, time: number, difficulty: string) {
+  if (typeof window === 'undefined') return;
+  let p = getProgress() || initProgress();
+  p = ensureDaily(p)!;
+  p.stats.gamesPlayedTotal++;
+  p.stats.gamesPlayedById.memory = (p.stats.gamesPlayedById.memory || 0) + 1;
+  
+  const prev = p.highScores.memory;
+  // Better = fewer moves, or same moves with faster time
+  if (!prev || moves < prev.bestMoves || (moves === prev.bestMoves && time < prev.bestTime)) {
+    p.highScores.memory = { 
+      bestMoves: moves, 
+      bestTime: time, 
+      difficulty,
+      updatedAt: new Date().toISOString() 
+    };
+  }
+  saveProgress(p);
+  scheduleServerSync();
+  scheduleServerSync(true);
+  
+  try { 
+    const grant = computeGameXp('memory', { moves, time, difficulty }); 
+    if (grant) fetch('/api/xp', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      credentials: 'include', 
+      body: JSON.stringify(grant) 
+    }).then(() => { 
+      try { window.dispatchEvent(new Event('xp:updated')); } catch {} 
+    }).catch(() => {}); 
+  } catch {}
+}
+
+export function recordStatBattleSession(score: number, maxStreak: number) {
+  if (typeof window === 'undefined') return;
+  let p = getProgress() || initProgress();
+  p = ensureDaily(p)!;
+  p.stats.gamesPlayedTotal++;
+  p.stats.gamesPlayedById.statbattle = (p.stats.gamesPlayedById.statbattle || 0) + 1;
+  
+  const prev = p.highScores.statbattle;
+  if (!prev || score > prev.bestScore || (score === prev.bestScore && maxStreak > prev.bestStreak)) {
+    p.highScores.statbattle = { 
+      bestScore: score, 
+      bestStreak: maxStreak, 
+      updatedAt: new Date().toISOString() 
+    };
+  }
+  saveProgress(p);
+  scheduleServerSync();
+  scheduleServerSync(true);
+  
+  try { 
+    const grant = computeGameXp('statbattle', { score, streak: maxStreak }); 
     if (grant) fetch('/api/xp', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 

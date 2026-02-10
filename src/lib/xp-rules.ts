@@ -41,6 +41,22 @@ const XP_VALUES = {
     rank5: 100,       // Bonus for top 5
     rank10: 50,       // Bonus for top 10
   },
+  // Memory
+  memory: {
+    win: 50,          // Base XP for completing
+    perfectEasy: 100, // Bonus for min moves on easy
+    perfectMedium: 150, // Bonus for min moves on medium  
+    perfectHard: 200,  // Bonus for min moves on hard
+    speedBonus: 50,   // Bonus for completing in under 60 seconds
+  },
+  // Stat Battle
+  statbattle: {
+    base: 15,         // Per correct guess
+    streak5: 75,      // Bonus at 5 streak
+    streak10: 150,    // Bonus at 10 streak
+    highScore10: 100, // Bonus for reaching 10 points
+    highScore20: 200, // Bonus for reaching 20 points
+  },
 };
 
 export function computeGameXp(gameId: string, data: any): XpGrant | null {
@@ -96,6 +112,44 @@ export function computeGameXp(gameId: string, data: any): XpGrant | null {
       else if (rank <= 5) amount += XP_VALUES.tapone.rank5;
       else if (rank <= 10) amount += XP_VALUES.tapone.rank10;
       return { kind: `game:tapone:complete`, amount };
+    }
+    
+    case 'memory': {
+      const moves = data.moves || 0;
+      const time = data.time || 0;
+      const difficulty = data.difficulty || 'medium';
+      let amount = XP_VALUES.memory.win;
+      
+      // Perfect game bonuses (minimum possible moves)
+      const minMoves: Record<string, number> = { easy: 4, medium: 6, hard: 8 };
+      if (moves === minMoves[difficulty]) {
+        if (difficulty === 'easy') amount += XP_VALUES.memory.perfectEasy;
+        else if (difficulty === 'medium') amount += XP_VALUES.memory.perfectMedium;
+        else if (difficulty === 'hard') amount += XP_VALUES.memory.perfectHard;
+      }
+      
+      // Speed bonus
+      if (time < 60) amount += XP_VALUES.memory.speedBonus;
+      
+      return { kind: `game:memory:win`, amount };
+    }
+    
+    case 'statbattle': {
+      const score = data.score || 0;
+      const streak = data.streak || 0;
+      if (score <= 0) return null;
+      
+      let amount = XP_VALUES.statbattle.base * score;
+      
+      // Streak bonuses
+      if (streak >= 10) amount += XP_VALUES.statbattle.streak10;
+      else if (streak >= 5) amount += XP_VALUES.statbattle.streak5;
+      
+      // High score bonuses
+      if (score >= 20) amount += XP_VALUES.statbattle.highScore20;
+      else if (score >= 10) amount += XP_VALUES.statbattle.highScore10;
+      
+      return { kind: `game:statbattle:complete`, amount };
     }
     
     default:
