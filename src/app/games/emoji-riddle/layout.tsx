@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 
 export const metadata: Metadata = {
+    image: '/images/games/8.webp',
   title: 'Emoji Riddle - Descifra la Carta con Emojis',
   description: 'Descifra qué carta de Clash Royale representan los emojis. ¡Cada emoji incorrecto revela una nueva pista!',
   keywords: ['emoji riddle', 'emoji game', 'clash royale emoji', 'emoji quiz', 'card guessing'],

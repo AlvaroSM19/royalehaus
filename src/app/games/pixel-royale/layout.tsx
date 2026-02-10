@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Pixel Royale - Adivina la Carta Pixelada',
   description: 'Juega a Pixel Royale y demuestra cuánto sabes de Clash Royale. Adivina la carta oculta mientras la imagen se va revelando poco a poco.',
   keywords: ['pixel royale', 'pixelated card', 'blur game', 'clash royale quiz', 'image guessing'],
+  image: '/images/games/6.webp',
   openGraph: {
     title: 'Pixel Royale - Adivina la Carta Pixelada | RoyaleHaus',
     description: 'Juega a Pixel Royale y adivina la carta oculta mientras la imagen se revela.',
