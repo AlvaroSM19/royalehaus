@@ -5,7 +5,6 @@ export const metadata: Metadata = {
   title: 'Emoji Riddle - Descifra la Carta con Emojis',
   description: 'Descifra qué carta de Clash Royale representan los emojis. ¡Cada emoji incorrecto revela una nueva pista!',
   keywords: ['emoji riddle', 'emoji game', 'clash royale emoji', 'emoji quiz', 'card guessing'],
-  image: '/images/games/8.webp',
   openGraph: {
     title: 'Emoji Riddle - Descifra la Carta con Emojis | RoyaleHaus',
     description: 'Descifra qué carta de Clash Royale representan los emojis. ¡Pistas emoji!',

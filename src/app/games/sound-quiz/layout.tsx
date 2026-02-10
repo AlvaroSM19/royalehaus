@@ -5,7 +5,6 @@ export const metadata: Metadata = {
   title: 'Sound Quiz - Guess the Card by Sound',
   description: 'Test your Clash Royale knowledge by guessing cards from their sound effects!',
   keywords: ['sound quiz', 'audio game', 'clash royale sounds', 'card sounds', 'audio recognition'],
-  image: '/images/games/9.webp',
   openGraph: {
     title: 'Sound Quiz - Guess the Card by Sound | RoyaleHaus',
     description: 'Test your Clash Royale knowledge by guessing cards from their sound effects!',
