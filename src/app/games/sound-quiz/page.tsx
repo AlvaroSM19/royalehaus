@@ -64,6 +64,27 @@ export default function SoundQuizPage() {
     return baseCards.filter(card => CARDS_WITH_SOUNDS.includes(card.id));
   }, []);
 
+  const stopSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (fallbackNodesRef.current) {
+      try {
+        fallbackNodesRef.current.osc.stop();
+      } catch (error) {
+        // ignore oscillator stop errors
+      }
+      fallbackNodesRef.current = null;
+    }
+    if (fallbackTimerRef.current) {
+      window.clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+    setIsPlaying(false);
+  }, []);
+
   const initGame = useCallback(() => {
     stopSound();
     if (cardsWithSounds.length === 0) {
@@ -113,27 +134,6 @@ export default function SoundQuizPage() {
   const getSoundUrl = (card: ClashCard) => {
     return `/sounds/cards/${card.id}.mp3`;
   };
-
-  const stopSound = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    if (fallbackNodesRef.current) {
-      try {
-        fallbackNodesRef.current.osc.stop();
-      } catch (error) {
-        // ignore oscillator stop errors
-      }
-      fallbackNodesRef.current = null;
-    }
-    if (fallbackTimerRef.current) {
-      window.clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = null;
-    }
-    setIsPlaying(false);
-  }, []);
 
   const playFallbackTone = useCallback((cardId: number) => {
     try {
