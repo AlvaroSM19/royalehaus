@@ -155,7 +155,7 @@ export default function PixelRoyalePage() {
               {targetCard && (
                 <img
                   src={getCardImageUrl(targetCard)}
-                  alt="Mystery Card"
+                  alt="Mystery Clash Royale Card - Guess the pixelated card"
                   className="w-full h-full object-contain p-4 transition-all duration-700"
                   style={{
                     filter: gameOver ? 'blur(0px)' : `blur(${currentBlur}px)`,

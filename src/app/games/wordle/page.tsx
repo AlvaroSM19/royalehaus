@@ -291,7 +291,7 @@ export default function WordlePage() {
               {/* Card Info */}
               <div className="flex items-center justify-center gap-4 mt-4 text-sm">
                 <span className="flex items-center gap-1">
-                  <img src="/images/elixir.png" alt="elixir" className="w-4 h-4" />
+                  <img src="/images/elixir.png" alt="Clash Royale Elixir Cost" className="w-4 h-4" />
                   <span className="text-cyan-400 font-bold">{targetCard.elixir}</span>
                 </span>
                 <span className="text-gray-400">{targetCard.type}</span>
@@ -342,7 +342,7 @@ export default function WordlePage() {
               {guesses.length >= 5 && targetCard ? (
                 <span className="font-bold text-cyan-400 flex items-center gap-1">
                   {targetCard.elixir}
-                  <img src="/images/elixir.png" alt="elixir" className="w-4 h-4" />
+                  <img src="/images/elixir.png" alt="Clash Royale Elixir Cost" className="w-4 h-4" />
                 </span>
               ) : (
                 <span className="text-gray-600 text-xs flex items-center gap-1">

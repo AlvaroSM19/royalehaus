@@ -8,6 +8,7 @@ import FeedbackModal from '@/components/FeedbackModal'
 import LanguageSelector from '@/components/LanguageSelector'
 import VisitCounter from '@/components/VisitCounter'
 import { LanguageProvider } from '@/lib/useLanguage'
+import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/schema'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -90,6 +91,15 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* JSON-LD Schema Markup for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebsiteSchema()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }}
+        />
       </head>
       <body className={`${inter.variable} antialiased min-h-screen bg-black text-amber-100 relative overflow-x-hidden wallpaper-body`}>
         <LanguageProvider>

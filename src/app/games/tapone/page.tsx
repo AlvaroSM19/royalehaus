@@ -263,7 +263,7 @@ export default function TapOnePage() {
               // Spinning animation - rapidly changing cards
               <img
                 src={`/images/cards/${currentSpinCard}.png`}
-                alt="Spinning"
+                alt="Loading Clash Royale card"
                 className="w-full h-full object-contain p-0.5 sm:p-1"
                 loading="eager"
               />

@@ -454,7 +454,7 @@ export default function RoyaledlePage() {
                     <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Elixir</div>
                     <div className="text-white font-bold text-xs flex items-center justify-center gap-0.5">
                       {guess.card.elixir}
-                      <img src="/images/elixir.png" alt="elixir" className="w-3 h-3" />
+                      <img src="/images/elixir.png" alt="Clash Royale Elixir Cost" className="w-3 h-3" />
                       <span className="text-white/70">{getArrow(guess.hints.elixir)}</span>
                     </div>
                   </div>
