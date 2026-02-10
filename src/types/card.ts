@@ -16,6 +16,8 @@ export interface ClashCard {
   targetAir: boolean | null
   attackSpeed: AttackSpeed | null
   hasHeroMode: boolean
+  // Stats at Tournament Level (Level 11)
+  damage_lvl_11?: number | null
   // Optional fields for future expansion
   imageUrl?: string
   description?: string
