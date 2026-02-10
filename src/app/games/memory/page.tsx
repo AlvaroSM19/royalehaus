@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { RotateCcw, Home, Brain, Trophy, Timer } from 'lucide-react'
+import { RotateCcw, Home, Brain, Trophy, Timer, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { cardsData, baseCards } from '@/data'
 import type { ClashCard } from '@/types/card'
@@ -331,52 +331,57 @@ export default function RoyaleMemoryGame() {
   // ── Render ───────────────────────────────────────────────────────────────
   if (!gameStarted || cards.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black/50">
-        <div className="text-2xl text-amber-200">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+        <div className="text-2xl text-amber-400 font-bold animate-pulse">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex flex-col">
+    <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
-      <header className="w-full bg-gray-900/95 backdrop-blur-sm border-b border-amber-500/30 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors">
-            <Home size={20} />
-            <span className="font-medium">Home</span>
+      <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
+          >
+            <Home size={20} className="group-hover:scale-110 transition-transform" />
+            <span className="font-medium hidden sm:inline">Home</span>
           </Link>
-          <h1 className="text-xl font-bold text-amber-400 flex items-center gap-2">
-            <Brain size={24} />
-            Royale Memory
+          <h1 className="text-lg sm:text-xl font-bold text-amber-400 flex items-center gap-2">
+            <Brain size={22} className="text-cyan-400" />
+            <span>Royale Memory</span>
           </h1>
           <button
             onClick={initGame}
-            className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 px-3 py-1.5 rounded-lg transition-all hover:scale-105 border border-amber-500/30"
           >
-            <RotateCcw size={18} />
-            New Game
+            <RotateCcw size={16} />
+            <span className="hidden sm:inline">New Game</span>
           </button>
         </div>
       </header>
 
-      {/* Stats Bar */}
-      <div className="w-full bg-gray-800/60 border-b border-gray-700/50 px-4 py-2">
-        <div className="max-w-5xl mx-auto flex items-center justify-center gap-8 text-sm">
-          <div className="flex items-center gap-2 text-cyan-400">
+      {/* Stats Panel */}
+      <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center gap-4 sm:gap-8 text-sm">
+          <div className="flex items-center gap-2 text-cyan-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-cyan-500/20">
             <Timer size={16} />
-            <span>{formatTime(timer)}</span>
+            <span className="font-mono font-bold">{formatTime(timer)}</span>
           </div>
-          <div className="flex items-center gap-2 text-amber-400">
-            <span>Moves: {moves}</span>
+          <div className="flex items-center gap-2 text-amber-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-amber-500/20">
+            <span className="text-xs text-amber-400/70">Moves</span>
+            <span className="font-bold">{moves}</span>
           </div>
-          <div className="flex items-center gap-2 text-green-400">
-            <Trophy size={16} />
-            <span>{matchedPairs}/{TOTAL_PAIRS}</span>
+          <div className="flex items-center gap-2 text-green-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-green-500/20">
+            <Sparkles size={16} />
+            <span className="font-bold">{matchedPairs}/{TOTAL_PAIRS}</span>
           </div>
           {bestScore && (
-            <div className="flex items-center gap-2 text-gray-400">
-              <span>Best: {bestScore}</span>
+            <div className="flex items-center gap-2 text-yellow-400 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 px-3 py-1.5 rounded-lg border border-yellow-500/30">
+              <Trophy size={16} />
+              <span className="font-bold">{bestScore}</span>
             </div>
           )}
         </div>
@@ -384,16 +389,19 @@ export default function RoyaleMemoryGame() {
 
       {/* Preview countdown */}
       {showPreview && (
-        <div className="text-center py-2 bg-amber-500/20 text-amber-300 font-semibold text-sm animate-pulse">
-          Memorize the cards!
+        <div className="text-center py-3 bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 text-amber-300 font-bold text-sm animate-pulse border-b border-amber-500/30">
+          <span className="flex items-center justify-center gap-2">
+            <Brain size={18} className="animate-bounce" />
+            Memorize the cards!
+          </span>
         </div>
       )}
 
-      {/* Game Board  6x3 grid */}
+      {/* Game Board 6x3 grid */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div
           className="grid gap-2 sm:gap-3"
-          style={{ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', maxWidth: 660 }}
+          style={{ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', maxWidth: 680 }}
         >
           {cards.map(card => {
             const faceUp = card.isFlipped || card.isMatched
@@ -403,34 +411,46 @@ export default function RoyaleMemoryGame() {
                 onClick={() => handleCardClick(card.id)}
                 disabled={card.isMatched || card.isFlipped || isChecking || showPreview}
                 className={`
-                  relative aspect-[3/4] w-[88px] sm:w-[100px] rounded-xl overflow-hidden
+                  relative aspect-[3/4] w-[82px] sm:w-[100px] rounded-xl overflow-hidden
                   transition-all duration-300 transform
-                  ${!faceUp ? 'hover:scale-105 cursor-pointer' : ''}
-                  ${card.isMatched ? 'ring-2 ring-green-400 shadow-lg shadow-green-400/20 opacity-80' : ''}
+                  ${!faceUp ? 'hover:scale-105 hover:-translate-y-1 cursor-pointer' : ''}
+                  ${card.isMatched ? 'ring-2 ring-green-400 shadow-lg shadow-green-400/30 scale-95' : ''}
                 `}
+                style={{ perspective: '1000px' }}
               >
                 {/* Card Back */}
                 {!faceUp && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600 to-amber-800 rounded-xl border-2 border-amber-500/50 flex items-center justify-center shadow-lg">
-                    <span className="text-3xl sm:text-4xl select-none">👑</span>
+                  <div 
+                    className="absolute inset-0 rounded-xl flex items-center justify-center shadow-lg border-2 border-amber-500/50"
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(180, 130, 40, 0.9) 0%, rgba(120, 80, 20, 0.95) 100%)',
+                    }}
+                  >
+                    <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjEuNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIuMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')]"></div>
+                    <span className="text-4xl sm:text-5xl select-none drop-shadow-lg z-10">👑</span>
                   </div>
                 )}
 
                 {/* Card Front */}
                 {faceUp && (
-                  <div className={`absolute inset-0 bg-gray-800 rounded-xl border-2 ${
-                    card.isMatched ? 'border-green-400' : 'border-cyan-500/60'
-                  } flex flex-col items-center justify-center p-1 shadow-lg`}>
+                  <div 
+                    className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center p-1 shadow-lg border-2 ${
+                      card.isMatched ? 'border-green-400' : 'border-cyan-500/60'
+                    }`}
+                    style={{
+                      background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+                    }}
+                  >
                     <img
                       src={`/images/cards/${card.card.id}.png`}
                       alt={card.card.name}
-                      className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+                      className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-md"
                     />
-                    <p className="text-[9px] sm:text-[10px] text-white text-center mt-1 leading-tight line-clamp-2 font-medium">
+                    <p className="text-[8px] sm:text-[10px] text-white text-center mt-0.5 leading-tight line-clamp-2 font-medium px-0.5">
                       {card.card.name}
                     </p>
                     {card.isMatched && (
-                      <span className="text-[10px] mt-0.5">{REL_EMOJI[card.relationship]}</span>
+                      <span className="text-sm mt-0.5 drop-shadow-md">{REL_EMOJI[card.relationship]}</span>
                     )}
                   </div>
                 )}
@@ -442,9 +462,14 @@ export default function RoyaleMemoryGame() {
 
       {/* Match Popup (toast) */}
       {matchPopup && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50" style={{ animation: 'bounceIn 0.4s ease-out forwards' }}>
-          <div className={`bg-gradient-to-r ${REL_COLOR[matchPopup.relationship]} border rounded-xl px-6 py-4 shadow-2xl backdrop-blur-sm max-w-sm text-center`}>
-            <p className="text-white font-black text-lg">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-[fadeIn_0.4s_ease-out]">
+          <div 
+            className={`bg-gradient-to-r ${REL_COLOR[matchPopup.relationship]} rounded-xl px-6 py-4 shadow-2xl backdrop-blur-sm max-w-sm text-center border border-white/20`}
+            style={{
+              animation: 'bounceIn 0.4s ease-out forwards',
+            }}
+          >
+            <p className="text-white font-black text-lg drop-shadow-md">
               {REL_EMOJI[matchPopup.relationship]} {REL_LABEL[matchPopup.relationship]}!
             </p>
             <p className="text-white/90 text-sm mt-1">{matchPopup.description}</p>
@@ -454,25 +479,40 @@ export default function RoyaleMemoryGame() {
 
       {/* Win Modal */}
       {gameWon && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl border border-amber-500/50 p-8 max-w-md w-full text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold text-amber-400 mb-2">You Win!</h2>
-            <p className="text-gray-300 mb-6">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
+          <div 
+            className="relative rounded-2xl p-8 max-w-md w-full text-center border-2 border-amber-500/50 overflow-hidden"
+            style={{
+              background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.98) 0%, rgba(15, 28, 50, 0.99) 100%)',
+              animation: 'fadeIn 0.4s ease-out',
+            }}
+          >
+            {/* Decorative corners */}
+            <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-amber-400/60"></div>
+            <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-amber-400/60"></div>
+            <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-amber-400/60"></div>
+            <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-amber-400/60"></div>
+
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <h2 className="text-3xl font-bold text-amber-400 mb-2 drop-shadow-lg">Victory!</h2>
+            <p className="text-slate-300 mb-6">
               Completed in <span className="text-amber-400 font-bold">{moves} moves</span> and{' '}
               <span className="text-cyan-400 font-bold">{formatTime(timer)}</span>
             </p>
 
             {/* Matched pairs summary */}
-            <div className="bg-gray-700/50 rounded-xl p-4 mb-6">
-              <h3 className="text-amber-200 font-medium mb-3">Pairs Found:</h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="bg-slate-800/60 rounded-xl p-4 mb-6 border border-slate-700/50">
+              <h3 className="text-amber-200 font-medium mb-3 flex items-center justify-center gap-2">
+                <Sparkles size={16} className="text-amber-400" />
+                Pairs Found
+              </h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
                 {matchHistory.map((pair, i) => (
-                  <div key={i} className="flex items-center justify-center gap-2 text-sm">
-                    <span className="text-xs">{REL_EMOJI[pair.relationship]}</span>
-                    <span className="text-white">{pair.card1Name}</span>
-                    <span className="text-gray-500">+</span>
-                    <span className="text-white">{pair.card2Name}</span>
+                  <div key={i} className="flex items-center justify-center gap-2 text-sm py-1 hover:bg-slate-700/30 rounded-lg transition-colors">
+                    <span className="text-base">{REL_EMOJI[pair.relationship]}</span>
+                    <span className="text-white font-medium">{pair.card1Name}</span>
+                    <span className="text-slate-500">+</span>
+                    <span className="text-white font-medium">{pair.card2Name}</span>
                   </div>
                 ))}
               </div>
@@ -480,7 +520,7 @@ export default function RoyaleMemoryGame() {
 
             <button
               onClick={initGame}
-              className="w-full bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold py-3 px-4 rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-2 border border-amber-400/50"
             >
               <RotateCcw size={18} />
               Play Again
@@ -489,12 +529,27 @@ export default function RoyaleMemoryGame() {
         </div>
       )}
 
-      {/* Keyframes for popup animation */}
+      {/* Keyframes for animations */}
       <style jsx>{`
         @keyframes bounceIn {
           0%   { opacity: 0; transform: translateX(-50%) translateY(40px) scale(0.8); }
           60%  { transform: translateX(-50%) translateY(-8px) scale(1.05); }
           100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(251, 191, 36, 0.4);
+          border-radius: 4px;
         }
       `}</style>
     </div>
