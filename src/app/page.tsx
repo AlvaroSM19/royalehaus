@@ -39,28 +39,22 @@ const games = [
     href: '/games/pixel-royale', 
   },
   { 
+    id: 'memory', 
+    title: 'ROYALE MEMORY', 
+    image: '/images/games/7.webp',
+    href: '/games/memory', 
+  },
+  { 
     id: 'emoji-riddle', 
     title: 'EMOJI RIDDLE', 
-    image: '/images/games/7.webp',
+    image: '/images/games/8.webp',
     href: '/games/emoji-riddle', 
   },
   { 
     id: 'sound-quiz', 
     title: 'SOUND QUIZ', 
-    image: '/images/games/8.webp',
-    href: '/games/sound-quiz', 
-  },
-  { 
-    id: 'memory', 
-    title: 'ROYALE MEMORY', 
     image: '/images/games/9.webp',
-    href: '/games/memory', 
-  },
-  { 
-    id: 'stat-battle', 
-    title: 'STAT BATTLE', 
-    image: '/images/games/10.webp',
-    href: '/games/stat-battle', 
+    href: '/games/sound-quiz', 
   },
 ]
 

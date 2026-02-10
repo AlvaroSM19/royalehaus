@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { RotateCcw, Home, TrendingUp, TrendingDown, Zap, Award, Calendar, Equal, Timer } from 'lucide-react'
+import { RotateCcw, Home, TrendingUp, TrendingDown, Zap, Award, Calendar, Equal, Timer, Sword } from 'lucide-react'
 import Link from 'next/link'
 import { getRandomCard } from '@/data'
 import type { ClashCard, AttackSpeed } from '@/types/card'
 import { recordHigherLowerSession } from '@/lib/progress'
 import { useLanguage } from '@/lib/useLanguage'
 
-type CompareMode = 'elixir' | 'release_year' | 'attack_speed'
+type CompareMode = 'elixir' | 'release_year' | 'attack_speed' | 'damage'
 
 const ATTACK_SPEED_VALUES: Record<AttackSpeed, number> = {
   'very-fast': 5,
@@ -37,7 +37,7 @@ export default function HigherLowerGame() {
   const [showResult, setShowResult] = useState(false)
   const [lastGuessCorrect, setLastGuessCorrect] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [compareMode, setCompareMode] = useState<CompareMode>('elixir')
+  const [compareMode, setCompareMode] = useState<CompareMode>('damage')
 
   useEffect(() => {
     const saved = localStorage.getItem('royalehaus-higherlower-highscore')
@@ -45,11 +45,15 @@ export default function HigherLowerGame() {
   }, [])
 
   const initGame = useCallback(() => {
-    // For attack_speed mode, filter cards that have an attackSpeed value
+    // For attack_speed and damage modes, filter cards that have valid values
     const getValidCard = () => {
       let card = getRandomCard()
       if (compareMode === 'attack_speed') {
         while (!card.attackSpeed) {
+          card = getRandomCard()
+        }
+      } else if (compareMode === 'damage') {
+        while (!card.damage_lvl_11 || card.damage_lvl_11 === null) {
           card = getRandomCard()
         }
       }
@@ -79,6 +83,8 @@ export default function HigherLowerGame() {
       return card.elixir
     } else if (compareMode === 'attack_speed') {
       return card.attackSpeed ? ATTACK_SPEED_VALUES[card.attackSpeed] : 0
+    } else if (compareMode === 'damage') {
+      return card.damage_lvl_11 || 0
     } else {
       return new Date(card.release_date).getFullYear()
     }
@@ -125,7 +131,7 @@ export default function HigherLowerGame() {
 
         // Get new card that's valid for current compare mode
         let newCard = getRandomCard()
-        while (newCard.id === nextCard.id || (compareMode === 'attack_speed' && !newCard.attackSpeed)) {
+        while (newCard.id === nextCard.id || (compareMode === 'attack_speed' && !newCard.attackSpeed) || (compareMode === 'damage' && (!newCard.damage_lvl_11 || newCard.damage_lvl_11 === null))) {
           newCard = getRandomCard()
         }
         
@@ -228,11 +234,13 @@ export default function HigherLowerGame() {
                       <img src="/images/elixir.png" alt="Elixir" className="w-10 h-10" />
                     ) : compareMode === 'attack_speed' ? (
                       <Timer className="w-8 h-8 text-cyan-400" />
+                    ) : compareMode === 'damage' ? (
+                      <Sword className="w-8 h-8 text-cyan-400" />
                     ) : (
                       <Calendar className="w-8 h-8 text-cyan-400" />
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">{compareMode === 'elixir' ? 'Current Elixir' : compareMode === 'attack_speed' ? 'Attack Speed' : 'Release Year'}</p>
+                  <p className="text-gray-500 text-sm">{compareMode === 'elixir' ? 'Current Elixir' : compareMode === 'attack_speed' ? 'Attack Speed' : compareMode === 'damage' ? 'Damage (Lvl 11)' : 'Release Year'}</p>
                 </div>
               </div>
             </div>
@@ -241,6 +249,17 @@ export default function HigherLowerGame() {
             <div className="flex flex-col items-center gap-5 px-8">
               {/* Mode Selector */}
               <div className="flex flex-wrap gap-2 mb-2 justify-center">
+                <button
+                  onClick={() => { setCompareMode('damage'); initGame() }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all text-sm border-2 ${
+                    compareMode === 'damage'
+                      ? 'bg-purple-600 text-white border-purple-500'
+                      : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
+                  }`}
+                >
+                  <Sword className="w-4 h-4" />
+                  Damage
+                </button>
                 <button
                   onClick={() => { setCompareMode('elixir'); initGame() }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all text-sm border-2 ${
@@ -277,7 +296,7 @@ export default function HigherLowerGame() {
               </div>
 
               <p className="text-gray-300 text-center text-lg">
-                Is the next card&apos;s {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : 'release year'} <span className="text-yellow-400 font-bold">{compareMode === 'attack_speed' ? 'FASTER' : 'HIGHER'}</span> or <span className="text-red-400 font-bold">{compareMode === 'attack_speed' ? 'SLOWER' : 'LOWER'}</span>?
+                Is the next card&apos;s {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : compareMode === 'damage' ? 'damage' : 'release year'} <span className="text-yellow-400 font-bold">{compareMode === 'attack_speed' ? 'FASTER' : 'HIGHER'}</span> or <span className="text-red-400 font-bold">{compareMode === 'attack_speed' ? 'SLOWER' : 'LOWER'}</span>?
               </p>
               
               {!gameOver && (
@@ -353,6 +372,8 @@ export default function HigherLowerGame() {
                           <img src="/images/elixir.png" alt="Elixir" className="w-10 h-10" />
                         ) : compareMode === 'attack_speed' ? (
                           <Timer className="w-8 h-8 text-cyan-400" />
+                        ) : compareMode === 'damage' ? (
+                          <Sword className="w-8 h-8 text-cyan-400" />
                         ) : (
                           <Calendar className="w-8 h-8 text-cyan-400" />
                         )}
@@ -361,7 +382,7 @@ export default function HigherLowerGame() {
                       <span className="text-5xl font-black text-gray-600">???</span>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">{compareMode === 'elixir' ? 'Next Elixir' : compareMode === 'attack_speed' ? 'Attack Speed' : 'Release Year'}</p>
+                  <p className="text-gray-500 text-sm">{compareMode === 'elixir' ? 'Next Elixir' : compareMode === 'attack_speed' ? 'Attack Speed' : compareMode === 'damage' ? 'Damage (Lvl 11)' : 'Release Year'}</p>
                 </div>
               </div>
             </div>
@@ -381,7 +402,7 @@ export default function HigherLowerGame() {
                 <p className="text-green-400 font-bold mb-4 text-lg">New High Score!</p>
               )}
               <p className="text-gray-500 mb-8">
-                {getCardNameTranslated(nextCard.id)} has <span className="text-cyan-400 font-bold">{getDisplayValue(nextCard)}</span> {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : 'release year'}
+                {getCardNameTranslated(nextCard.id)} has <span className="text-cyan-400 font-bold">{getDisplayValue(nextCard)}</span> {compareMode === 'elixir' ? 'elixir' : compareMode === 'attack_speed' ? 'attack speed' : compareMode === 'damage' ? 'damage' : 'release year'}
               </p>
               <button
                 onClick={initGame}

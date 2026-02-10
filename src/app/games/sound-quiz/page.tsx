@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward } from 'lucide-react';
+import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 5;
@@ -53,14 +53,40 @@ export default function SoundQuizPage() {
   const [won, setWon] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playCount, setPlayCount] = useState(0);
-  const [audioError, setAudioError] = useState(false);
+  const [isLoadingSound, setIsLoadingSound] = useState(false);
+  const [audioMode, setAudioMode] = useState<'file' | 'fallback' | 'unavailable'>('file');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const fallbackNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
+  const fallbackTimerRef = useRef<number | null>(null);
 
   const cardsWithSounds = useMemo(() => {
     return baseCards.filter(card => CARDS_WITH_SOUNDS.includes(card.id));
   }, []);
 
+  const stopSound = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (fallbackNodesRef.current) {
+      try {
+        fallbackNodesRef.current.osc.stop();
+      } catch (error) {
+        // ignore oscillator stop errors
+      }
+      fallbackNodesRef.current = null;
+    }
+    if (fallbackTimerRef.current) {
+      window.clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+    setIsPlaying(false);
+  }, []);
+
   const initGame = useCallback(() => {
+    stopSound();
     if (cardsWithSounds.length === 0) {
       console.warn('No cards with sounds available');
       return;
@@ -71,19 +97,23 @@ export default function SoundQuizPage() {
     setSearchTerm('');
     setGameOver(false);
     setWon(false);
-    setIsPlaying(false);
     setPlayCount(0);
-    setAudioError(false);
-    
-    // Preload audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-  }, [cardsWithSounds]);
+    setIsLoadingSound(false);
+    setAudioMode('file');
+  }, [cardsWithSounds, stopSound]);
 
   useEffect(() => {
     initGame();
   }, [initGame]);
+
+  useEffect(() => {
+    return () => {
+      stopSound();
+      if (audioCtxRef.current && typeof audioCtxRef.current.close === 'function') {
+        audioCtxRef.current.close().catch(() => undefined);
+      }
+    };
+  }, [stopSound]);
 
   const guessedCardIds = useMemo(() => new Set(guesses.map(g => g.id)), [guesses]);
 
@@ -105,32 +135,98 @@ export default function SoundQuizPage() {
     return `/sounds/cards/${card.id}.mp3`;
   };
 
-  const playSound = () => {
-    if (!targetCard || gameOver) return;
-    
-    const audio = new Audio(getSoundUrl(targetCard));
-    audioRef.current = audio;
-    
-    audio.onplay = () => setIsPlaying(true);
-    audio.onended = () => setIsPlaying(false);
-    audio.onerror = () => {
-      setAudioError(true);
-      setIsPlaying(false);
-    };
-    
-    audio.play().catch(() => {
-      setAudioError(true);
-    });
-    setPlayCount(prev => prev + 1);
-  };
-
-  const stopSound = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
+  const playFallbackTone = useCallback((cardId: number) => {
+    try {
+      if (typeof window === 'undefined') {
+        throw new Error('No window context');
+      }
+      const anyWindow = window as typeof window & { webkitAudioContext?: typeof AudioContext };
+      const AudioCtor = anyWindow.AudioContext || anyWindow.webkitAudioContext;
+      if (!AudioCtor) {
+        throw new Error('AudioContext unsupported');
+      }
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtor();
+      }
+      const ctx = audioCtxRef.current;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const baseFreq = 180 + ((cardId % 12) * 25);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.1);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 1.2);
+      fallbackNodesRef.current = { osc, gain };
+      if (fallbackTimerRef.current) {
+        window.clearTimeout(fallbackTimerRef.current);
+      }
+      setAudioMode('fallback');
+      setIsPlaying(true);
+      fallbackTimerRef.current = window.setTimeout(() => {
+        fallbackNodesRef.current = null;
+        setIsPlaying(false);
+      }, 1200);
+    } catch (error) {
+      console.warn('Fallback tone failed', error);
+      setAudioMode('unavailable');
     }
-  };
+  }, []);
+
+  const playSound = useCallback(async () => {
+    if (!targetCard || gameOver) return;
+
+    stopSound();
+    setIsLoadingSound(true);
+
+    const soundUrl = getSoundUrl(targetCard);
+    const cardId = targetCard.id;
+    let fallbackHandled = false;
+
+    const handleFallback = () => {
+      if (fallbackHandled) return;
+      fallbackHandled = true;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+      playFallbackTone(cardId);
+    };
+
+    try {
+      const response = await fetch(soundUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        throw new Error('Missing sound file');
+      }
+
+      const audio = new Audio(soundUrl);
+      audioRef.current = audio;
+
+      audio.onplay = () => {
+        setIsPlaying(true);
+        setAudioMode('file');
+      };
+      audio.onended = () => {
+        setIsPlaying(false);
+      };
+      audio.onerror = () => {
+        setIsPlaying(false);
+        handleFallback();
+      };
+
+      await audio.play();
+    } catch (error) {
+      handleFallback();
+    } finally {
+      setIsLoadingSound(false);
+      setPlayCount(prev => prev + 1);
+    }
+  }, [gameOver, playFallbackTone, stopSound, targetCard]);
 
   const handleGuess = (card: ClashCard) => {
     if (gameOver || !targetCard) return;
@@ -241,27 +337,40 @@ export default function SoundQuizPage() {
             {!gameOver && (
               <button
                 onClick={isPlaying ? stopSound : playSound}
-                disabled={audioError}
+                disabled={audioMode === 'unavailable' || isLoadingSound}
                 className={`
                   flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg
                   transition-all shadow-lg
-                  ${audioError 
+                  ${audioMode === 'unavailable'
                     ? 'bg-red-600/50 text-red-200 cursor-not-allowed'
-                    : isPlaying 
+                    : isPlaying
                       ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/50'
-                      : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 shadow-cyan-900/50'
+                      : audioMode === 'fallback'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-900/40'
+                        : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 shadow-cyan-900/50'
                   }
+                  ${isLoadingSound ? 'opacity-80 cursor-wait' : ''}
                 `}
               >
-                {audioError ? (
+                {audioMode === 'unavailable' ? (
                   <>
                     <VolumeX className="w-6 h-6" />
-                    <span>Sound Not Available</span>
+                    <span>Audio Not Available</span>
+                  </>
+                ) : isLoadingSound ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Loading...</span>
                   </>
                 ) : isPlaying ? (
                   <>
                     <Pause className="w-6 h-6" />
                     <span>Stop</span>
+                  </>
+                ) : audioMode === 'fallback' ? (
+                  <>
+                    <Volume2 className="w-6 h-6" />
+                    <span>Play Placeholder Tone</span>
                   </>
                 ) : (
                   <>
@@ -272,7 +381,14 @@ export default function SoundQuizPage() {
               </button>
             )}
 
-            {audioError && !gameOver && (
+            {audioMode === 'fallback' && !gameOver && targetCard && (
+              <p className="text-xs text-amber-100/70 text-center max-w-xs">
+                Placeholder tone in use because /sounds/cards/{targetCard.id}.mp3 was not found.
+                Add a real clip under public/sounds/cards/ to replace it.
+              </p>
+            )}
+
+            {(audioMode === 'unavailable' || audioMode === 'fallback') && !gameOver && (
               <button
                 onClick={initGame}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium transition-all"

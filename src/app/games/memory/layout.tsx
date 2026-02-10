@@ -10,11 +10,13 @@ export const metadata: Metadata = {
     description: 'Test your memory matching Clash Royale card pairs! Find counters, evolutions, and synergies.',
     type: 'website',
     siteName: 'RoyaleHaus',
+    images: ['/images/games/7.webp'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Royale Memory - Match Card Pairs',
     description: 'Test your memory matching Clash Royale card pairs!',
+    images: ['/images/games/7.webp'],
   },
 }
 

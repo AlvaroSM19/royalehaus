@@ -1551,7 +1551,7 @@
     "targetAir": true,
     "attackSpeed": "medium",
     "hasHeroMode": false,
-    "damage_lvl_11": 218
+    "damage_lvl_11": null
   },
   {
     "id": 112,
