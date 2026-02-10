@@ -28,11 +28,14 @@ export async function GET() {
 // POST: Increment visit count
 export async function POST(request: NextRequest) {
   try {
-    // Check for existing visit in this session via cookie
-    const visitedCookie = request.cookies.get('royale_visited');
+    // Check for existing visit today via cookie
+    const visitedCookie = request.cookies.get('royale_visited_today');
     
-    if (visitedCookie?.value === 'true') {
-      // Already counted this session, just return current stats
+    // Get today's date string to validate the cookie
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if (visitedCookie?.value === today) {
+      // Already counted today, just return current stats
       const stat = await prisma.siteStat.findUnique({
         where: { id: 'main' },
       });
@@ -64,13 +67,19 @@ export async function POST(request: NextRequest) {
       counted: true,
     });
 
-    // Set session cookie (no maxAge = expires when browser closes)
-    // This ensures we only count one visit per browser session
-    response.cookies.set('royale_visited', 'true', {
+    // Calculate seconds until midnight (local server time)
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0); // Next midnight
+    const secondsUntilMidnight = Math.floor((midnight.getTime() - now.getTime()) / 1000);
+
+    // Set cookie with today's date, expires at midnight
+    response.cookies.set('royale_visited_today', today, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      // No maxAge = session cookie, expires when browser closes
+      maxAge: secondsUntilMidnight, // Expires at midnight
+      path: '/',
     });
 
     return response;

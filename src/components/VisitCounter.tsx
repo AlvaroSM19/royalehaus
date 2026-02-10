@@ -10,6 +10,30 @@ interface SiteStats {
   updatedAt?: string;
 }
 
+// Get today's date string in YYYY-MM-DD format
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Check if we already visited today (localStorage fallback)
+function hasVisitedToday(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const lastVisit = localStorage.getItem('royale_last_visit');
+    return lastVisit === getTodayString();
+  } catch {
+    return false;
+  }
+}
+
+// Mark that we visited today
+function markVisitedToday(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('royale_last_visit', getTodayString());
+  } catch {}
+}
+
 export default function VisitCounter() {
   const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState<SiteStats | null>(null);
@@ -22,18 +46,35 @@ export default function VisitCounter() {
   useEffect(() => {
     const registerAndFetchVisits = async () => {
       try {
-        // Register this visit (POST will set cookie to prevent double counting)
-        const postRes = await fetch('/api/site-stats', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (postRes.ok) {
-          const data = await postRes.json();
-          setStats({
-            visits: data.visits,
-            displayVisits: data.displayVisits,
-          });
+        // Check localStorage first as a fallback
+        const alreadyVisitedToday = hasVisitedToday();
+        
+        if (alreadyVisitedToday) {
+          // Just fetch current stats without incrementing
+          const getRes = await fetch('/api/site-stats');
+          if (getRes.ok) {
+            const data = await getRes.json();
+            setStats(data);
+          }
           setRegistered(true);
+        } else {
+          // Register this visit (POST will also check cookie server-side)
+          const postRes = await fetch('/api/site-stats', {
+            method: 'POST',
+            credentials: 'include',
+          });
+          if (postRes.ok) {
+            const data = await postRes.json();
+            setStats({
+              visits: data.visits,
+              displayVisits: data.displayVisits,
+            });
+            // Mark in localStorage as well for redundancy
+            if (data.counted) {
+              markVisitedToday();
+            }
+            setRegistered(true);
+          }
         }
       } catch (error) {
         console.error('Failed to register visit:', error);
