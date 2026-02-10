@@ -5,10 +5,78 @@ import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { emojiRiddles } from '@/data/emoji-riddles';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search } from 'lucide-react';
+import { Home, RotateCcw, Search, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 5;
+
+// Emojis that are considered "abstract" or attribute-based (not physical descriptors)
+const ABSTRACT_EMOJIS = new Set([
+  // Elemental/Effects
+  '⚡', '🔥', '💨', '❄️', '🧊', '💥', '✨', '🌪️', '☁️', '🌊', '💎', '🔮', '🧪', '💢',
+  // Numbers
+  '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣',
+  // Attributes
+  '💪', '🏃', '💀', '👻', '🛡️', '⚔️', '🎯', '🔫', '🪓', '🗡️', '🔱',
+  // Actions/States
+  '🔄', '💊', '⏸️', '📈', '➡️',
+  // Colors/Abstract
+  '💙', '💜', '💚', '💖', '🟢', '🟣', '🟤', '🔵', '🟠', '🌑',
+]);
+
+// Emojis that directly describe physical appearance (key emojis - too obvious)
+const KEY_EMOJIS = new Set([
+  // Animals/Creatures (very descriptive)
+  '🐷', '🐉', '🦇', '🐶', '🐦', '🐏', '🦅',
+  // Character types
+  '🧙‍♂️', '🧙‍♀️', '🧔', '👩', '👨', '👸', '🤖', '👺', '👿', '🦹‍♀️', '👼', '💂',
+  '🏇', '👑', '👶', '🧊', '🎣',
+  // Objects that define the card
+  '🎈', '💣', '🛢️', '🛒', '🪵', '⚰️', '🏰', '⛏️',
+]);
+
+/**
+ * Reorders emojis to make the riddle harder:
+ * 1. Key/obvious emojis go to the end (positions 3+)
+ * 2. Abstract/attribute emojis go first
+ * 3. The most obvious emoji (usually position 0) is moved to last
+ */
+function reorderEmojisForDifficulty(emojis: string[]): string[] {
+  if (emojis.length <= 2) return emojis;
+  
+  // Categorize emojis
+  const keyEmojis: string[] = [];
+  const abstractEmojis: string[] = [];
+  const neutralEmojis: string[] = [];
+  
+  emojis.forEach((emoji, index) => {
+    // First emoji is almost always the most obvious - treat as key
+    if (index === 0 || KEY_EMOJIS.has(emoji)) {
+      keyEmojis.push(emoji);
+    } else if (ABSTRACT_EMOJIS.has(emoji)) {
+      abstractEmojis.push(emoji);
+    } else {
+      neutralEmojis.push(emoji);
+    }
+  });
+  
+  // Shuffle within categories for variety
+  const shuffle = (arr: string[]) => [...arr].sort(() => Math.random() - 0.5);
+  
+  // Build new order: abstract first, then neutral, then key emojis last
+  const reordered = [
+    ...shuffle(abstractEmojis),
+    ...shuffle(neutralEmojis),
+    ...shuffle(keyEmojis),
+  ];
+  
+  // Ensure we have all emojis (fallback if categorization missed some)
+  if (reordered.length !== emojis.length) {
+    return emojis; // Fallback to original order
+  }
+  
+  return reordered;
+}
 
 export default function EmojiRiddlePage() {
   const { getCardNameTranslated } = useLanguage();
@@ -21,20 +89,26 @@ export default function EmojiRiddlePage() {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [showBonusHint, setShowBonusHint] = useState(false);
 
   const initGame = useCallback(() => {
     // Get a card that has emojis defined
     const cardsWithEmojis = baseCards.filter(card => emojiRiddles[card.id]);
     const randomCard = cardsWithEmojis[Math.floor(Math.random() * cardsWithEmojis.length)];
     
+    // Get original emojis and reorder for difficulty
+    const originalEmojis = emojiRiddles[randomCard.id] || [];
+    const reorderedEmojis = reorderEmojisForDifficulty(originalEmojis);
+    
     setTargetCard(randomCard);
-    setEmojis(emojiRiddles[randomCard.id] || []);
+    setEmojis(reorderedEmojis);
     setRevealedCount(1);
     setGuesses([]);
     setSearchTerm('');
     setGameOver(false);
     setWon(false);
     setShowAnswer(false);
+    setShowBonusHint(false);
   }, []);
 
   useEffect(() => {
@@ -88,10 +162,21 @@ export default function EmojiRiddlePage() {
     return `/images/cards/${card.id}.png`;
   };
 
+  // Can request bonus hint after 2 guesses, reveals one extra emoji
+  const canRequestBonusHint = !gameOver && guesses.length >= 2 && !showBonusHint && revealedCount < emojis.length;
+  
+  const handleBonusHint = () => {
+    if (canRequestBonusHint) {
+      setShowBonusHint(true);
+      setRevealedCount(prev => Math.min(prev + 1, emojis.length));
+    }
+  };
+
   const displayedEmojis = useMemo(() => {
     return emojis.map((emoji, index) => ({
       emoji,
       revealed: index < revealedCount || gameOver,
+      isKeyEmoji: KEY_EMOJIS.has(emoji) || index === emojis.length - 1, // Last emoji is usually the key
     }));
   }, [emojis, revealedCount, gameOver]);
 
@@ -157,13 +242,17 @@ export default function EmojiRiddlePage() {
                     text-3xl md:text-4xl lg:text-5xl
                     transition-all duration-500
                     ${item.revealed 
-                      ? 'bg-cyan-900/40 border border-cyan-500/40 shadow-lg shadow-cyan-500/20' 
+                      ? item.isKeyEmoji 
+                        ? 'bg-amber-900/40 border border-amber-500/40 shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/30'
+                        : 'bg-cyan-900/40 border border-cyan-500/40 shadow-lg shadow-cyan-500/20' 
                       : 'bg-gray-800/50 border border-gray-600/50'
                     }
                   `}
                 >
                   {item.revealed ? (
-                    <span className="transform transition-all duration-300 hover:scale-110">
+                    <span className={`transform transition-all duration-300 hover:scale-110 ${
+                      item.isKeyEmoji ? 'animate-pulse' : ''
+                    }`}>
                       {item.emoji}
                     </span>
                   ) : (
@@ -173,6 +262,25 @@ export default function EmojiRiddlePage() {
               ))}
             </div>
           </div>
+
+          {/* Bonus Hint Button */}
+          {canRequestBonusHint && (
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={handleBonusHint}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-900/40 border border-amber-500/40 hover:bg-amber-900/60 transition-all text-amber-300 text-sm font-semibold"
+              >
+                <Sparkles className="w-4 h-4" />
+                Reveal Extra Clue
+              </button>
+            </div>
+          )}
+          
+          {showBonusHint && !gameOver && (
+            <div className="text-center mb-6 text-amber-300 text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-lg py-2 px-4 max-w-md mx-auto">
+              ✨ Bonus clue revealed!
+            </div>
+          )}
 
           {/* Game Over State */}
           {gameOver && (
@@ -297,9 +405,10 @@ export default function EmojiRiddlePage() {
             <h3 className="text-lg font-bold text-amber-400 mb-4">How to Play</h3>
             <div className="text-sm text-gray-400 space-y-2 bg-gray-900/60 border border-gray-700/50 rounded-xl p-6">
               <p>🔮 A sequence of emojis represents a Clash Royale card</p>
-              <p>🎯 Try to guess which card the emojis describe</p>
+              <p>🧩 Abstract clues appear first, key hints come later</p>
               <p>💡 Each wrong guess reveals another emoji clue</p>
-              <p>✨ You have {MAX_GUESSES} attempts to guess correctly!</p>
+              <p>✨ After 2 guesses, you can request a bonus hint!</p>
+              <p>🎯 You have {MAX_GUESSES} attempts to guess correctly!</p>
             </div>
           </div>
         </main>
