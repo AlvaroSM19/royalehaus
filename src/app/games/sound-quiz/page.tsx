@@ -1,4 +1,3 @@
-  image: '/images/games/9.webp',
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
