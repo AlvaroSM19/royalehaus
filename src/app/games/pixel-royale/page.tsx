@@ -8,7 +8,11 @@ import { Home, RotateCcw, Search, HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 6;
-const BLUR_LEVELS = [40, 32, 24, 16, 8, 4, 0]; // Higher = more blurred
+const GRID_SIZE = 8; // 8x8 grid
+const TOTAL_TILES = GRID_SIZE * GRID_SIZE; // 64 tiles
+
+// Calculate how many tiles to reveal per failed guess
+const TILES_PER_REVEAL = Math.floor(TOTAL_TILES / (MAX_GUESSES + 1)); // ~9 tiles per guess
 
 export default function PixelRoyalePage() {
   const { getCardNameTranslated } = useLanguage();
@@ -19,11 +23,27 @@ export default function PixelRoyalePage() {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  
+  // Track which tiles are revealed (indices 0-63 for 8x8 grid)
+  const [revealedTiles, setRevealedTiles] = useState<Set<number>>(new Set());
+  // Track newly revealed tiles for animation
+  const [newlyRevealed, setNewlyRevealed] = useState<Set<number>>(new Set());
 
-  const currentBlur = useMemo(() => {
-    const index = Math.min(guesses.length, BLUR_LEVELS.length - 1);
-    return BLUR_LEVELS[index];
-  }, [guesses.length]);
+  // Generate random tiles to reveal
+  const revealRandomTiles = useCallback((count: number, currentRevealed: Set<number>) => {
+    const available = [];
+    for (let i = 0; i < TOTAL_TILES; i++) {
+      if (!currentRevealed.has(i)) {
+        available.push(i);
+      }
+    }
+    
+    // Shuffle and pick
+    const shuffled = available.sort(() => Math.random() - 0.5);
+    const toReveal = shuffled.slice(0, Math.min(count, available.length));
+    
+    return new Set(toReveal);
+  }, []);
 
   const initGame = useCallback(() => {
     const card = getRandomCard();
@@ -33,6 +53,8 @@ export default function PixelRoyalePage() {
     setGameOver(false);
     setWon(false);
     setShowHint(false);
+    setRevealedTiles(new Set());
+    setNewlyRevealed(new Set());
   }, []);
 
   useEffect(() => {
@@ -64,10 +86,30 @@ export default function PixelRoyalePage() {
     setShowSuggestions(false);
 
     if (card.id === targetCard.id) {
+      // Won! Reveal all tiles
+      setRevealedTiles(new Set(Array.from({ length: TOTAL_TILES }, (_, i) => i)));
       setWon(true);
       setGameOver(true);
-    } else if (newGuesses.length >= MAX_GUESSES) {
-      setGameOver(true);
+    } else {
+      // Wrong guess - reveal more tiles
+      const tilesToReveal = revealRandomTiles(TILES_PER_REVEAL, revealedTiles);
+      setNewlyRevealed(tilesToReveal);
+      setRevealedTiles(prev => {
+        const next = new Set(prev);
+        tilesToReveal.forEach(t => next.add(t));
+        return next;
+      });
+      
+      // Clear animation state after animation completes
+      setTimeout(() => setNewlyRevealed(new Set()), 600);
+      
+      if (newGuesses.length >= MAX_GUESSES) {
+        // Game over - reveal all after a delay
+        setTimeout(() => {
+          setRevealedTiles(new Set(Array.from({ length: TOTAL_TILES }, (_, i) => i)));
+        }, 800);
+        setGameOver(true);
+      }
     }
   };
 
@@ -89,6 +131,9 @@ export default function PixelRoyalePage() {
     hints.push(targetCard.rarity);
     return hints.join(' • ');
   };
+
+  // Calculate revealed percentage
+  const revealedPercent = Math.round((revealedTiles.size / TOTAL_TILES) * 100);
 
   return (
     <div className="min-h-screen relative bg-[#0a0a0a]">
@@ -134,12 +179,12 @@ export default function PixelRoyalePage() {
               <div className="text-xs text-gray-400 uppercase tracking-wide">Guesses</div>
             </div>
             <div className="text-center px-6 py-3 bg-gray-900/80 border border-cyan-700/40 rounded-xl">
-              <div className="text-2xl font-black text-cyan-400">{Math.round((1 - currentBlur / 40) * 100)}%</div>
-              <div className="text-xs text-gray-400 uppercase tracking-wide">Clarity</div>
+              <div className="text-2xl font-black text-cyan-400">{revealedPercent}%</div>
+              <div className="text-xs text-gray-400 uppercase tracking-wide">Revealed</div>
             </div>
           </div>
 
-          {/* Pixelated Image Container */}
+          {/* Grid Image Container */}
           <div className="flex justify-center mb-8">
             <div className="relative">
               <div 
@@ -150,29 +195,71 @@ export default function PixelRoyalePage() {
                   shadow-2xl ${gameOver ? (won ? 'shadow-green-500/30' : 'shadow-red-500/30') : 'shadow-amber-500/20'}
                   bg-[#0d3b4c]/50
                   transition-all duration-500
+                  relative
                 `}
               >
-              {targetCard && (
-                <img
-                  src={getCardImageUrl(targetCard)}
-                  alt="Mystery Clash Royale Card - Guess the pixelated card"
-                  className="w-full h-full object-contain p-4 transition-all duration-700"
+                {/* Base Image (always rendered but covered by tiles) */}
+                {targetCard && (
+                  <img
+                    src={getCardImageUrl(targetCard)}
+                    alt="Mystery Clash Royale Card - Guess the pixelated card"
+                    className="w-full h-full object-contain p-4 absolute inset-0"
+                  />
+                )}
+                
+                {/* Grid Overlay */}
+                <div 
+                  className="absolute inset-0 grid"
                   style={{
-                    filter: gameOver ? 'blur(0px)' : `blur(${currentBlur}px)`,
-                    imageRendering: currentBlur > 20 ? 'pixelated' : 'auto',
+                    gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+                    gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
                   }}
-                />
-              )}
-            </div>
-            
-              {/* Clarity indicator dots */}
+                >
+                  {Array.from({ length: TOTAL_TILES }).map((_, index) => {
+                    const isRevealed = revealedTiles.has(index);
+                    const isNew = newlyRevealed.has(index);
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`
+                          transition-all duration-500 ease-out
+                          ${isRevealed 
+                            ? 'opacity-0 scale-90' 
+                            : 'opacity-100 scale-100'
+                          }
+                          ${isNew ? 'animate-tile-reveal' : ''}
+                        `}
+                        style={{
+                          backgroundColor: isRevealed ? 'transparent' : '#1a1a2e',
+                          boxShadow: isRevealed ? 'none' : 'inset 0 0 0 1px rgba(255,255,255,0.05)',
+                        }}
+                      >
+                        {/* Pixelated preview (subtle hint of color beneath) */}
+                        {!isRevealed && (
+                          <div 
+                            className="w-full h-full"
+                            style={{
+                              backgroundColor: `hsl(${(index * 7) % 360}, 10%, 12%)`,
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Progress indicator dots */}
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {BLUR_LEVELS.slice(0, -1).map((_, i) => (
+                {Array.from({ length: MAX_GUESSES }).map((_, i) => (
                   <div
                     key={i}
                     className={`w-3 h-3 rounded-full transition-all ${
                       i < guesses.length
-                        ? 'bg-amber-500 shadow-lg shadow-amber-500/50'
+                        ? won && i === guesses.length - 1
+                          ? 'bg-green-500 shadow-lg shadow-green-500/50'
+                          : 'bg-amber-500 shadow-lg shadow-amber-500/50'
                         : 'bg-gray-700 border border-gray-600'
                     }`}
                   />
@@ -311,14 +398,36 @@ export default function PixelRoyalePage() {
           <div className="mt-12 max-w-lg mx-auto text-center">
             <h3 className="text-lg font-bold text-amber-400 mb-4">How to Play</h3>
             <div className="text-sm text-gray-400 space-y-2 bg-gray-900/60 border border-gray-700/50 rounded-xl p-6">
-              <p>🎨 A card image is shown heavily pixelated/blurred</p>
+              <p>🎨 A card image is hidden behind a mosaic grid</p>
               <p>🔍 Try to guess which Clash Royale card it is</p>
-              <p>✨ With each guess, the image becomes clearer</p>
+              <p>✨ With each wrong guess, tiles fade away to reveal the image</p>
               <p>🎯 You have {MAX_GUESSES} attempts to guess correctly!</p>
             </div>
           </div>
         </main>
       </div>
+      
+      {/* Custom animation styles */}
+      <style jsx>{`
+        @keyframes tile-reveal {
+          0% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(1.1);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+        }
+        
+        .animate-tile-reveal {
+          animation: tile-reveal 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
