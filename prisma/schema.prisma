@@ -132,3 +132,38 @@ model Feedback {
 
   @@index([status, createdAt])
 }
+
+// === DAILY CHALLENGES (RoyaleHaus specific) ===
+
+// Stores which card is the daily challenge for each game type and date
+model DailyChallenge {
+  id        String   @id @default(cuid())
+  date      String   // YYYY-MM-DD format
+  gameType  String   // 'royaledle' | 'emoji-riddle' | 'pixel-royale'
+  cardId    Int      // Card ID for that day
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participations DailyParticipation[]
+
+  @@unique([date, gameType])
+  @@index([date])
+  @@index([gameType, date])
+}
+
+// Tracks user participation in daily challenges
+model DailyParticipation {
+  id          String   @id @default(cuid())
+  challengeId String
+  userId      String
+  completed   Boolean  @default(false)
+  won         Boolean  @default(false)
+  attempts    Int      @default(0)
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  challenge   DailyChallenge @relation(fields: [challengeId], references: [id])
+
+  @@unique([challengeId, userId])
+  @@index([userId, completedAt])
+}

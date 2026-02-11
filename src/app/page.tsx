@@ -1,6 +1,33 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
+const dailyGames = [
+  { 
+    id: 'royaledle', 
+    title: 'ROYALEDLE', 
+    description: 'Guess the card from clues',
+    image: '/images/games/3.webp',
+    href: '/games/royaledle?mode=daily', 
+    color: '#f59e0b',
+  },
+  { 
+    id: 'emoji-riddle', 
+    title: 'EMOJI RIDDLE', 
+    description: 'Decode the emoji combo',
+    image: '/images/games/8.webp',
+    href: '/games/emoji-riddle?mode=daily', 
+    color: '#ec4899',
+  },
+  { 
+    id: 'pixel-royale', 
+    title: 'PIXEL ROYALE', 
+    description: 'Identify the pixelated card',
+    image: '/images/games/6.webp',
+    href: '/games/pixel-royale?mode=daily', 
+    color: '#8b5cf6',
+  },
+]
+
 const games = [
   { 
     id: 'impostor', 
@@ -61,8 +88,109 @@ const games = [
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      {/* Daily Games Section */}
+      <section className="px-6 sm:px-10 pt-10 pb-8">
+        <div className="max-w-[1100px] mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-3 mb-3">
+              <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200, 165, 70, 0.5))' }} />
+              <span className="text-[11px] font-bold uppercase tracking-[0.4em] text-amber-500/50 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                </svg>
+                Resets Daily
+              </span>
+              <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.5), transparent)' }} />
+            </div>
+            <h2 
+              className="text-2xl sm:text-3xl font-black uppercase tracking-[0.2em]"
+              style={{
+                background: 'linear-gradient(180deg, #ffe6a0 0%, #d4a843 40%, #a07830 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
+              }}
+            >
+              Daily Challenges
+            </h2>
+            <p className="text-amber-100/40 mt-2 text-sm">
+              One attempt per day • Build your streak!
+            </p>
+          </div>
+
+          {/* Daily Games Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {dailyGames.map((game) => (
+              <Link
+                key={game.id}
+                href={game.href}
+                className="group relative block rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_8px_40px_rgba(245,180,50,0.2)]"
+                style={{
+                  border: '2px solid rgba(180, 140, 60, 0.4)',
+                  background: 'linear-gradient(180deg, rgba(30, 25, 18, 0.7) 0%, rgba(20, 18, 12, 0.9) 100%)',
+                }}
+              >
+                {/* Daily badge */}
+                <div 
+                  className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  style={{
+                    background: `linear-gradient(135deg, ${game.color}20, ${game.color}40)`,
+                    border: `1px solid ${game.color}60`,
+                    color: game.color,
+                  }}
+                >
+                  Daily
+                </div>
+
+                {/* Image */}
+                <div className="relative aspect-[16/9] overflow-hidden">
+                  <Image
+                    src={game.image}
+                    alt={game.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/0 via-amber-300/0 to-amber-200/0 group-hover:from-amber-400/5 group-hover:via-amber-300/10 group-hover:to-amber-200/5 transition-all duration-500" />
+                </div>
+
+                {/* Content */}
+                <div 
+                  className="py-3 px-4"
+                  style={{
+                    background: 'linear-gradient(90deg, rgba(42, 35, 22, 0.95) 0%, rgba(55, 45, 28, 0.95) 50%, rgba(42, 35, 22, 0.95) 100%)',
+                    borderTop: '1px solid rgba(180, 140, 60, 0.25)',
+                  }}
+                >
+                  <h3 
+                    className="text-center text-[12px] font-extrabold tracking-[0.2em] uppercase"
+                    style={{
+                      background: 'linear-gradient(180deg, #f5d485 0%, #c9a44a 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
+                    }}
+                  >
+                    {game.title}
+                  </h3>
+                  <p className="text-center text-amber-100/40 text-[11px] mt-1">{game.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="px-6 sm:px-10">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(180, 140, 60, 0.3), transparent)' }} />
+        </div>
+      </div>
+
       {/* Games Grid */}
-      <section className="px-6 sm:px-10 pt-10 pb-20">
+      <section className="px-6 sm:px-10 pt-8 pb-20">
         <div className="max-w-[1100px] mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {games.map((game) => (
