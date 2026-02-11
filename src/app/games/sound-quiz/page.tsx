@@ -259,7 +259,8 @@ export default function SoundQuizPage() {
   // Show message if no sounds available
   if (cardsWithSounds.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white flex items-center justify-center">
+      <div className="min-h-screen relative text-white flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 pointer-events-none z-0" />
         <div 
           className="text-center p-8 rounded-2xl border-2 border-cyan-500/30"
           style={{
@@ -277,9 +278,14 @@ export default function SoundQuizPage() {
   }
 
   return (
-    <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
-      {/* Header */}
-      <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20 backdrop-blur-sm">
+    <div className="min-h-screen relative flex flex-col text-white">
+      {/* Dark Overlay for wallpaper visibility */}
+      <div className="fixed inset-0 bg-black/40 pointer-events-none z-0" />
+      
+      {/* Content wrapper */}
+      <div className="relative z-10 flex flex-col flex-1">
+        {/* Header */}
+        <header className="bg-gray-900/90 border-b border-gray-700/50 sticky top-0 z-20 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center justify-between">
           <Link 
             href="/" 
@@ -594,6 +600,7 @@ export default function SoundQuizPage() {
           }
         `}</style>
       </main>
+      </div> {/* End content wrapper */}
     </div>
   );
 }

@@ -117,14 +117,14 @@ export default function PixelRoyalePage() {
   const currentScale = SCALE_STEPS[Math.min(step, SCALE_STEPS.length - 1)];
 
   return (
-    <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Dark Overlay */}
-      <div className="fixed inset-0 bg-black/30 pointer-events-none z-0" />
+    <div className="min-h-screen relative flex flex-col">
+      {/* Dark Overlay for wallpaper visibility */}
+      <div className="fixed inset-0 bg-black/40 pointer-events-none z-0" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header */}
-        <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20">
+        <header className="bg-gray-900/90 border-b border-gray-700/50 sticky top-0 z-20 backdrop-blur-sm">
           <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/" className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-xs">
