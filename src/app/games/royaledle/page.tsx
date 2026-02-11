@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { getDailyCard, getRandomPracticeCard } from '@/lib/shuffle-bag';
 import { ClashCard, RARITY_COLORS, CardType, CardRarity, AttackType, AttackSpeed } from '@/types/card';
-import { Home, RotateCcw, Search, Calendar, Shuffle } from 'lucide-react';
+import { Home, RotateCcw, Search, Calendar, Shuffle, Clock, Trophy, CheckCircle } from 'lucide-react';
 import { recordRoyaledleSession } from '@/lib/progress';
 import { useLanguage } from '@/lib/useLanguage';
 
@@ -36,6 +36,27 @@ type GuessResult = {
 
 const MAX_GUESSES = 8;
 
+interface DailyResult {
+  won: boolean;
+  guesses: number;
+  cardId: number;
+}
+
+// Calculate time until next daily reset (midnight UTC)
+function getTimeUntilReset(): { hours: number; minutes: number; seconds: number } {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  tomorrow.setUTCHours(0, 0, 0, 0);
+  
+  const diff = tomorrow.getTime() - now.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  return { hours, minutes, seconds };
+}
+
 export default function RoyaledlePage() {
   const { getCardNameTranslated } = useLanguage();
   const [mode, setMode] = useState<GameMode>('daily');
@@ -46,18 +67,42 @@ export default function RoyaledlePage() {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [dailyCompleted, setDailyCompleted] = useState(false);
+  const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
+  const [countdown, setCountdown] = useState(getTimeUntilReset());
+
+  // Countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(getTimeUntilReset());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const initGame = useCallback((gameMode: GameMode = 'daily') => {
     // For daily mode, check if already completed today
     if (gameMode === 'daily') {
       const today = new Date().toISOString().split('T')[0];
       const lastDaily = localStorage.getItem('royaledle-last-daily');
-      const lastDailyResult = localStorage.getItem('royaledle-daily-result');
+      const lastDailyResultStr = localStorage.getItem('royaledle-daily-result');
       
-      if (lastDaily === today && lastDailyResult) {
-        setDailyCompleted(true);
+      if (lastDaily === today && lastDailyResultStr) {
+        try {
+          const result = JSON.parse(lastDailyResultStr) as DailyResult;
+          setDailyCompleted(true);
+          setDailyResult(result);
+          // Still set the target card so we can show it
+          const card = getDailyCard();
+          setTargetCard(card);
+          setMode(gameMode);
+          setGameOver(true);
+          setWon(result.won);
+          return; // Don't reset the game state
+        } catch (e) {
+          // Invalid stored data, continue with new game
+        }
       } else {
         setDailyCompleted(false);
+        setDailyResult(null);
       }
     }
     
@@ -332,6 +377,88 @@ export default function RoyaledlePage() {
 
         {/* Game Area */}
         <div className="container mx-auto px-4 pb-8">
+          {/* Daily Completed Banner */}
+          {mode === 'daily' && dailyCompleted && dailyResult && (
+            <div className="mb-8 max-w-2xl mx-auto">
+              <div 
+                className="relative rounded-2xl p-6 text-center overflow-hidden"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(20, 50, 40, 0.95) 0%, rgba(15, 40, 30, 0.98) 100%)',
+                  border: '2px solid rgba(34, 197, 94, 0.5)',
+                }}
+              >
+                {/* Corner decorations */}
+                <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-green-400/60" />
+                <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-green-400/60" />
+                <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-green-400/60" />
+                <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-green-400/60" />
+                
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <CheckCircle className="w-8 h-8 text-green-400" />
+                  <h3 className="text-xl font-black text-green-400 uppercase tracking-wider">
+                    Daily Completed!
+                  </h3>
+                </div>
+                
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  {targetCard && (
+                    <>
+                      <img
+                        src={`/images/cards/${targetCard.id}.webp`}
+                        alt={getCardNameTranslated(targetCard.id)}
+                        className="w-16 h-20 object-contain rounded-lg border-2 border-green-500/50"
+                      />
+                      <div className="text-left">
+                        <div className="text-white font-bold text-lg">{getCardNameTranslated(targetCard.id)}</div>
+                        <div className="text-green-300/80 text-sm">
+                          {dailyResult.won ? (
+                            <span className="flex items-center gap-1">
+                              <Trophy className="w-4 h-4" />
+                              Found in {dailyResult.guesses} {dailyResult.guesses === 1 ? 'guess' : 'guesses'}!
+                            </span>
+                          ) : (
+                            <span>Better luck tomorrow!</span>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Countdown to next daily */}
+                <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                  <div className="flex items-center justify-center gap-2 text-slate-400 text-sm mb-2">
+                    <Clock className="w-4 h-4" />
+                    <span>Next daily available in:</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-amber-400">{countdown.hours.toString().padStart(2, '0')}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">Hours</div>
+                    </div>
+                    <span className="text-2xl font-bold text-slate-600">:</span>
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-amber-400">{countdown.minutes.toString().padStart(2, '0')}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">Minutes</div>
+                    </div>
+                    <span className="text-2xl font-bold text-slate-600">:</span>
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-amber-400">{countdown.seconds.toString().padStart(2, '0')}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">Seconds</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => initGame('practice')}
+                  className="mt-4 px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all text-sm"
+                >
+                  Play Practice Mode
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Search Input */}
           {!gameOver && (
             <div className="relative mb-8 max-w-3xl mx-auto">
