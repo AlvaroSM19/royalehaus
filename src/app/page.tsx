@@ -83,6 +83,12 @@ const games = [
     image: '/images/games/9.webp',
     href: '/games/sound-quiz', 
   },
+  { 
+    id: 'royale-guesser', 
+    title: 'ROYALE GUESSER', 
+    image: '/images/games/10.webp',
+    href: '/games/royale-guesser', 
+  },
 ]
 
 export default function HomePage() {
