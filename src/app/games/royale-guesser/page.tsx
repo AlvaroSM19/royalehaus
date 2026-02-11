@@ -365,9 +365,10 @@ export default function RoyaleGuesserPage() {
                 {!showHint && !gameOver && (
                   <button
                     onClick={() => setShowHint(true)}
-                    className="w-full text-center text-xs sm:text-sm text-cyan-400/70 hover:text-cyan-400 transition-colors font-medium"
+                    className="w-full text-center text-xs sm:text-sm text-cyan-400/70 hover:text-cyan-400 transition-colors font-medium flex items-center justify-center gap-2"
                   >
-                    💡 Show hint: How many cards?
+                    <HelpCircle className="w-4 h-4" />
+                    Show hint: How many cards?
                   </button>
                 )}
                 {showHint && !gameOver && (
@@ -378,7 +379,7 @@ export default function RoyaleGuesserPage() {
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                    ✨ There {targetCards.length === 1 ? 'is' : 'are'} {targetCards.length} card{targetCards.length !== 1 ? 's' : ''} to find!
+                    There {targetCards.length === 1 ? 'is' : 'are'} {targetCards.length} card{targetCards.length !== 1 ? 's' : ''} to find!
                   </div>
                 )}
               </div>
@@ -412,17 +413,8 @@ export default function RoyaleGuesserPage() {
                   </div>
                   
                   {/* Main result */}
-                  <div 
-                    className="text-5xl sm:text-6xl md:text-7xl font-black mb-2"
-                    style={{
-                      background: won 
-                        ? 'linear-gradient(180deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)'
-                        : 'linear-gradient(180deg, #f87171 0%, #ef4444 50%, #dc2626 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    {won ? '🎉' : '😔'}
+                  <div className={`mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
+                    {won ? <Trophy className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto" /> : <XCircle className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto" />}
                   </div>
                   
                   <div className="text-lg sm:text-xl md:text-2xl text-amber-400 font-black uppercase tracking-wider mb-4">
@@ -586,7 +578,7 @@ export default function RoyaleGuesserPage() {
                     <span className="text-xs sm:text-sm font-bold text-green-300 truncate max-w-[80px] sm:max-w-none">
                       {getCardNameTranslated(card.id)}
                     </span>
-                    <span className="text-xs sm:text-sm">✅</span>
+                    <CheckCircle className="w-4 h-4 text-green-400" />
                   </div>
                 ))}
               </div>
@@ -618,7 +610,7 @@ export default function RoyaleGuesserPage() {
                     <span className="text-xs sm:text-sm font-bold text-red-300 truncate max-w-[80px] sm:max-w-none">
                       {getCardNameTranslated(card.id)}
                     </span>
-                    <span className="text-xs sm:text-sm">❌</span>
+                    <XCircle className="w-4 h-4 text-red-400" />
                   </div>
                 ))}
               </div>
@@ -640,23 +632,23 @@ export default function RoyaleGuesserPage() {
             >
               <div className="text-xs sm:text-sm text-slate-300 space-y-2 sm:space-y-3">
                 <p className="flex items-start gap-2">
-                  <span className="text-amber-400">🎯</span>
+                  <span className="text-amber-400 font-bold">1.</span>
                   <span>Read the 3 conditions shown above</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-cyan-400">🔍</span>
+                  <span className="text-amber-400 font-bold">2.</span>
                   <span>Find ALL cards that match ALL conditions</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-green-400">✅</span>
+                  <span className="text-amber-400 font-bold">3.</span>
                   <span>Correct guesses are marked green</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-red-400">❌</span>
+                  <span className="text-amber-400 font-bold">4.</span>
                   <span>You can only make {maxWrongGuesses} wrong guesses!</span>
                 </p>
                 <p className="flex items-start gap-2">
-                  <span className="text-yellow-400">💡</span>
+                  <span className="text-amber-400 font-bold">5.</span>
                   <span>Click &quot;Show hint&quot; to see how many cards</span>
                 </p>
               </div>

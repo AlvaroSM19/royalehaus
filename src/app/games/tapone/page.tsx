@@ -412,7 +412,7 @@ export default function TapOnePage() {
               <div className="flex items-center gap-2">
                 <span className="text-white font-black text-sm">#{bestRank.rank}</span>
                 <span className="text-amber-400/70 text-[10px] uppercase">{bestRank.title}</span>
-                <span className="text-cyan-400 text-[10px] font-bold">{bestRank.trophies.toLocaleString()} 🏆</span>
+                <span className="text-cyan-400 text-[10px] font-bold flex items-center gap-1"><Trophy className="w-3 h-3" />{bestRank.trophies.toLocaleString()}</span>
               </div>
             ) : (
               <span className="text-gray-500 text-xs">Play to rank!</span>
@@ -487,8 +487,8 @@ export default function TapOnePage() {
                 </div>
                 
                 <div className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 rounded-full bg-cyan-500/20 border border-cyan-400/40">
-                  <span className="text-cyan-400 text-sm sm:text-base md:text-lg font-bold tracking-wide">
-                    🏆 {playerRank.trophies.toLocaleString()} TROPHIES
+                  <span className="text-cyan-400 text-sm sm:text-base md:text-lg font-bold tracking-wide flex items-center justify-center gap-2">
+                    <Trophy className="w-4 h-4 sm:w-5 sm:h-5" /> {playerRank.trophies.toLocaleString()} TROPHIES
                   </span>
                 </div>
               </div>

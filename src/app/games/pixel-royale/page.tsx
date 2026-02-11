@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, HelpCircle, Trophy, Check, X } from 'lucide-react';
+import { Home, RotateCcw, Search, HelpCircle, Trophy, Check, X, XCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 6;
@@ -280,7 +280,7 @@ export default function PixelRoyalePage() {
                 border: '2px solid rgba(245, 158, 11, 0.5)',
               }}
             >
-              💡 {getHint()}
+              <span className="text-amber-400 font-bold">HINT:</span> {getHint()}
             </div>
           )}
 
@@ -403,8 +403,8 @@ export default function PixelRoyalePage() {
 
                 <div className="relative z-10 p-4 xs:p-5 sm:p-6 md:p-8 text-center">
                   {/* Result Icon */}
-                  <div className={`text-4xl xs:text-5xl sm:text-6xl mb-3 sm:mb-4 ${won ? '' : 'grayscale'}`}>
-                    {won ? '🎉' : '😔'}
+                  <div className={`mb-3 sm:mb-4 ${won ? 'text-green-400' : 'text-red-400'}`}>
+                    {won ? <Trophy className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 mx-auto" /> : <XCircle className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 mx-auto" />}
                   </div>
 
                   {/* Title */}
@@ -500,10 +500,10 @@ export default function PixelRoyalePage() {
                 border: '1px solid rgba(60, 90, 140, 0.3)',
               }}
             >
-              <p>🔍 A card image is hidden behind blur and zoom</p>
-              <p>🎯 Try to guess which Clash Royale card it is</p>
-              <p>✨ With each wrong guess, the image gets clearer</p>
-              <p>🏆 You have {MAX_GUESSES} attempts to guess correctly!</p>
+              <p><span className="text-cyan-400 font-bold">1.</span> A card image is hidden behind blur and zoom</p>
+              <p><span className="text-cyan-400 font-bold">2.</span> Try to guess which Clash Royale card it is</p>
+              <p><span className="text-cyan-400 font-bold">3.</span> With each wrong guess, the image gets clearer</p>
+              <p><span className="text-cyan-400 font-bold">4.</span> You have {MAX_GUESSES} attempts to guess correctly!</p>
             </div>
           </div>
         </main>

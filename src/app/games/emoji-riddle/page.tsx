@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { emojiRiddles } from '@/data/emoji-riddles';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Sparkles, Trophy, HelpCircle } from 'lucide-react';
+import { Home, RotateCcw, Search, Sparkles, Trophy, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 5;
@@ -281,8 +281,8 @@ export default function EmojiRiddlePage() {
         )}
         
         {showBonusHint && !gameOver && (
-          <div className="text-center mb-4 xs:mb-5 sm:mb-6 text-amber-300 text-[10px] xs:text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-md xs:rounded-lg py-1.5 xs:py-2 px-3 xs:px-4 max-w-[280px] xs:max-w-xs sm:max-w-md mx-auto animate-pulse">
-            ✨ Bonus clue revealed!
+          <div className="text-center mb-4 xs:mb-5 sm:mb-6 text-amber-300 text-[10px] xs:text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-md xs:rounded-lg py-1.5 xs:py-2 px-3 xs:px-4 max-w-[280px] xs:max-w-xs sm:max-w-md mx-auto animate-pulse flex items-center justify-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Bonus clue revealed!
           </div>
         )}
 
@@ -307,8 +307,11 @@ export default function EmojiRiddlePage() {
             <div className={`absolute bottom-1.5 xs:bottom-2 left-1.5 xs:left-2 w-3 h-3 xs:w-4 xs:h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
             <div className={`absolute bottom-1.5 xs:bottom-2 right-1.5 xs:right-2 w-3 h-3 xs:w-4 xs:h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
 
-            <div className={`text-2xl xs:text-3xl sm:text-4xl mb-1.5 xs:mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
-              {won ? '🎉 Correct!' : '😔 Game Over'}
+            <div className={`mb-1.5 xs:mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
+              {won 
+                ? <><CheckCircle className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 mx-auto mb-1" /><span className="text-xl xs:text-2xl sm:text-3xl font-bold">Correct!</span></>
+                : <><XCircle className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 mx-auto mb-1" /><span className="text-xl xs:text-2xl sm:text-3xl font-bold">Game Over</span></>
+              }
             </div>
             <div className="flex items-center justify-center gap-2 xs:gap-3 sm:gap-4 mb-2 xs:mb-3 sm:mb-4">
               {targetCard && (
@@ -439,11 +442,11 @@ export default function EmojiRiddlePage() {
               background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
             }}
           >
-            <p>🔮 A sequence of emojis represents a Clash Royale card</p>
-            <p>🧩 Abstract clues appear first, key hints come later</p>
-            <p>💡 Each wrong guess reveals another emoji clue</p>
-            <p>✨ After 2 guesses, you can request a bonus hint!</p>
-            <p>🎯 You have {MAX_GUESSES} attempts to guess correctly!</p>
+            <p><span className="text-cyan-400 font-bold">1.</span> A sequence of emojis represents a Clash Royale card</p>
+            <p><span className="text-cyan-400 font-bold">2.</span> Abstract clues appear first, key hints come later</p>
+            <p><span className="text-cyan-400 font-bold">3.</span> Each wrong guess reveals another emoji clue</p>
+            <p><span className="text-cyan-400 font-bold">4.</span> After 2 guesses, you can request a bonus hint!</p>
+            <p><span className="text-cyan-400 font-bold">5.</span> You have {MAX_GUESSES} attempts to guess correctly!</p>
           </div>
         </div>
       </main>

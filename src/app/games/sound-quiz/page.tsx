@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2, Trophy, HelpCircle } from 'lucide-react';
+import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2, Trophy, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 5;
@@ -437,8 +437,8 @@ export default function SoundQuizPage() {
             <div className={`absolute bottom-1.5 xs:bottom-2 left-1.5 xs:left-2 w-3 h-3 xs:w-4 xs:h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
             <div className={`absolute bottom-1.5 xs:bottom-2 right-1.5 xs:right-2 w-3 h-3 xs:w-4 xs:h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
 
-            <div className={`text-2xl xs:text-3xl sm:text-4xl mb-1.5 xs:mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
-              {won ? '🎉 Correct!' : '😔 Game Over'}
+            <div className={`text-2xl xs:text-3xl sm:text-4xl mb-1.5 xs:mb-2 font-bold ${won ? 'text-green-400' : 'text-red-400'}`}>
+              {won ? 'Correct!' : 'Game Over'}
             </div>
             <div className="flex items-center justify-center gap-2 xs:gap-3 sm:gap-4 mb-2 xs:mb-3 sm:mb-4">
               {targetCard && (
@@ -557,9 +557,10 @@ export default function SoundQuizPage() {
                   }`}>
                     {getCardNameTranslated(card.id)}
                   </span>
-                  <span className="text-xs xs:text-sm">
-                    {card.id === targetCard?.id ? '✅' : '❌'}
-                  </span>
+                  {card.id === targetCard?.id 
+                    ? <CheckCircle className="w-4 h-4 text-green-400" />
+                    : <XCircle className="w-4 h-4 text-red-400" />
+                  }
                 </div>
               ))}
             </div>
@@ -578,10 +579,10 @@ export default function SoundQuizPage() {
               background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
             }}
           >
-            <p>🔊 Listen to the sound of a Clash Royale card</p>
-            <p>🎯 Try to guess which card makes that sound</p>
-            <p>🔁 You can replay the sound as many times as needed</p>
-            <p>✨ You have {MAX_GUESSES} attempts to guess correctly!</p>
+            <p><span className="text-cyan-400 font-bold">1.</span> Listen to the sound of a Clash Royale card</p>
+            <p><span className="text-cyan-400 font-bold">2.</span> Try to guess which card makes that sound</p>
+            <p><span className="text-cyan-400 font-bold">3.</span> You can replay the sound as many times as needed</p>
+            <p><span className="text-cyan-400 font-bold">4.</span> You have {MAX_GUESSES} attempts to guess correctly!</p>
           </div>
         </div>
 

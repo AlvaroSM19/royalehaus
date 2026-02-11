@@ -500,7 +500,9 @@ export default function RoyaleMemoryGame() {
             <div className="absolute bottom-1.5 xs:bottom-2 left-1.5 xs:left-2 w-3 xs:w-4 h-3 xs:h-4 border-l xs:border-l-2 border-b xs:border-b-2 border-amber-400/60"></div>
             <div className="absolute bottom-1.5 xs:bottom-2 right-1.5 xs:right-2 w-3 xs:w-4 h-3 xs:h-4 border-r xs:border-r-2 border-b xs:border-b-2 border-amber-400/60"></div>
 
-            <div className="text-4xl xs:text-5xl sm:text-6xl mb-2 xs:mb-3 sm:mb-4 animate-bounce">🎉</div>
+            <div className="text-green-400 mb-2 xs:mb-3 sm:mb-4">
+              <Trophy className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 mx-auto" />
+            </div>
             <h2 className="text-xl xs:text-2xl sm:text-3xl font-bold text-amber-400 mb-1.5 xs:mb-2 drop-shadow-lg">Victory!</h2>
             <p className="text-slate-300 text-sm xs:text-base mb-4 xs:mb-5 sm:mb-6">
               Completed in <span className="text-amber-400 font-bold">{moves} moves</span> and{' '}
