@@ -365,7 +365,7 @@ export default function RoyaledlePage() {
                       className="w-full px-4 py-3 text-left hover:bg-cyan-900/50 transition-colors flex items-center gap-4 border-b border-cyan-800/30 last:border-0"
                     >
                       <img 
-                        src={`/images/cards/${card.id}.png`}
+                        src={`/images/cards/${card.id}.webp`}
                         alt={getCardNameTranslated(card.id)}
                         className="w-10 h-12 object-cover rounded"
                       />
@@ -410,7 +410,7 @@ export default function RoyaledlePage() {
                     }}
                   >
                     <img 
-                      src={`/images/cards/${guess.card.id}.png`}
+                      src={`/images/cards/${guess.card.id}.webp`}
                       alt={getCardNameTranslated(guess.card.id)}
                       className="w-full h-full object-cover"
                     />
@@ -454,7 +454,7 @@ export default function RoyaledlePage() {
                     <div className="text-[8px] text-white/70 uppercase tracking-wider sm:hidden">Elixir</div>
                     <div className="text-white font-bold text-xs flex items-center justify-center gap-0.5">
                       {guess.card.elixir}
-                      <img src="/images/elixir.png" alt="Clash Royale Elixir Cost" className="w-3 h-3" />
+                      <img src="/images/elixir.webp" alt="Clash Royale Elixir Cost" className="w-3 h-3" />
                       <span className="text-white/70">{getArrow(guess.hints.elixir)}</span>
                     </div>
                   </div>
@@ -573,7 +573,7 @@ export default function RoyaledlePage() {
                   </p>
                   <div className="flex items-center justify-center">
                     <img 
-                      src={`/images/cards/${targetCard.id}.png`}
+                      src={`/images/cards/${targetCard.id}.webp`}
                       alt={getCardNameTranslated(targetCard.id)}
                       className="w-20 h-24 object-cover rounded-lg"
                     />

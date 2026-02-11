@@ -262,7 +262,7 @@ export default function TapOnePage() {
             {phase === 'spinning' && !isLocked ? (
               // Spinning animation - rapidly changing cards
               <img
-                src={`/images/cards/${currentSpinCard}.png`}
+                src={`/images/cards/${currentSpinCard}.webp`}
                 alt="Loading Clash Royale card"
                 className="w-full h-full object-contain p-0.5 sm:p-1"
                 loading="eager"
@@ -270,7 +270,7 @@ export default function TapOnePage() {
             ) : (
               // Revealed card - high resolution
               <img
-                src={`/images/cards/${element.id}.png`}
+                src={`/images/cards/${element.id}.webp`}
                 alt={getCardNameTranslated(element.id)}
                 className="w-full h-full object-contain p-0.5 sm:p-1 animate-fadeIn"
                 loading="eager"
@@ -518,7 +518,7 @@ export default function TapOnePage() {
                     >
                       <div className="aspect-square p-1 sm:p-2">
                         <img
-                          src={`/images/cards/${element.id}.png`}
+                          src={`/images/cards/${element.id}.webp`}
                           alt={getCardNameTranslated(element.id)}
                           className="w-full h-full object-contain"
                         />

@@ -215,7 +215,7 @@ export default function HigherLowerGame() {
                 <div className="p-8 flex justify-center">
                   <div className="w-44 h-[211px] rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
                     <img 
-                      src={`/images/cards/${currentCard.id}.png`}
+                      src={`/images/cards/${currentCard.id}.webp`}
                       alt={getCardNameTranslated(currentCard.id)}
                       className="w-full h-full object-cover"
                     />
@@ -231,7 +231,7 @@ export default function HigherLowerGame() {
                   <div className="flex items-center justify-center gap-3 mb-2">
                     <span className={`font-black text-cyan-400 ${compareMode === 'attack_speed' ? 'text-3xl' : 'text-5xl'}`}>{getDisplayValue(currentCard)}</span>
                     {compareMode === 'elixir' ? (
-                      <img src="/images/elixir.png" alt="Elixir" className="w-10 h-10" />
+                      <img src="/images/elixir.webp" alt="Elixir" className="w-10 h-10" />
                     ) : compareMode === 'attack_speed' ? (
                       <Timer className="w-8 h-8 text-cyan-400" />
                     ) : compareMode === 'damage' ? (
@@ -268,7 +268,7 @@ export default function HigherLowerGame() {
                       : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
                   }`}
                 >
-                  <img src="/images/elixir.png" alt="Elixir" className="w-5 h-5" />
+                  <img src="/images/elixir.webp" alt="Elixir" className="w-5 h-5" />
                   Elixir
                 </button>
                 <button
@@ -351,7 +351,7 @@ export default function HigherLowerGame() {
                 <div className="p-8 flex justify-center">
                   <div className="w-44 h-[211px] rounded-xl border-4 border-gray-500 overflow-hidden bg-gradient-to-b from-gray-700 to-gray-800 shadow-inner">
                     <img 
-                      src={`/images/cards/${nextCard.id}.png`}
+                      src={`/images/cards/${nextCard.id}.webp`}
                       alt={getCardNameTranslated(nextCard.id)}
                       className="w-full h-full object-cover"
                     />
@@ -369,7 +369,7 @@ export default function HigherLowerGame() {
                       <>
                         <span className={`font-black text-cyan-400 ${compareMode === 'attack_speed' ? 'text-3xl' : 'text-5xl'}`}>{getDisplayValue(nextCard)}</span>
                         {compareMode === 'elixir' ? (
-                          <img src="/images/elixir.png" alt="Elixir" className="w-10 h-10" />
+                          <img src="/images/elixir.webp" alt="Elixir" className="w-10 h-10" />
                         ) : compareMode === 'attack_speed' ? (
                           <Timer className="w-8 h-8 text-cyan-400" />
                         ) : compareMode === 'damage' ? (

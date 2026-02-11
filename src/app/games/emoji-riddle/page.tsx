@@ -159,7 +159,7 @@ export default function EmojiRiddlePage() {
   };
 
   const getCardImageUrl = (card: ClashCard) => {
-    return `/images/cards/${card.id}.png`;
+    return `/images/cards/${card.id}.webp`;
   };
 
   // Can request bonus hint after 2 guesses, reveals one extra emoji

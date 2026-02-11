@@ -77,9 +77,9 @@ const FRAME_VARIANTS = {
 function getCardImage(cardId: number | string): string {
   const numId = typeof cardId === 'number' ? cardId : parseInt(cardId, 10);
   if (isNaN(numId) || numId < 1 || numId > 171) {
-    return '/images/cards/1.png'; // Default avatar for non-RoyaleHaus IDs
+    return '/images/cards/1.webp'; // Default avatar for non-RoyaleHaus IDs
   }
-  return `/images/cards/${numId}.png`;
+  return `/images/cards/${numId}.webp`;
 }
 
 function computeStreak(calendar: string[]): number {
@@ -216,7 +216,7 @@ export default function LogbookPage() {
                       src={getCardImage(avatarId)} 
                       alt="Avatar" 
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/cards/1.png'; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/cards/1.webp'; }}
                     />
                   </div>
                 </div>
@@ -473,7 +473,7 @@ export default function LogbookPage() {
                       src={getCardImage(card.id)} 
                       alt={card.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/cards/1.png'; }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = '/images/cards/1.webp'; }}
                     />
                   </div>
                 </button>

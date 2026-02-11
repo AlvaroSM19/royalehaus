@@ -442,7 +442,7 @@ export default function RoyaleMemoryGame() {
                     }}
                   >
                     <img
-                      src={`/images/cards/${card.card.id}.png`}
+                      src={`/images/cards/${card.card.id}.webp`}
                       alt={card.card.name}
                       className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-md"
                     />

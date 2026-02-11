@@ -198,7 +198,7 @@ export default function CardsPage() {
                 {/* Card Image */}
                 <div className="aspect-[5/6] relative overflow-hidden bg-gradient-to-br from-blue-900/50 to-blue-950/80">
                   <img 
-                    src={`/images/cards/${card.id}.png`}
+                    src={`/images/cards/${card.id}.webp`}
                     alt={getCardNameTranslated(card.id)}
                     className="w-full h-full object-cover"
                   />

@@ -253,7 +253,7 @@ export default function SoundQuizPage() {
   };
 
   const getCardImageUrl = (card: ClashCard) => {
-    return `/images/cards/${card.id}.png`;
+    return `/images/cards/${card.id}.webp`;
   };
 
   // Show message if no sounds available

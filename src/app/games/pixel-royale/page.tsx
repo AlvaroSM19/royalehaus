@@ -50,7 +50,7 @@ export default function PixelRoyalePage() {
   useEffect(() => {
     if (!targetCard) return;
     const img = new Image();
-    img.src = `/images/cards/${targetCard.id}.png`;
+    img.src = `/images/cards/${targetCard.id}.webp`;
     img.onload = () => setImageReady(true);
   }, [targetCard]);
 
@@ -106,7 +106,7 @@ export default function PixelRoyalePage() {
     }
   };
 
-  const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.png`;
+  const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.webp`;
 
   const getHint = () => {
     if (!targetCard) return '';

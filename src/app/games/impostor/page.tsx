@@ -585,7 +585,7 @@ export default function ImpostorPage() {
                     }}
                   >
                     <img 
-                      src={`/images/cards/${lastImpostor.id}.png`}
+                      src={`/images/cards/${lastImpostor.id}.webp`}
                       alt={getCardNameTranslated(lastImpostor.id)}
                       className="w-full h-full object-contain p-1"
                     />
@@ -794,7 +794,7 @@ export default function ImpostorPage() {
                     }}
                   >
                     <img 
-                      src={`/images/cards/${card.id}.png`}
+                      src={`/images/cards/${card.id}.webp`}
                       alt={getCardNameTranslated(card.id)}
                       className="w-full h-full object-contain"
                     />
