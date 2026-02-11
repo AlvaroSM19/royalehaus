@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { getDailyCard, getRandomPracticeCard } from '@/lib/shuffle-bag';
 import { ClashCard, RARITY_COLORS, CardType, CardRarity, AttackType, AttackSpeed } from '@/types/card';
-import { Home, RotateCcw, Search, Calendar, Shuffle, Clock, Trophy, CheckCircle } from 'lucide-react';
+import { Home, RotateCcw, Search, Calendar, Shuffle, Clock, Trophy, CheckCircle, UserPlus, Flame } from 'lucide-react';
 import { recordRoyaledleSession } from '@/lib/progress';
 import { useLanguage } from '@/lib/useLanguage';
+import { useAuth } from '@/lib/useAuth';
 
 type GameMode = 'daily' | 'practice';
 
@@ -42,6 +43,67 @@ interface DailyResult {
   cardId: number;
 }
 
+interface DailyStreakData {
+  currentStreak: number;
+  bestStreak: number;
+  lastPlayedDate: string;
+  history: string[]; // dates when completed
+}
+
+const DAILY_STREAK_KEY = 'royaledle-daily-streak';
+
+// Get daily streak data
+function getDailyStreakData(): DailyStreakData {
+  if (typeof window === 'undefined') {
+    return { currentStreak: 0, bestStreak: 0, lastPlayedDate: '', history: [] };
+  }
+  try {
+    const stored = localStorage.getItem(DAILY_STREAK_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {}
+  return { currentStreak: 0, bestStreak: 0, lastPlayedDate: '', history: [] };
+}
+
+// Update daily streak
+function updateDailyStreak(): DailyStreakData {
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  
+  const data = getDailyStreakData();
+  
+  // Already played today
+  if (data.lastPlayedDate === today) {
+    return data;
+  }
+  
+  // Played yesterday - continue streak
+  if (data.lastPlayedDate === yesterday) {
+    data.currentStreak += 1;
+  } else {
+    // Streak broken - reset to 1
+    data.currentStreak = 1;
+  }
+  
+  // Update best streak
+  if (data.currentStreak > data.bestStreak) {
+    data.bestStreak = data.currentStreak;
+  }
+  
+  data.lastPlayedDate = today;
+  if (!data.history.includes(today)) {
+    data.history.push(today);
+    // Keep only last 365 days
+    if (data.history.length > 365) {
+      data.history = data.history.slice(-365);
+    }
+  }
+  
+  localStorage.setItem(DAILY_STREAK_KEY, JSON.stringify(data));
+  return data;
+}
+
 // Calculate time until next daily reset (midnight UTC)
 function getTimeUntilReset(): { hours: number; minutes: number; seconds: number } {
   const now = new Date();
@@ -59,6 +121,7 @@ function getTimeUntilReset(): { hours: number; minutes: number; seconds: number 
 
 export default function RoyaledlePage() {
   const { getCardNameTranslated } = useLanguage();
+  const { user } = useAuth();
   const [mode, setMode] = useState<GameMode>('daily');
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
@@ -69,6 +132,7 @@ export default function RoyaledlePage() {
   const [dailyCompleted, setDailyCompleted] = useState(false);
   const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
   const [countdown, setCountdown] = useState(getTimeUntilReset());
+  const [dailyStreak, setDailyStreak] = useState(getDailyStreakData());
 
   // Countdown timer effect
   useEffect(() => {
@@ -243,6 +307,9 @@ export default function RoyaledlePage() {
           guesses: newGuesses.length,
           cardId: targetCard?.id
         }));
+        // Update daily streak
+        const newStreak = updateDailyStreak();
+        setDailyStreak(newStreak);
         setDailyCompleted(true);
       }
     }
@@ -714,6 +781,36 @@ export default function RoyaledlePage() {
               >
                 Play Again
               </button>
+
+              {/* Daily Streak Display */}
+              {isDaily && dailyStreak && dailyStreak.currentStreak > 0 && (
+                <div className="mt-4 flex items-center justify-center gap-2 text-amber-400">
+                  <Flame className="w-5 h-5" />
+                  <span className="font-bold">{dailyStreak.currentStreak} day streak</span>
+                  {dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && (
+                    <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>
+                  )}
+                </div>
+              )}
+
+              {/* Account Creation Reminder */}
+              {!user && (
+                <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
+                    <UserPlus className="w-5 h-5" />
+                    <span className="font-semibold">Save your progress!</span>
+                  </div>
+                  <p className="text-gray-400 text-sm text-center mb-3">
+                    Create an account to save your stats and compete on leaderboards
+                  </p>
+                  <a
+                    href="/auth"
+                    className="block w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-400 transition-colors text-center"
+                  >
+                    Create Account
+                  </a>
+                </div>
+              )}
             </div>
           )}
 

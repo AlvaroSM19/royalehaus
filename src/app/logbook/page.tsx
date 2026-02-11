@@ -3,8 +3,27 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { getProgress, updateUserProfile, syncProgressNowAsync, type UserProgress } from '@/lib/progress';
-import { MessageSquare, Calendar, Trophy, Gamepad2, Star, X } from 'lucide-react';
+import { MessageSquare, Calendar, Trophy, Gamepad2, Star, X, Flame } from 'lucide-react';
 import cards from '@/data/cards.json';
+
+// Daily Streak Types
+interface DailyStreakData {
+  currentStreak: number;
+  bestStreak: number;
+  lastPlayedDate: string;
+  history: string[];
+}
+
+function getDailyStreakData(gameKey: string): DailyStreakData | null {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(`${gameKey}-daily-streak`);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
 
 const allCards = cards as { id: number; name: string; rarity: string }[];
 const GAME_IDS = ['royaledle', 'higherlower', 'impostor', 'wordle', 'tapone', 'pixel-royale', 'emoji-riddle', 'sound-quiz'] as const;
@@ -114,6 +133,9 @@ export default function LogbookPage() {
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [avatarSearch, setAvatarSearch] = useState('');
   const [authUser, setAuthUser] = useState<any>(null);
+  const [dailyStreaks, setDailyStreaks] = useState<{ royaledle: DailyStreakData | null }>({
+    royaledle: null
+  });
   const [selectedFrame, setSelectedFrame] = useState<keyof typeof FRAME_VARIANTS>('gold');
 
   useEffect(() => {
@@ -123,6 +145,10 @@ export default function LogbookPage() {
         const u = localStorage.getItem('authUser');
         if (u) setAuthUser(JSON.parse(u));
       } catch {}
+      // Load daily streaks
+      setDailyStreaks({
+        royaledle: getDailyStreakData('royaledle')
+      });
     };
     
     loadData();
@@ -329,6 +355,70 @@ export default function LogbookPage() {
               <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">Longest Word</div>
               <div className="text-3xl font-bold text-white">{progress?.highScores?.wordle?.longestWordLength || '—'}</div>
               <div className="text-gray-500 text-xs mt-1">letters</div>
+            </div>
+          </div>
+
+          {/* Daily Games Streak Section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
+              <span className="w-1 h-6 bg-gradient-to-b from-orange-500 to-red-600 rounded-full" />
+              <Flame className="w-5 h-5 text-orange-400" />
+              Daily Games Streak
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Royaledle Daily */}
+              <div className="p-5 bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/30 rounded-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="text-orange-400 text-sm font-bold uppercase tracking-wider">Royaledle Daily</div>
+                </div>
+                
+                {dailyStreaks.royaledle ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Flame className="w-6 h-6 text-orange-400" />
+                          <span className="text-4xl font-bold text-orange-400">{dailyStreaks.royaledle.currentStreak}</span>
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1">current streak</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-amber-400">{dailyStreaks.royaledle.bestStreak}</div>
+                        <div className="text-gray-500 text-xs mt-1">best streak</div>
+                      </div>
+                    </div>
+                    
+                    {/* Recent History */}
+                    {dailyStreaks.royaledle.history && dailyStreaks.royaledle.history.length > 0 && (
+                      <div className="pt-3 border-t border-white/10">
+                        <div className="text-gray-500 text-xs mb-2">Last {Math.min(7, dailyStreaks.royaledle.history.length)} days</div>
+                        <div className="flex gap-1">
+                          {dailyStreaks.royaledle.history.slice(-7).map((date, i) => (
+                            <div
+                              key={i}
+                              className="w-6 h-6 rounded bg-orange-500/50 flex items-center justify-center"
+                              title={date}
+                            >
+                              <Flame className="w-3 h-3 text-orange-300" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-gray-500 text-sm">
+                    Play the Royaledle daily challenge to start your streak!
+                  </div>
+                )}
+              </div>
+
+              {/* Coming Soon - Other Daily Games */}
+              <div className="p-5 bg-white/5 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center text-center">
+                <div className="text-gray-500 text-sm mb-2">More daily challenges coming soon!</div>
+                <div className="text-gray-600 text-xs">Complete daily games to build your streak</div>
+              </div>
             </div>
           </div>
 
