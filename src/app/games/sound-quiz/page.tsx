@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2 } from 'lucide-react';
+import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2, Trophy, HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 5;
@@ -259,11 +259,16 @@ export default function SoundQuizPage() {
   // Show message if no sounds available
   if (cardsWithSounds.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-cyan-950/30 to-slate-900 text-white flex items-center justify-center">
-        <div className="text-center p-8 rounded-2xl bg-slate-800/60 border border-cyan-500/30">
-          <h2 className="text-2xl font-bold text-cyan-300 mb-4">Coming Soon!</h2>
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white flex items-center justify-center">
+        <div 
+          className="text-center p-8 rounded-2xl border-2 border-cyan-500/30"
+          style={{
+            background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+          }}
+        >
+          <h2 className="text-2xl font-bold text-cyan-400 mb-4">Coming Soon!</h2>
           <p className="text-slate-300">Sound files are being prepared.</p>
-          <Link href="/" className="mt-4 inline-block px-6 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold transition-all">
+          <Link href="/" className="mt-4 inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold transition-all">
             Back to Home
           </Link>
         </div>
@@ -272,56 +277,61 @@ export default function SoundQuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-cyan-950/30 to-slate-900 text-white">
+    <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-cyan-900/95 via-teal-900/95 to-cyan-900/95 border-b border-cyan-500/30 backdrop-blur-lg shadow-xl shadow-cyan-900/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/60 border border-slate-600/50 hover:bg-slate-700/60 hover:border-cyan-500/50 transition-all group"
-              >
-                <Home className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300" />
-                <span className="text-sm font-medium text-slate-200 hidden sm:inline">Home</span>
-              </Link>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-black tracking-wider bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent">
-              🔊 SOUND QUIZ
-            </h1>
-            <button
-              onClick={initGame}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 border border-cyan-400/30 transition-all shadow-lg shadow-cyan-900/50"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="font-bold text-sm">New</span>
-            </button>
-          </div>
+      <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
+          >
+            <Home size={20} className="group-hover:scale-110 transition-transform" />
+            <span className="font-medium hidden sm:inline">Home</span>
+          </Link>
+          <h1 className="text-lg sm:text-xl font-bold text-amber-400 flex items-center gap-2">
+            <Volume2 size={22} className="text-cyan-400" />
+            <span>Sound Quiz</span>
+          </h1>
+          <button
+            onClick={initGame}
+            className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-3 py-1.5 rounded-lg transition-all hover:scale-105 font-bold text-sm border border-amber-400/50"
+          >
+            <RotateCcw size={16} />
+            <span className="hidden sm:inline">New</span>
+          </button>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Game Stats */}
-        <div className="flex justify-center gap-6 mb-8">
-          <div className="text-center">
-            <div className="text-2xl font-black text-cyan-300">{guesses.length}/{MAX_GUESSES}</div>
-            <div className="text-xs text-cyan-400/70 uppercase tracking-wide">Guesses</div>
+      {/* Stats Panel */}
+      <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-center gap-4 sm:gap-8">
+          <div className="flex items-center gap-2 text-amber-400 bg-slate-800/60 px-4 py-2 rounded-lg border border-amber-500/20">
+            <span className="text-xs text-amber-400/70 uppercase tracking-wide">Guesses</span>
+            <span className="font-bold text-lg">{guesses.length}/{MAX_GUESSES}</span>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-black text-teal-300">{playCount}</div>
-            <div className="text-xs text-teal-400/70 uppercase tracking-wide">Plays</div>
+          <div className="flex items-center gap-2 text-cyan-400 bg-slate-800/60 px-4 py-2 rounded-lg border border-cyan-500/20">
+            <Volume2 size={16} />
+            <span className="text-xs text-cyan-400/70 uppercase tracking-wide">Plays</span>
+            <span className="font-bold text-lg">{playCount}</span>
           </div>
         </div>
+      </div>
 
+      <main className="flex-1 container mx-auto px-4 py-8">
         {/* Sound Player */}
         <div className="flex justify-center mb-8">
-          <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-slate-800/60 border border-cyan-500/30 shadow-2xl shadow-cyan-900/30">
+          <div 
+            className="flex flex-col items-center gap-4 p-8 rounded-2xl border-2 border-cyan-500/30 shadow-2xl"
+            style={{
+              background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+            }}
+          >
             {/* Sound Wave Animation */}
             <div className={`flex items-center justify-center gap-1 h-24 ${isPlaying ? '' : 'opacity-40'}`}>
               {[...Array(7)].map((_, i) => (
                 <div
                   key={i}
-                  className={`w-3 bg-gradient-to-t from-cyan-500 to-teal-400 rounded-full transition-all ${
+                  className={`w-3 bg-gradient-to-t from-cyan-500 to-amber-400 rounded-full transition-all ${
                     isPlaying ? 'animate-soundwave' : ''
                   }`}
                   style={{
@@ -340,14 +350,14 @@ export default function SoundQuizPage() {
                 disabled={audioMode === 'unavailable' || isLoadingSound}
                 className={`
                   flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg
-                  transition-all shadow-lg
+                  transition-all shadow-lg hover:scale-105
                   ${audioMode === 'unavailable'
                     ? 'bg-red-600/50 text-red-200 cursor-not-allowed'
                     : isPlaying
-                      ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/50'
+                      ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/50 border border-red-400/50'
                       : audioMode === 'fallback'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-900/40'
-                        : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 shadow-cyan-900/50'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-900/40 border border-amber-400/50'
+                        : 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-cyan-900/50 border border-cyan-400/50'
                   }
                   ${isLoadingSound ? 'opacity-80 cursor-wait' : ''}
                 `}
@@ -382,16 +392,15 @@ export default function SoundQuizPage() {
             )}
 
             {audioMode === 'fallback' && !gameOver && targetCard && (
-              <p className="text-xs text-amber-100/70 text-center max-w-xs">
+              <p className="text-xs text-amber-300/70 text-center max-w-xs">
                 Placeholder tone in use because /sounds/cards/{targetCard.id}.mp3 was not found.
-                Add a real clip under public/sounds/cards/ to replace it.
               </p>
             )}
 
             {(audioMode === 'unavailable' || audioMode === 'fallback') && !gameOver && (
               <button
                 onClick={initGame}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm font-medium transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-sm font-medium transition-all hover:scale-105"
               >
                 <SkipForward className="w-4 h-4" />
                 Skip to Next Card
@@ -402,11 +411,25 @@ export default function SoundQuizPage() {
 
         {/* Game Over State */}
         {gameOver && (
-          <div className={`text-center mb-8 p-6 rounded-2xl border ${
-            won 
-              ? 'bg-green-900/30 border-green-500/40' 
-              : 'bg-red-900/30 border-red-500/40'
-          }`}>
+          <div 
+            className={`text-center mb-8 p-6 rounded-2xl border-2 max-w-md mx-auto relative overflow-hidden ${
+              won 
+                ? 'border-green-500/50' 
+                : 'border-red-500/50'
+            }`}
+            style={{
+              background: won 
+                ? 'linear-gradient(145deg, rgba(22, 101, 52, 0.3) 0%, rgba(15, 28, 50, 0.95) 100%)'
+                : 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(15, 28, 50, 0.95) 100%)',
+              animation: 'fadeIn 0.4s ease-out',
+            }}
+          >
+            {/* Decorative corners */}
+            <div className={`absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+
             <div className={`text-4xl mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
               {won ? '🎉 Correct!' : '😔 Game Over'}
             </div>
@@ -416,7 +439,7 @@ export default function SoundQuizPage() {
                   <img
                     src={getCardImageUrl(targetCard)}
                     alt={targetCard.name}
-                    className="w-16 h-16 object-contain rounded-lg bg-slate-700/50"
+                    className="w-16 h-16 object-contain rounded-lg bg-slate-800/50 p-1 border border-slate-600/50"
                   />
                   <div className="text-xl font-bold text-white">
                     {getCardNameTranslated(targetCard.id)}
@@ -425,23 +448,24 @@ export default function SoundQuizPage() {
               )}
             </div>
             {won && (
-              <div className="text-sm text-green-300/80">
+              <div className="text-sm text-green-300/80 flex items-center justify-center gap-2">
+                <Trophy size={16} />
                 Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
               </div>
             )}
             <div className="flex justify-center gap-4 mt-4">
               <button
                 onClick={playSound}
-                className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 font-semibold transition-all flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 font-semibold transition-all flex items-center gap-2 hover:scale-105"
               >
                 <Volume2 className="w-4 h-4" />
-                Play Sound Again
+                Play Again
               </button>
               <button
                 onClick={initGame}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 font-bold transition-all shadow-lg"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50"
               >
-                Play Again
+                New Game
               </button>
             </div>
           </div>
@@ -451,7 +475,7 @@ export default function SoundQuizPage() {
         {!gameOver && (
           <div className="max-w-md mx-auto mb-8">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 value={searchTerm}
@@ -463,26 +487,34 @@ export default function SoundQuizPage() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a card name..."
-                className="w-full pl-12 pr-4 py-4 rounded-xl bg-slate-800/80 border border-cyan-500/40 text-white placeholder:text-cyan-300/50 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30 transition-all text-lg"
+                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-cyan-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-lg"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+                }}
               />
               
               {/* Suggestions Dropdown */}
               {showSuggestions && filteredCards.length > 0 && (
-                <div className="absolute z-50 w-full mt-2 bg-slate-800/95 border border-cyan-500/40 rounded-xl shadow-2xl shadow-cyan-900/50 overflow-hidden backdrop-blur-xl">
+                <div 
+                  className="absolute z-50 w-full mt-2 border-2 border-cyan-700/50 rounded-xl shadow-2xl shadow-black/50 overflow-hidden backdrop-blur-xl"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(15, 35, 55, 0.98) 0%, rgba(10, 25, 40, 0.99) 100%)',
+                  }}
+                >
                   {filteredCards.map((card) => (
                     <button
                       key={card.id}
                       onClick={() => handleGuess(card)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cyan-600/30 transition-colors text-left border-b border-cyan-500/20 last:border-b-0"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cyan-900/40 transition-colors text-left border-b border-slate-700/30 last:border-b-0"
                     >
                       <img
                         src={getCardImageUrl(card)}
                         alt={card.name}
-                        className="w-10 h-10 object-contain rounded-lg bg-slate-700/50"
+                        className="w-10 h-10 object-contain rounded-lg bg-slate-800/50 p-0.5"
                       />
                       <div>
                         <div className="font-semibold text-white">{getCardNameTranslated(card.id)}</div>
-                        <div className="text-xs text-cyan-300/70">{card.type} • {card.rarity}</div>
+                        <div className="text-xs text-slate-400">{card.type} • {card.rarity}</div>
                       </div>
                     </button>
                   ))}
@@ -495,16 +527,16 @@ export default function SoundQuizPage() {
         {/* Previous Guesses */}
         {guesses.length > 0 && (
           <div className="max-w-md mx-auto mb-8">
-            <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wide mb-3 text-center">
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 text-center">
               Previous Guesses
             </h3>
             <div className="flex flex-wrap justify-center gap-2">
               {guesses.map((card, index) => (
                 <div
                   key={index}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                     card.id === targetCard?.id
-                      ? 'bg-green-900/40 border-green-500/50'
+                      ? 'bg-green-900/30 border-green-500/50'
                       : 'bg-slate-800/60 border-red-500/30'
                   }`}
                 >
@@ -518,7 +550,7 @@ export default function SoundQuizPage() {
                   }`}>
                     {getCardNameTranslated(card.id)}
                   </span>
-                  <span className="text-xs">
+                  <span className="text-sm">
                     {card.id === targetCard?.id ? '✅' : '❌'}
                   </span>
                 </div>
@@ -529,8 +561,16 @@ export default function SoundQuizPage() {
 
         {/* How to Play */}
         <div className="mt-12 max-w-lg mx-auto text-center">
-          <h3 className="text-lg font-bold text-cyan-300 mb-4">How to Play</h3>
-          <div className="text-sm text-cyan-200/70 space-y-2">
+          <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center justify-center gap-2">
+            <HelpCircle size={20} />
+            How to Play
+          </h3>
+          <div 
+            className="text-sm text-slate-300 space-y-2 border-2 border-slate-700/50 rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
+            }}
+          >
             <p>🔊 Listen to the sound of a Clash Royale card</p>
             <p>🎯 Try to guess which card makes that sound</p>
             <p>🔁 You can replay the sound as many times as needed</p>
@@ -538,7 +578,7 @@ export default function SoundQuizPage() {
           </div>
         </div>
 
-        {/* CSS for sound wave animation */}
+        {/* CSS for animations */}
         <style jsx>{`
           @keyframes soundwave {
             0%, 100% { height: 20px; }
@@ -546,6 +586,10 @@ export default function SoundQuizPage() {
           }
           .animate-soundwave {
             animation: soundwave 0.5s ease-in-out infinite;
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
           }
         `}</style>
       </main>
