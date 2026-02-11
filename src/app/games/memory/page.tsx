@@ -434,7 +434,11 @@ export default function RoyaleMemoryGame() {
                     }}
                   >
                     <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjEuNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIuMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')]"></div>
-                    <span className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl select-none drop-shadow-lg z-10">👑</span>
+                    <img 
+                      src="/images/card-back.svg" 
+                      alt="Card back" 
+                      className="w-10 h-12 xs:w-12 xs:h-14 sm:w-14 sm:h-16 md:w-16 md:h-20 object-contain z-10 drop-shadow-lg"
+                    />
                   </div>
                 )}
 
