@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, HelpCircle, Trophy, Check, X, XCircle } from 'lucide-react';
+import { Home, RotateCcw, Search, HelpCircle, Trophy, Check, X, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
+import { useAuth } from '@/lib/useAuth';
 
 const MAX_GUESSES = 6;
 
@@ -13,7 +15,110 @@ const MAX_GUESSES = 6;
 const BLUR_STEPS  = [40, 32, 24, 16, 8, 3, 0];
 const SCALE_STEPS = [3.5, 3.0, 2.5, 2.0, 1.5, 1.2, 1.0];
 
+// Daily challenge helpers
+interface DailyResult {
+  won: boolean;
+  guesses: number;
+  cardId: number;
+}
+
+interface DailyStreakData {
+  currentStreak: number;
+  bestStreak: number;
+  lastPlayedDate: string;
+  history: string[];
+}
+
+const DAILY_STREAK_KEY = 'pixel-royale-daily-streak';
+
+function getDailyStreakData(): DailyStreakData | null {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem(DAILY_STREAK_KEY);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+}
+
+function updateDailyStreak(): DailyStreakData {
+  const today = new Date().toISOString().slice(0, 10);
+  const existing = getDailyStreakData();
+  
+  if (!existing) {
+    const newData: DailyStreakData = {
+      currentStreak: 1,
+      bestStreak: 1,
+      lastPlayedDate: today,
+      history: [today]
+    };
+    localStorage.setItem(DAILY_STREAK_KEY, JSON.stringify(newData));
+    return newData;
+  }
+  
+  // Check if already played today
+  if (existing.lastPlayedDate === today) {
+    return existing;
+  }
+  
+  // Check if yesterday was played (continue streak)
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+  
+  let newStreak: number;
+  if (existing.lastPlayedDate === yesterdayStr) {
+    newStreak = existing.currentStreak + 1;
+  } else {
+    newStreak = 1;
+  }
+  
+  const data: DailyStreakData = {
+    currentStreak: newStreak,
+    bestStreak: Math.max(newStreak, existing.bestStreak),
+    lastPlayedDate: today,
+    history: [...existing.history, today].slice(-30)
+  };
+  
+  localStorage.setItem(DAILY_STREAK_KEY, JSON.stringify(data));
+  return data;
+}
+
+function getTimeUntilReset(): string {
+  const now = new Date();
+  const tomorrow = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1,
+    0, 0, 0, 0
+  ));
+  const diff = tomorrow.getTime() - now.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// Seeded random for daily challenge
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function getDailyCard(): ClashCard {
+  const today = new Date().toISOString().slice(0, 10);
+  const seed = today.split('-').reduce((acc, part) => acc + parseInt(part), 0) * 31337;
+  const index = Math.floor(seededRandom(seed) * baseCards.length);
+  return baseCards[index];
+}
+
 export default function PixelRoyalePage() {
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode');
+  const isDaily = mode === 'daily';
+  
+  const { user } = useAuth();
   const { getCardNameTranslated } = useLanguage();
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [guesses, setGuesses] = useState<ClashCard[]>([]);
@@ -26,6 +131,12 @@ export default function PixelRoyalePage() {
   const [step, setStep] = useState(0);
   const [bestScore, setBestScore] = useState<number | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  
+  // Daily mode state
+  const [dailyCompleted, setDailyCompleted] = useState(false);
+  const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
+  const [dailyStreak, setDailyStreak] = useState<DailyStreakData | null>(null);
+  const [countdown, setCountdown] = useState('');
 
   // Load best score from localStorage
   useEffect(() => {
@@ -35,7 +146,44 @@ export default function PixelRoyalePage() {
     } catch {}
   }, []);
 
+  // Check daily completion status
+  useEffect(() => {
+    if (isDaily) {
+      const today = new Date().toISOString().slice(0, 10);
+      const lastDaily = localStorage.getItem('pixel-royale-last-daily');
+      const lastDailyResultStr = localStorage.getItem('pixel-royale-daily-result');
+      
+      if (lastDaily === today && lastDailyResultStr) {
+        try {
+          const result = JSON.parse(lastDailyResultStr) as DailyResult;
+          setDailyCompleted(true);
+          setDailyResult(result);
+          setDailyStreak(getDailyStreakData());
+          
+          // Load the daily card for display
+          const dailyCard = getDailyCard();
+          setTargetCard(dailyCard);
+          setGameOver(true);
+          setWon(result.won);
+          setStep(MAX_GUESSES);
+        } catch {}
+      } else {
+        setDailyCompleted(false);
+        setDailyResult(null);
+      }
+      
+      // Countdown timer
+      const updateCountdown = () => setCountdown(getTimeUntilReset());
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isDaily]);
+
   const initGame = useCallback(() => {
+    // For daily mode, only allow one attempt per day
+    if (isDaily && dailyCompleted) return;
+    
     setImageReady(false);
     setStep(0);
     setGuesses([]);
@@ -43,9 +191,13 @@ export default function PixelRoyalePage() {
     setGameOver(false);
     setWon(false);
     setShowHint(false);
-    const card = getRandomCard();
-    setTargetCard(card);
-  }, []);
+    
+    if (isDaily) {
+      setTargetCard(getDailyCard());
+    } else {
+      setTargetCard(getRandomCard());
+    }
+  }, [isDaily, dailyCompleted]);
 
   useEffect(() => {
     if (!targetCard) return;
@@ -76,13 +228,17 @@ export default function PixelRoyalePage() {
 
   const handleGuess = (card: ClashCard) => {
     if (gameOver || !targetCard) return;
+    if (isDaily && dailyCompleted) return;
 
     const newGuesses = [...guesses, card];
     setGuesses(newGuesses);
     setSearchTerm('');
     setShowSuggestions(false);
 
-    if (card.id === targetCard.id) {
+    const isWin = card.id === targetCard.id;
+    const isLoss = !isWin && newGuesses.length >= MAX_GUESSES;
+
+    if (isWin) {
       setStep(MAX_GUESSES);
       setWon(true);
       setGameOver(true);
@@ -93,10 +249,25 @@ export default function PixelRoyalePage() {
       }
     } else {
       setStep(newGuesses.length);
-      if (newGuesses.length >= MAX_GUESSES) {
+      if (isLoss) {
         setGameOver(true);
         setTimeout(() => setStep(MAX_GUESSES), 800);
       }
+    }
+
+    // Save daily result
+    if (isDaily && (isWin || isLoss)) {
+      const today = new Date().toISOString().slice(0, 10);
+      localStorage.setItem('pixel-royale-last-daily', today);
+      localStorage.setItem('pixel-royale-daily-result', JSON.stringify({
+        won: isWin,
+        guesses: newGuesses.length,
+        cardId: targetCard.id
+      }));
+      setDailyCompleted(true);
+      setDailyResult({ won: isWin, guesses: newGuesses.length, cardId: targetCard.id });
+      const newStreak = updateDailyStreak();
+      setDailyStreak(newStreak);
     }
   };
 
@@ -132,8 +303,13 @@ export default function PixelRoyalePage() {
                 <span className="hidden sm:inline">Home</span>
               </Link>
               <span className="text-slate-600">/</span>
-              <h1 className="text-base sm:text-lg md:text-xl font-black text-amber-400 tracking-wider">
+              <h1 className="text-base sm:text-lg md:text-xl font-black text-amber-400 tracking-wider flex items-center gap-2">
                 PIXEL ROYALE
+                {isDaily && (
+                  <span className="text-[10px] px-2 py-0.5 bg-purple-500/20 border border-purple-500/50 text-purple-400 rounded-full font-bold">
+                    DAILY
+                  </span>
+                )}
               </h1>
             </div>
 
@@ -141,13 +317,21 @@ export default function PixelRoyalePage() {
               <span className="text-slate-400 text-[10px] sm:text-xs uppercase tracking-wide hidden sm:inline">
                 Guesses: <span className="text-white font-bold">{guesses.length}/{MAX_GUESSES}</span>
               </span>
-              <button
-                onClick={initGame}
-                className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold rounded-lg hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/20 text-xs transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">New Game</span>
-              </button>
+              {!isDaily && (
+                <button
+                  onClick={initGame}
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold rounded-lg hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/20 text-xs transition-all"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">New Game</span>
+                </button>
+              )}
+              {isDaily && dailyCompleted && (
+                <div className="flex items-center gap-1.5 text-gray-400 text-xs">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{countdown}</span>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -457,23 +641,58 @@ export default function PixelRoyalePage() {
                   {/* Separator */}
                   <div className="flex items-center gap-2 xs:gap-3 my-3 sm:my-4 md:my-6">
                     <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
-                    <span className="text-amber-500/60 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest whitespace-nowrap">Play Again?</span>
+                    <span className="text-amber-500/60 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest whitespace-nowrap">
+                      {isDaily && dailyCompleted ? 'Daily Complete!' : 'Play Again?'}
+                    </span>
                     <div className="flex-1 h-px bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
                   </div>
 
+                  {/* Daily Streak Display */}
+                  {isDaily && dailyStreak && dailyStreak.currentStreak > 0 && (
+                    <div className="mb-4 flex items-center justify-center gap-2 text-amber-400">
+                      <Flame className="w-5 h-5" />
+                      <span className="font-bold">{dailyStreak.currentStreak} day streak</span>
+                      {dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && (
+                        <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Next daily countdown for daily mode */}
+                  {isDaily && dailyCompleted && (
+                    <div className="mb-4 flex items-center justify-center gap-2 text-gray-400 text-sm">
+                      <Clock className="w-4 h-4" />
+                      <span>Next daily in {countdown}</span>
+                    </div>
+                  )}
+
                   {/* Buttons */}
                   <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 justify-center">
-                    <button
-                      onClick={initGame}
-                      className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-black uppercase tracking-wider text-xs xs:text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
-                      style={{
-                        background: 'linear-gradient(90deg, #f59e0b 0%, #eab308 50%, #f59e0b 100%)',
-                        color: '#1e1b18',
-                        boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)'
-                      }}
-                    >
-                      New Game
-                    </button>
+                    {isDaily ? (
+                      <Link
+                        href="/games/pixel-royale"
+                        className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-black uppercase tracking-wider text-xs xs:text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
+                        style={{
+                          background: 'linear-gradient(90deg, #f59e0b 0%, #eab308 50%, #f59e0b 100%)',
+                          color: '#1e1b18',
+                          boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)'
+                        }}
+                      >
+                        Practice Mode
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={initGame}
+                        className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-black uppercase tracking-wider text-xs xs:text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
+                        style={{
+                          background: 'linear-gradient(90deg, #f59e0b 0%, #eab308 50%, #f59e0b 100%)',
+                          color: '#1e1b18',
+                          boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)'
+                        }}
+                      >
+                        New Game
+                      </button>
+                    )}
                     <Link
                       href="/"
                       className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold uppercase tracking-wider text-xs xs:text-sm sm:text-base bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-600/50 transition-all text-center"
@@ -481,6 +700,25 @@ export default function PixelRoyalePage() {
                       Home
                     </Link>
                   </div>
+
+                  {/* Account Creation Reminder */}
+                  {!user && (
+                    <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                      <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
+                        <UserPlus className="w-5 h-5" />
+                        <span className="font-semibold">Save your progress!</span>
+                      </div>
+                      <p className="text-gray-400 text-sm text-center mb-3">
+                        Create an account to save your stats and streaks
+                      </p>
+                      <a
+                        href="/auth"
+                        className="block w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-400 transition-colors text-center text-sm"
+                      >
+                        Create Account
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

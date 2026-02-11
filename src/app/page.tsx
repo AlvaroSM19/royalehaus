@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { DailyGamesGrid } from '@/components/DailyGameCard'
 
 const dailyGames = [
   { 
@@ -125,66 +126,8 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Daily Games Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {dailyGames.map((game) => (
-              <Link
-                key={game.id}
-                href={game.href}
-                className="group relative block rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_8px_40px_rgba(245,180,50,0.2)]"
-                style={{
-                  border: '2px solid rgba(180, 140, 60, 0.4)',
-                  background: 'linear-gradient(180deg, rgba(30, 25, 18, 0.7) 0%, rgba(20, 18, 12, 0.9) 100%)',
-                }}
-              >
-                {/* Daily badge */}
-                <div 
-                  className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-                  style={{
-                    background: `linear-gradient(135deg, ${game.color}20, ${game.color}40)`,
-                    border: `1px solid ${game.color}60`,
-                    color: game.color,
-                  }}
-                >
-                  Daily
-                </div>
-
-                {/* Image */}
-                <div className="relative aspect-[16/9] overflow-hidden">
-                  <Image
-                    src={game.image}
-                    alt={game.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/0 via-amber-300/0 to-amber-200/0 group-hover:from-amber-400/5 group-hover:via-amber-300/10 group-hover:to-amber-200/5 transition-all duration-500" />
-                </div>
-
-                {/* Content */}
-                <div 
-                  className="py-3 px-4"
-                  style={{
-                    background: 'linear-gradient(90deg, rgba(42, 35, 22, 0.95) 0%, rgba(55, 45, 28, 0.95) 50%, rgba(42, 35, 22, 0.95) 100%)',
-                    borderTop: '1px solid rgba(180, 140, 60, 0.25)',
-                  }}
-                >
-                  <h3 
-                    className="text-center text-[12px] font-extrabold tracking-[0.2em] uppercase"
-                    style={{
-                      background: 'linear-gradient(180deg, #f5d485 0%, #c9a44a 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
-                    }}
-                  >
-                    {game.title}
-                  </h3>
-                  <p className="text-center text-amber-100/40 text-[11px] mt-1">{game.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {/* Daily Games Grid - Client Component */}
+          <DailyGamesGrid games={dailyGames} />
         </div>
       </section>
 
