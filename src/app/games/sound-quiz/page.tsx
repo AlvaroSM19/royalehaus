@@ -280,58 +280,58 @@ export default function SoundQuizPage() {
     <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* Header */}
       <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center justify-between">
           <Link 
             href="/" 
-            className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
+            className="flex items-center gap-1.5 xs:gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
           >
-            <Home size={20} className="group-hover:scale-110 transition-transform" />
+            <Home className="w-4 h-4 xs:w-5 xs:h-5 group-hover:scale-110 transition-transform" />
             <span className="font-medium hidden sm:inline">Home</span>
           </Link>
-          <h1 className="text-lg sm:text-xl font-bold text-amber-400 flex items-center gap-2">
-            <Volume2 size={22} className="text-cyan-400" />
+          <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-amber-400 flex items-center gap-1.5 xs:gap-2">
+            <Volume2 className="w-4 h-4 xs:w-5 xs:h-5 text-cyan-400" />
             <span>Sound Quiz</span>
           </h1>
           <button
             onClick={initGame}
-            className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-3 py-1.5 rounded-lg transition-all hover:scale-105 font-bold text-sm border border-amber-400/50"
+            className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md xs:rounded-lg transition-all hover:scale-105 font-bold text-xs xs:text-sm border border-amber-400/50"
           >
-            <RotateCcw size={16} />
-            <span className="hidden sm:inline">New</span>
+            <RotateCcw className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">New</span>
           </button>
         </div>
       </header>
 
       {/* Stats Panel */}
       <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-center gap-4 sm:gap-8">
-          <div className="flex items-center gap-2 text-amber-400 bg-slate-800/60 px-4 py-2 rounded-lg border border-amber-500/20">
-            <span className="text-xs text-amber-400/70 uppercase tracking-wide">Guesses</span>
-            <span className="font-bold text-lg">{guesses.length}/{MAX_GUESSES}</span>
+        <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex flex-wrap items-center justify-center gap-2 xs:gap-3 sm:gap-4 md:gap-8">
+          <div className="flex items-center gap-1.5 xs:gap-2 text-amber-400 bg-slate-800/60 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg border border-amber-500/20">
+            <span className="text-[10px] xs:text-xs text-amber-400/70 uppercase tracking-wide">Guesses</span>
+            <span className="font-bold text-sm xs:text-base sm:text-lg">{guesses.length}/{MAX_GUESSES}</span>
           </div>
-          <div className="flex items-center gap-2 text-cyan-400 bg-slate-800/60 px-4 py-2 rounded-lg border border-cyan-500/20">
-            <Volume2 size={16} />
-            <span className="text-xs text-cyan-400/70 uppercase tracking-wide">Plays</span>
-            <span className="font-bold text-lg">{playCount}</span>
+          <div className="flex items-center gap-1.5 xs:gap-2 text-cyan-400 bg-slate-800/60 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg border border-cyan-500/20">
+            <Volume2 className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+            <span className="text-[10px] xs:text-xs text-cyan-400/70 uppercase tracking-wide">Plays</span>
+            <span className="font-bold text-sm xs:text-base sm:text-lg">{playCount}</span>
           </div>
         </div>
       </div>
 
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-2 xs:px-3 sm:px-4 py-4 xs:py-5 sm:py-6 md:py-8">
         {/* Sound Player */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-4 xs:mb-5 sm:mb-6 md:mb-8">
           <div 
-            className="flex flex-col items-center gap-4 p-8 rounded-2xl border-2 border-cyan-500/30 shadow-2xl"
+            className="flex flex-col items-center gap-2 xs:gap-3 sm:gap-4 p-4 xs:p-5 sm:p-6 md:p-8 rounded-xl xs:rounded-2xl border-2 border-cyan-500/30 shadow-2xl w-full max-w-[280px] xs:max-w-[320px] sm:max-w-sm md:max-w-md"
             style={{
               background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
             }}
           >
             {/* Sound Wave Animation */}
-            <div className={`flex items-center justify-center gap-1 h-24 ${isPlaying ? '' : 'opacity-40'}`}>
+            <div className={`flex items-center justify-center gap-0.5 xs:gap-1 h-16 xs:h-20 sm:h-24 ${isPlaying ? '' : 'opacity-40'}`}>
               {[...Array(7)].map((_, i) => (
                 <div
                   key={i}
-                  className={`w-3 bg-gradient-to-t from-cyan-500 to-amber-400 rounded-full transition-all ${
+                  className={`w-2 xs:w-2.5 sm:w-3 bg-gradient-to-t from-cyan-500 to-amber-400 rounded-full transition-all ${
                     isPlaying ? 'animate-soundwave' : ''
                   }`}
                   style={{
@@ -349,7 +349,7 @@ export default function SoundQuizPage() {
                 onClick={isPlaying ? stopSound : playSound}
                 disabled={audioMode === 'unavailable' || isLoadingSound}
                 className={`
-                  flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-lg
+                  flex items-center gap-2 xs:gap-2.5 sm:gap-3 px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-xl xs:rounded-2xl font-bold text-sm xs:text-base sm:text-lg
                   transition-all shadow-lg hover:scale-105
                   ${audioMode === 'unavailable'
                     ? 'bg-red-600/50 text-red-200 cursor-not-allowed'
@@ -364,27 +364,28 @@ export default function SoundQuizPage() {
               >
                 {audioMode === 'unavailable' ? (
                   <>
-                    <VolumeX className="w-6 h-6" />
+                    <VolumeX className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
                     <span>Audio Not Available</span>
                   </>
                 ) : isLoadingSound ? (
                   <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 animate-spin" />
                     <span>Loading...</span>
                   </>
                 ) : isPlaying ? (
                   <>
-                    <Pause className="w-6 h-6" />
+                    <Pause className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
                     <span>Stop</span>
                   </>
                 ) : audioMode === 'fallback' ? (
                   <>
-                    <Volume2 className="w-6 h-6" />
-                    <span>Play Placeholder Tone</span>
+                    <Volume2 className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
+                    <span className="hidden xs:inline">Play Placeholder Tone</span>
+                    <span className="xs:hidden">Play Tone</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-6 h-6" />
+                    <Play className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
                     <span>Play Sound</span>
                   </>
                 )}
@@ -392,7 +393,7 @@ export default function SoundQuizPage() {
             )}
 
             {audioMode === 'fallback' && !gameOver && targetCard && (
-              <p className="text-xs text-amber-300/70 text-center max-w-xs">
+              <p className="text-[10px] xs:text-xs text-amber-300/70 text-center max-w-[200px] xs:max-w-xs">
                 Placeholder tone in use because /sounds/cards/{targetCard.id}.mp3 was not found.
               </p>
             )}
@@ -400,9 +401,9 @@ export default function SoundQuizPage() {
             {(audioMode === 'unavailable' || audioMode === 'fallback') && !gameOver && (
               <button
                 onClick={initGame}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-sm font-medium transition-all hover:scale-105"
+                className="flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-xs xs:text-sm font-medium transition-all hover:scale-105"
               >
-                <SkipForward className="w-4 h-4" />
+                <SkipForward className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                 Skip to Next Card
               </button>
             )}
@@ -412,7 +413,7 @@ export default function SoundQuizPage() {
         {/* Game Over State */}
         {gameOver && (
           <div 
-            className={`text-center mb-8 p-6 rounded-2xl border-2 max-w-md mx-auto relative overflow-hidden ${
+            className={`text-center mb-4 xs:mb-5 sm:mb-6 md:mb-8 p-3 xs:p-4 sm:p-5 md:p-6 rounded-xl xs:rounded-2xl border-2 w-full max-w-[280px] xs:max-w-xs sm:max-w-sm md:max-w-md mx-auto relative overflow-hidden ${
               won 
                 ? 'border-green-500/50' 
                 : 'border-red-500/50'
@@ -425,45 +426,45 @@ export default function SoundQuizPage() {
             }}
           >
             {/* Decorative corners */}
-            <div className={`absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
-            <div className={`absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
-            <div className={`absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
-            <div className={`absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute top-1.5 xs:top-2 left-1.5 xs:left-2 w-3 h-3 xs:w-4 xs:h-4 border-l-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute top-1.5 xs:top-2 right-1.5 xs:right-2 w-3 h-3 xs:w-4 xs:h-4 border-r-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute bottom-1.5 xs:bottom-2 left-1.5 xs:left-2 w-3 h-3 xs:w-4 xs:h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute bottom-1.5 xs:bottom-2 right-1.5 xs:right-2 w-3 h-3 xs:w-4 xs:h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
 
-            <div className={`text-4xl mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-2xl xs:text-3xl sm:text-4xl mb-1.5 xs:mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
               {won ? '🎉 Correct!' : '😔 Game Over'}
             </div>
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-2 xs:gap-3 sm:gap-4 mb-2 xs:mb-3 sm:mb-4">
               {targetCard && (
                 <>
                   <img
                     src={getCardImageUrl(targetCard)}
                     alt={targetCard.name}
-                    className="w-16 h-16 object-contain rounded-lg bg-slate-800/50 p-1 border border-slate-600/50"
+                    className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 object-contain rounded-md xs:rounded-lg bg-slate-800/50 p-0.5 xs:p-1 border border-slate-600/50"
                   />
-                  <div className="text-xl font-bold text-white">
+                  <div className="text-base xs:text-lg sm:text-xl font-bold text-white">
                     {getCardNameTranslated(targetCard.id)}
                   </div>
                 </>
               )}
             </div>
             {won && (
-              <div className="text-sm text-green-300/80 flex items-center justify-center gap-2">
-                <Trophy size={16} />
+              <div className="text-xs xs:text-sm text-green-300/80 flex items-center justify-center gap-1.5 xs:gap-2">
+                <Trophy className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                 Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
               </div>
             )}
-            <div className="flex justify-center gap-4 mt-4">
+            <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mt-3 xs:mt-4">
               <button
                 onClick={playSound}
-                className="px-4 py-2 rounded-xl bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 font-semibold transition-all flex items-center gap-2 hover:scale-105"
+                className="px-3 xs:px-4 py-1.5 xs:py-2 rounded-lg xs:rounded-xl bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 font-semibold text-xs xs:text-sm transition-all flex items-center gap-1.5 xs:gap-2 hover:scale-105"
               >
-                <Volume2 className="w-4 h-4" />
+                <Volume2 className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                 Play Again
               </button>
               <button
                 onClick={initGame}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50"
+                className="px-4 xs:px-5 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold text-xs xs:text-sm sm:text-base transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50"
               >
                 New Game
               </button>
@@ -473,9 +474,9 @@ export default function SoundQuizPage() {
 
         {/* Search Input */}
         {!gameOver && (
-          <div className="max-w-md mx-auto mb-8">
+          <div className="w-full max-w-[280px] xs:max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-4 xs:mb-5 sm:mb-6 md:mb-8">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 xs:left-4 top-1/2 -translate-y-1/2 w-4 h-4 xs:w-5 xs:h-5 text-slate-400" />
               <input
                 type="text"
                 value={searchTerm}
@@ -487,7 +488,7 @@ export default function SoundQuizPage() {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a card name..."
-                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-cyan-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-lg"
+                className="w-full pl-9 xs:pl-10 sm:pl-12 pr-3 xs:pr-4 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg xs:rounded-xl border-2 border-cyan-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm xs:text-base sm:text-lg"
                 style={{
                   background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
                 }}
@@ -496,7 +497,7 @@ export default function SoundQuizPage() {
               {/* Suggestions Dropdown */}
               {showSuggestions && filteredCards.length > 0 && (
                 <div 
-                  className="absolute z-50 w-full mt-2 border-2 border-cyan-700/50 rounded-xl shadow-2xl shadow-black/50 overflow-hidden backdrop-blur-xl"
+                  className="absolute z-50 w-full mt-1.5 xs:mt-2 border-2 border-cyan-700/50 rounded-lg xs:rounded-xl shadow-2xl shadow-black/50 overflow-hidden backdrop-blur-xl max-h-60 xs:max-h-72 sm:max-h-80 overflow-y-auto"
                   style={{
                     background: 'linear-gradient(145deg, rgba(15, 35, 55, 0.98) 0%, rgba(10, 25, 40, 0.99) 100%)',
                   }}
@@ -505,16 +506,16 @@ export default function SoundQuizPage() {
                     <button
                       key={card.id}
                       onClick={() => handleGuess(card)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cyan-900/40 transition-colors text-left border-b border-slate-700/30 last:border-b-0"
+                      className="w-full flex items-center gap-2 xs:gap-3 px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 hover:bg-cyan-900/40 transition-colors text-left border-b border-slate-700/30 last:border-b-0"
                     >
                       <img
                         src={getCardImageUrl(card)}
                         alt={card.name}
-                        className="w-10 h-10 object-contain rounded-lg bg-slate-800/50 p-0.5"
+                        className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 object-contain rounded-md xs:rounded-lg bg-slate-800/50 p-0.5"
                       />
-                      <div>
-                        <div className="font-semibold text-white">{getCardNameTranslated(card.id)}</div>
-                        <div className="text-xs text-slate-400">{card.type} • {card.rarity}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-white text-sm xs:text-base truncate">{getCardNameTranslated(card.id)}</div>
+                        <div className="text-[10px] xs:text-xs text-slate-400">{card.type} • {card.rarity}</div>
                       </div>
                     </button>
                   ))}
@@ -526,15 +527,15 @@ export default function SoundQuizPage() {
 
         {/* Previous Guesses */}
         {guesses.length > 0 && (
-          <div className="max-w-md mx-auto mb-8">
-            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 text-center">
+          <div className="w-full max-w-[280px] xs:max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-4 xs:mb-5 sm:mb-6 md:mb-8">
+            <h3 className="text-xs xs:text-sm font-bold text-slate-300 uppercase tracking-wide mb-2 xs:mb-3 text-center">
               Previous Guesses
             </h3>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-1.5 xs:gap-2">
               {guesses.map((card, index) => (
                 <div
                   key={index}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                  className={`flex items-center gap-1.5 xs:gap-2 px-2 xs:px-2.5 sm:px-3 py-1.5 xs:py-2 rounded-md xs:rounded-lg border-2 transition-all ${
                     card.id === targetCard?.id
                       ? 'bg-green-900/30 border-green-500/50'
                       : 'bg-slate-800/60 border-red-500/30'
@@ -543,14 +544,14 @@ export default function SoundQuizPage() {
                   <img
                     src={getCardImageUrl(card)}
                     alt={card.name}
-                    className="w-8 h-8 object-contain rounded"
+                    className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 object-contain rounded"
                   />
-                  <span className={`text-sm font-medium ${
+                  <span className={`text-xs xs:text-sm font-medium truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none ${
                     card.id === targetCard?.id ? 'text-green-300' : 'text-red-300'
                   }`}>
                     {getCardNameTranslated(card.id)}
                   </span>
-                  <span className="text-sm">
+                  <span className="text-xs xs:text-sm">
                     {card.id === targetCard?.id ? '✅' : '❌'}
                   </span>
                 </div>
@@ -560,13 +561,13 @@ export default function SoundQuizPage() {
         )}
 
         {/* How to Play */}
-        <div className="mt-12 max-w-lg mx-auto text-center">
-          <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center justify-center gap-2">
-            <HelpCircle size={20} />
+        <div className="mt-6 xs:mt-8 sm:mt-10 md:mt-12 w-full max-w-[280px] xs:max-w-xs sm:max-w-md md:max-w-lg mx-auto text-center">
+          <h3 className="text-sm xs:text-base sm:text-lg font-bold text-amber-400 mb-2 xs:mb-3 sm:mb-4 flex items-center justify-center gap-1.5 xs:gap-2">
+            <HelpCircle className="w-4 h-4 xs:w-5 xs:h-5" />
             How to Play
           </h3>
           <div 
-            className="text-sm text-slate-300 space-y-2 border-2 border-slate-700/50 rounded-xl p-6"
+            className="text-xs xs:text-sm text-slate-300 space-y-1.5 xs:space-y-2 border-2 border-slate-700/50 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 md:p-6"
             style={{
               background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
             }}
