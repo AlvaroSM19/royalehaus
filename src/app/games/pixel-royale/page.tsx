@@ -154,32 +154,32 @@ export default function PixelRoyalePage() {
 
         <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 flex-1">
           {/* Stats Panel */}
-          <div className="flex justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
             <div 
-              className="text-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl"
+              className="text-center px-3 xs:px-4 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl min-w-[70px] xs:min-w-[80px]"
               style={{
                 background: 'linear-gradient(180deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
                 border: '2px solid rgba(60, 90, 140, 0.4)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
               }}
             >
-              <div className="text-xl sm:text-2xl font-black text-amber-400">{guesses.length}/{MAX_GUESSES}</div>
-              <div className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-slate-400">Guesses</div>
+              <div className="text-lg xs:text-xl sm:text-2xl font-black text-amber-400">{guesses.length}/{MAX_GUESSES}</div>
+              <div className="text-[7px] xs:text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-slate-400">Guesses</div>
             </div>
             <div 
-              className="text-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl"
+              className="text-center px-3 xs:px-4 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl min-w-[70px] xs:min-w-[80px]"
               style={{
                 background: 'linear-gradient(180deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
                 border: '2px solid rgba(60, 90, 140, 0.4)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
               }}
             >
-              <div className="text-xl sm:text-2xl font-black text-cyan-400">{Math.round((step / MAX_GUESSES) * 100)}%</div>
-              <div className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-slate-400">Clarity</div>
+              <div className="text-lg xs:text-xl sm:text-2xl font-black text-cyan-400">{Math.round((step / MAX_GUESSES) * 100)}%</div>
+              <div className="text-[7px] xs:text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-slate-400">Clarity</div>
             </div>
             {bestScore !== null && (
               <div 
-                className="text-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl"
+                className="text-center px-3 xs:px-4 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl min-w-[70px] xs:min-w-[80px]"
                 style={{
                   background: 'linear-gradient(180deg, rgba(45, 35, 20, 0.95) 0%, rgba(30, 25, 15, 0.98) 100%)',
                   border: '2px solid rgba(245, 158, 11, 0.6)',
@@ -187,18 +187,18 @@ export default function PixelRoyalePage() {
                 }}
               >
                 <div className="flex items-center justify-center gap-1">
-                  <Trophy className="w-4 h-4 text-amber-400" />
-                  <span className="text-xl sm:text-2xl font-black text-white">{bestScore}</span>
+                  <Trophy className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-amber-400" />
+                  <span className="text-lg xs:text-xl sm:text-2xl font-black text-white">{bestScore}</span>
                 </div>
-                <div className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-cyan-400">Best</div>
+                <div className="text-[7px] xs:text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-cyan-400">Best</div>
               </div>
             )}
           </div>
 
           {/* Main Card Container */}
-          <div className="flex justify-center mb-6 sm:mb-8">
+          <div className="flex justify-center mb-4 sm:mb-6 md:mb-8 px-2">
             <div 
-              className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300"
+              className="relative rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 w-full max-w-[200px] xs:max-w-[220px] sm:max-w-[260px] md:max-w-[300px] lg:max-w-[320px]"
               style={{
                 background: gameOver 
                   ? won 
@@ -217,7 +217,7 @@ export default function PixelRoyalePage() {
                   : '0 4px 20px rgba(0,0,0,0.4)'
               }}
             >
-              <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 relative">
+              <div className="aspect-square relative">
                 {/* Image Area */}
                 <div 
                   className="absolute inset-0 flex items-center justify-center"
@@ -242,11 +242,11 @@ export default function PixelRoyalePage() {
               </div>
 
               {/* Progress dots */}
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-1.5 bg-slate-900/90 px-3 py-1.5 rounded-full border border-slate-700/50">
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-1 xs:gap-1.5 bg-slate-900/90 px-2 xs:px-3 py-1 xs:py-1.5 rounded-full border border-slate-700/50">
                 {Array.from({ length: MAX_GUESSES }).map((_, i) => (
                   <div
                     key={i}
-                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
+                    className={`w-2 h-2 xs:w-2.5 xs:h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
                       i < guesses.length
                         ? won && i === guesses.length - 1
                           ? 'bg-green-500 shadow-lg shadow-green-500/50'
@@ -261,12 +261,12 @@ export default function PixelRoyalePage() {
 
           {/* Hint Button */}
           {!gameOver && guesses.length >= 2 && (
-            <div className="flex justify-center mb-4 sm:mb-6">
+            <div className="flex justify-center mb-3 sm:mb-4 md:mb-6">
               <button
                 onClick={() => setShowHint(!showHint)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-slate-800/80 border border-cyan-600/40 hover:bg-slate-700 transition-all text-cyan-400 text-xs sm:text-sm font-semibold"
+                className="flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md sm:rounded-lg bg-slate-800/80 border border-cyan-600/40 hover:bg-slate-700 transition-all text-cyan-400 text-[11px] xs:text-xs sm:text-sm font-semibold"
               >
-                <HelpCircle className="w-4 h-4" />
+                <HelpCircle className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                 {showHint ? 'Hide Hint' : 'Show Hint'}
               </button>
             </div>
@@ -274,7 +274,7 @@ export default function PixelRoyalePage() {
 
           {showHint && !gameOver && (
             <div 
-              className="text-center mb-4 sm:mb-6 text-amber-300 text-xs sm:text-sm font-medium rounded-xl py-3 px-4 max-w-md mx-auto"
+              className="text-center mb-3 sm:mb-4 md:mb-6 text-amber-300 text-[11px] xs:text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl py-2.5 xs:py-3 px-3 xs:px-4 max-w-md mx-auto"
               style={{
                 background: 'linear-gradient(180deg, rgba(45, 35, 20, 0.95) 0%, rgba(30, 25, 15, 0.98) 100%)',
                 border: '2px solid rgba(245, 158, 11, 0.5)',
@@ -286,9 +286,9 @@ export default function PixelRoyalePage() {
 
           {/* Search Input */}
           {!gameOver && (
-            <div className="max-w-md mx-auto mb-6 sm:mb-8">
+            <div className="max-w-md mx-auto mb-4 sm:mb-6 md:mb-8 px-1">
               <div className="relative">
-                <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                <Search className="absolute left-2.5 xs:left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                 <input
                   type="text"
                   value={searchTerm}
@@ -300,7 +300,7 @@ export default function PixelRoyalePage() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type at least 2 letters..."
-                  className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 rounded-xl text-white placeholder:text-slate-500 focus:outline-none transition-all text-sm sm:text-base"
+                  className="w-full pl-9 xs:pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 xs:py-3 sm:py-4 rounded-lg sm:rounded-xl text-white placeholder:text-slate-500 focus:outline-none transition-all text-sm"
                   style={{
                     background: 'linear-gradient(180deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
                     border: '2px solid rgba(60, 90, 140, 0.5)',
@@ -341,17 +341,17 @@ export default function PixelRoyalePage() {
 
           {/* Previous Guesses */}
           {guesses.length > 0 && !gameOver && (
-            <div className="max-w-lg mx-auto mb-6">
-              <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="max-w-lg mx-auto mb-4 sm:mb-6 px-1">
+              <div className="flex items-center justify-center gap-2 mb-2 sm:mb-3">
                 <div className="flex-1 h-px bg-slate-600/40" />
-                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-400">Previous Guesses</span>
+                <span className="text-[8px] xs:text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.1em] sm:tracking-[0.15em] text-slate-400 whitespace-nowrap">Previous Guesses</span>
                 <div className="flex-1 h-px bg-slate-600/40" />
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex flex-wrap justify-center gap-1.5 xs:gap-2">
                 {guesses.map((card, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all"
+                    className="flex items-center gap-1.5 xs:gap-2 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 sm:py-2 rounded-md sm:rounded-lg transition-all"
                     style={{
                       background: card.id === targetCard?.id 
                         ? 'linear-gradient(180deg, rgba(20, 60, 30, 0.9) 0%, rgba(15, 45, 25, 0.95) 100%)'
@@ -383,9 +383,9 @@ export default function PixelRoyalePage() {
 
           {/* Game Over Modal */}
           {gameOver && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-black/90 backdrop-blur-md animate-fadeIn">
               <div 
-                className="rounded-2xl sm:rounded-3xl max-w-md w-full overflow-hidden relative"
+                className="rounded-xl xs:rounded-2xl sm:rounded-3xl max-w-sm xs:max-w-md w-full overflow-hidden relative mx-2"
                 style={{
                   background: 'linear-gradient(180deg, rgba(20, 15, 8, 0.98) 0%, rgba(35, 25, 12, 0.99) 50%, rgba(20, 15, 8, 0.98) 100%)',
                   border: '2px solid rgba(245, 180, 50, 0.7)',
@@ -393,28 +393,28 @@ export default function PixelRoyalePage() {
                 }}
               >
                 {/* Decorative inner border */}
-                <div className="absolute inset-1 sm:inset-2 rounded-xl border border-amber-500/30 pointer-events-none" />
+                <div className="absolute inset-1 rounded-lg xs:rounded-xl border border-amber-500/30 pointer-events-none" />
                 
-                {/* Corner decorations - desktop only */}
-                <div className="hidden md:block absolute top-3 left-3 w-12 h-12 border-l-4 border-t-4 border-amber-400/60 rounded-tl-lg" />
-                <div className="hidden md:block absolute top-3 right-3 w-12 h-12 border-r-4 border-t-4 border-amber-400/60 rounded-tr-lg" />
-                <div className="hidden md:block absolute bottom-3 left-3 w-12 h-12 border-l-4 border-b-4 border-amber-400/60 rounded-bl-lg" />
-                <div className="hidden md:block absolute bottom-3 right-3 w-12 h-12 border-r-4 border-b-4 border-amber-400/60 rounded-br-lg" />
+                {/* Corner decorations - tablet and desktop only */}
+                <div className="hidden sm:block absolute top-2 sm:top-3 left-2 sm:left-3 w-8 sm:w-12 h-8 sm:h-12 border-l-2 sm:border-l-4 border-t-2 sm:border-t-4 border-amber-400/60 rounded-tl-lg" />
+                <div className="hidden sm:block absolute top-2 sm:top-3 right-2 sm:right-3 w-8 sm:w-12 h-8 sm:h-12 border-r-2 sm:border-r-4 border-t-2 sm:border-t-4 border-amber-400/60 rounded-tr-lg" />
+                <div className="hidden sm:block absolute bottom-2 sm:bottom-3 left-2 sm:left-3 w-8 sm:w-12 h-8 sm:h-12 border-l-2 sm:border-l-4 border-b-2 sm:border-b-4 border-amber-400/60 rounded-bl-lg" />
+                <div className="hidden sm:block absolute bottom-2 sm:bottom-3 right-2 sm:right-3 w-8 sm:w-12 h-8 sm:h-12 border-r-2 sm:border-r-4 border-b-2 sm:border-b-4 border-amber-400/60 rounded-br-lg" />
 
-                <div className="relative z-10 p-6 sm:p-8 text-center">
+                <div className="relative z-10 p-4 xs:p-5 sm:p-6 md:p-8 text-center">
                   {/* Result Icon */}
-                  <div className={`text-5xl sm:text-6xl mb-4 ${won ? '' : 'grayscale'}`}>
+                  <div className={`text-4xl xs:text-5xl sm:text-6xl mb-3 sm:mb-4 ${won ? '' : 'grayscale'}`}>
                     {won ? '🎉' : '😔'}
                   </div>
 
                   {/* Title */}
-                  <div className="text-amber-400/80 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-2">
+                  <div className="text-amber-400/80 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-1.5 sm:mb-2">
                     {won ? 'Congratulations!' : 'Game Over'}
                   </div>
 
                   {/* Card Name */}
                   <div 
-                    className="text-2xl sm:text-3xl md:text-4xl font-black mb-4"
+                    className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-black mb-3 sm:mb-4 px-2"
                     style={{
                       background: 'linear-gradient(180deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)',
                       WebkitBackgroundClip: 'text',
@@ -425,9 +425,9 @@ export default function PixelRoyalePage() {
                   </div>
 
                   {/* Card Image */}
-                  <div className="flex justify-center mb-4">
+                  <div className="flex justify-center mb-3 sm:mb-4">
                     <div 
-                      className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden p-1"
+                      className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 rounded-lg sm:rounded-xl overflow-hidden p-1"
                       style={{
                         background: won 
                           ? 'linear-gradient(180deg, rgba(74, 222, 128, 0.3) 0%, rgba(34, 197, 94, 0.2) 100%)'
@@ -447,25 +447,25 @@ export default function PixelRoyalePage() {
 
                   {/* Score Badge */}
                   {won && (
-                    <div className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 mb-4">
-                      <span className="text-cyan-400 font-bold text-sm">
+                    <div className="inline-block px-3 xs:px-4 py-1 xs:py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 mb-3 sm:mb-4">
+                      <span className="text-cyan-400 font-bold text-xs xs:text-sm">
                         Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
                       </span>
                     </div>
                   )}
 
                   {/* Separator */}
-                  <div className="flex items-center gap-3 my-4 sm:my-6">
+                  <div className="flex items-center gap-2 xs:gap-3 my-3 sm:my-4 md:my-6">
                     <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
-                    <span className="text-amber-500/60 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Play Again?</span>
+                    <span className="text-amber-500/60 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest whitespace-nowrap">Play Again?</span>
                     <div className="flex-1 h-px bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
                   </div>
 
                   {/* Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 justify-center">
                     <button
                       onClick={initGame}
-                      className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-black uppercase tracking-wider text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
+                      className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-black uppercase tracking-wider text-xs xs:text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
                       style={{
                         background: 'linear-gradient(90deg, #f59e0b 0%, #eab308 50%, #f59e0b 100%)',
                         color: '#1e1b18',
@@ -476,7 +476,7 @@ export default function PixelRoyalePage() {
                     </button>
                     <Link
                       href="/"
-                      className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold uppercase tracking-wider text-sm sm:text-base bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-600/50 transition-all text-center"
+                      className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold uppercase tracking-wider text-xs xs:text-sm sm:text-base bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-600/50 transition-all text-center"
                     >
                       Home
                     </Link>
@@ -487,14 +487,14 @@ export default function PixelRoyalePage() {
           )}
 
           {/* How to Play */}
-          <div className="mt-8 sm:mt-12 max-w-lg mx-auto text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="mt-6 sm:mt-8 md:mt-12 max-w-lg mx-auto text-center px-1">
+            <div className="flex items-center justify-center gap-2 mb-3 sm:mb-4">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent to-slate-600/40" />
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] text-amber-400">How to Play</span>
+              <span className="text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-[0.12em] sm:tracking-[0.15em] text-amber-400 whitespace-nowrap">How to Play</span>
               <div className="flex-1 h-px bg-gradient-to-l from-transparent to-slate-600/40" />
             </div>
             <div 
-              className="text-xs sm:text-sm text-slate-400 space-y-2 rounded-xl p-4 sm:p-6"
+              className="text-[11px] xs:text-xs sm:text-sm text-slate-400 space-y-1.5 sm:space-y-2 rounded-lg sm:rounded-xl p-3 xs:p-4 sm:p-6"
               style={{
                 background: 'linear-gradient(180deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
                 border: '1px solid rgba(60, 90, 140, 0.3)',
