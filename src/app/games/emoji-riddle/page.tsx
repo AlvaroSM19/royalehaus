@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { emojiRiddles } from '@/data/emoji-riddles';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Sparkles } from 'lucide-react';
+import { Home, RotateCcw, Search, Sparkles, Trophy, HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 5;
@@ -181,238 +181,274 @@ export default function EmojiRiddlePage() {
   }, [emojis, revealedCount, gameOver]);
 
   return (
-    <div className="min-h-screen relative bg-[#0a0a0a]">
-      {/* Dark Overlay */}
-      <div className="fixed inset-0 bg-gradient-to-b from-[#0d1a24] via-[#0a1018] to-[#080808] pointer-events-none z-0" />
-      
-      {/* Content */}
-      <div className="relative z-10">
-        {/* Header Banner - Unified style */}
-        <div className="bg-gray-900/95 border-b border-amber-500/30 shadow-lg shadow-amber-900/20">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-colors">
-                <Home className="w-4 h-4" />
-                <span className="hidden sm:inline">Home</span>
-              </Link>
-              <span className="text-gray-600">/</span>
-              <h1 className="text-xl md:text-2xl font-black text-amber-400 tracking-wide flex items-center gap-2">
-                <span>🔮</span> EMOJI RIDDLE
-              </h1>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <span className="text-gray-400 text-sm hidden sm:inline">
-                GUESSES: <span className="text-white font-bold">{guesses.length}/{MAX_GUESSES}</span>
-              </span>
-              <button
-                onClick={initGame}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-gray-900 font-bold rounded-lg hover:bg-amber-400 transition-colors text-sm border-2 border-amber-600 shadow-lg shadow-amber-900/30"
+    <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      {/* Header */}
+      <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
+          >
+            <Home size={20} className="group-hover:scale-110 transition-transform" />
+            <span className="font-medium hidden sm:inline">Home</span>
+          </Link>
+          <h1 className="text-lg sm:text-xl font-bold text-amber-400 flex items-center gap-2">
+            <span className="text-2xl">🔮</span>
+            <span>Emoji Riddle</span>
+          </h1>
+          <button
+            onClick={initGame}
+            className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-3 py-1.5 rounded-lg transition-all hover:scale-105 font-bold text-sm border border-amber-400/50"
+          >
+            <RotateCcw size={16} />
+            <span className="hidden sm:inline">New Game</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Stats Panel */}
+      <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-center gap-4 sm:gap-8">
+          <div className="flex items-center gap-2 text-amber-400 bg-slate-800/60 px-4 py-2 rounded-lg border border-amber-500/20">
+            <span className="text-xs text-amber-400/70 uppercase tracking-wide">Guesses</span>
+            <span className="font-bold text-lg">{guesses.length}/{MAX_GUESSES}</span>
+          </div>
+          <div className="flex items-center gap-2 text-cyan-400 bg-slate-800/60 px-4 py-2 rounded-lg border border-cyan-500/20">
+            <Sparkles size={16} />
+            <span className="text-xs text-cyan-400/70 uppercase tracking-wide">Clues</span>
+            <span className="font-bold text-lg">{revealedCount}/{emojis.length}</span>
+          </div>
+        </div>
+      </div>
+
+      <main className="flex-1 container mx-auto px-4 py-8">
+        {/* Emoji Display */}
+        <div className="flex justify-center mb-8">
+          <div 
+            className="flex flex-wrap justify-center gap-3 md:gap-4 p-6 md:p-8 rounded-2xl border-2 border-amber-500/30 shadow-2xl max-w-lg"
+            style={{
+              background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+            }}
+          >
+            {displayedEmojis.map((item, index) => (
+              <div
+                key={index}
+                className={`
+                  w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24
+                  flex items-center justify-center
+                  rounded-xl
+                  text-3xl md:text-4xl lg:text-5xl
+                  transition-all duration-500
+                  ${item.revealed 
+                    ? item.isKeyEmoji 
+                      ? 'bg-amber-900/40 border-2 border-amber-500/50 shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/30'
+                      : 'bg-cyan-900/40 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/20' 
+                    : 'bg-slate-800/60 border-2 border-slate-600/50'
+                  }
+                `}
               >
-                <RotateCcw className="w-4 h-4" />
-                <span className="hidden sm:inline">New Game</span>
-              </button>
-            </div>
+                {item.revealed ? (
+                  <span className={`transform transition-all duration-300 hover:scale-110 ${
+                    item.isKeyEmoji ? 'animate-pulse' : ''
+                  }`}>
+                    {item.emoji}
+                  </span>
+                ) : (
+                  <span className="text-slate-500 text-2xl md:text-3xl">❓</span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        <main className="container mx-auto px-4 py-8">
-          {/* Game Stats */}
-          <div className="flex justify-center gap-8 mb-8">
-            <div className="text-center px-6 py-3 bg-gray-900/80 border border-cyan-700/40 rounded-xl">
-              <div className="text-2xl font-black text-amber-400">{guesses.length}/{MAX_GUESSES}</div>
-              <div className="text-xs text-gray-400 uppercase tracking-wide">Guesses</div>
+        {/* Bonus Hint Button */}
+        {canRequestBonusHint && (
+          <div className="flex justify-center mb-6">
+            <button
+              onClick={handleBonusHint}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/40 hover:from-amber-500/30 hover:to-amber-600/30 transition-all text-amber-300 text-sm font-semibold hover:scale-105"
+            >
+              <Sparkles className="w-4 h-4" />
+              Reveal Extra Clue
+            </button>
+          </div>
+        )}
+        
+        {showBonusHint && !gameOver && (
+          <div className="text-center mb-6 text-amber-300 text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-lg py-2 px-4 max-w-md mx-auto animate-pulse">
+            ✨ Bonus clue revealed!
+          </div>
+        )}
+
+        {/* Game Over State */}
+        {gameOver && (
+          <div 
+            className={`text-center mb-8 p-6 rounded-2xl border-2 max-w-md mx-auto relative overflow-hidden ${
+              won 
+                ? 'border-green-500/50' 
+                : 'border-red-500/50'
+            }`}
+            style={{
+              background: won 
+                ? 'linear-gradient(145deg, rgba(22, 101, 52, 0.3) 0%, rgba(15, 28, 50, 0.95) 100%)'
+                : 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(15, 28, 50, 0.95) 100%)',
+              animation: 'fadeIn 0.4s ease-out',
+            }}
+          >
+            {/* Decorative corners */}
+            <div className={`absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+            <div className={`absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+
+            <div className={`text-4xl mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
+              {won ? '🎉 Correct!' : '😔 Game Over'}
             </div>
-            <div className="text-center px-6 py-3 bg-gray-900/80 border border-cyan-700/40 rounded-xl">
-              <div className="text-2xl font-black text-cyan-400">{revealedCount}/{emojis.length}</div>
-              <div className="text-xs text-gray-400 uppercase tracking-wide">Clues</div>
+            <div className="flex items-center justify-center gap-4 mb-4">
+              {targetCard && (
+                <>
+                  <img
+                    src={getCardImageUrl(targetCard)}
+                    alt={targetCard.name}
+                    className="w-16 h-16 object-contain rounded-lg bg-slate-800/50 p-1 border border-slate-600/50"
+                  />
+                  <div className="text-xl font-bold text-white">
+                    {getCardNameTranslated(targetCard.id)}
+                  </div>
+                </>
+              )}
+            </div>
+            {won && (
+              <div className="text-sm text-green-300/80 flex items-center justify-center gap-2">
+                <Trophy size={16} />
+                Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'} with {revealedCount} {revealedCount === 1 ? 'clue' : 'clues'}!
+              </div>
+            )}
+            <button
+              onClick={initGame}
+              className="mt-4 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50"
+            >
+              Play Again
+            </button>
+          </div>
+        )}
+
+        {/* Search Input */}
+        {!gameOver && (
+          <div className="max-w-md mx-auto mb-8">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type at least 2 letters..."
+                className="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-cyan-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-lg"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+                }}
+              />
+              
+              {/* Suggestions Dropdown */}
+              {showSuggestions && filteredCards.length > 0 && (
+                <div 
+                  className="absolute z-50 w-full mt-2 border-2 border-cyan-700/50 rounded-xl shadow-2xl shadow-black/50 overflow-hidden max-h-80 overflow-y-auto"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(15, 35, 55, 0.98) 0%, rgba(10, 25, 40, 0.99) 100%)',
+                  }}
+                >
+                  {filteredCards.map((card) => (
+                    <button
+                      key={card.id}
+                      onClick={() => handleGuess(card)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cyan-900/40 transition-colors text-left border-b border-slate-700/30 last:border-b-0"
+                    >
+                      <img
+                        src={getCardImageUrl(card)}
+                        alt={card.name}
+                        className="w-10 h-10 object-contain rounded-lg bg-slate-800/50 p-0.5"
+                      />
+                      <div>
+                        <div className="font-semibold text-white">{getCardNameTranslated(card.id)}</div>
+                        <div className="text-xs text-slate-400">{card.type} • {card.rarity}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+        )}
 
-          {/* Emoji Display */}
-          <div className="flex justify-center mb-8">
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4 p-6 md:p-8 rounded-2xl bg-[#0d3b4c]/50 border border-amber-500/30 shadow-2xl shadow-amber-900/20 max-w-lg">
-              {displayedEmojis.map((item, index) => (
+        {/* Previous Guesses */}
+        {guesses.length > 0 && (
+          <div className="max-w-md mx-auto mb-8">
+            <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 text-center">
+              Previous Guesses
+            </h3>
+            <div className="flex flex-wrap justify-center gap-2">
+              {guesses.map((card, index) => (
                 <div
                   key={index}
-                  className={`
-                    w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24
-                    flex items-center justify-center
-                    rounded-xl
-                    text-3xl md:text-4xl lg:text-5xl
-                    transition-all duration-500
-                    ${item.revealed 
-                      ? item.isKeyEmoji 
-                        ? 'bg-amber-900/40 border border-amber-500/40 shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/30'
-                        : 'bg-cyan-900/40 border border-cyan-500/40 shadow-lg shadow-cyan-500/20' 
-                      : 'bg-gray-800/50 border border-gray-600/50'
-                    }
-                  `}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                    card.id === targetCard?.id
+                      ? 'bg-green-900/30 border-green-500/50'
+                      : 'bg-slate-800/60 border-red-500/30'
+                  }`}
                 >
-                  {item.revealed ? (
-                    <span className={`transform transition-all duration-300 hover:scale-110 ${
-                      item.isKeyEmoji ? 'animate-pulse' : ''
-                    }`}>
-                      {item.emoji}
-                    </span>
-                  ) : (
-                    <span className="text-gray-500 text-2xl md:text-3xl">❓</span>
-                  )}
+                  <img
+                    src={getCardImageUrl(card)}
+                    alt={card.name}
+                    className="w-8 h-8 object-contain rounded"
+                  />
+                  <span className={`text-sm font-medium ${
+                    card.id === targetCard?.id ? 'text-green-300' : 'text-red-300'
+                  }`}>
+                    {getCardNameTranslated(card.id)}
+                  </span>
+                  <span className="text-sm">
+                    {card.id === targetCard?.id ? '✅' : '❌'}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
+        )}
 
-          {/* Bonus Hint Button */}
-          {canRequestBonusHint && (
-            <div className="flex justify-center mb-6">
-              <button
-                onClick={handleBonusHint}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-900/40 border border-amber-500/40 hover:bg-amber-900/60 transition-all text-amber-300 text-sm font-semibold"
-              >
-                <Sparkles className="w-4 h-4" />
-                Reveal Extra Clue
-              </button>
-            </div>
-          )}
-          
-          {showBonusHint && !gameOver && (
-            <div className="text-center mb-6 text-amber-300 text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-lg py-2 px-4 max-w-md mx-auto">
-              ✨ Bonus clue revealed!
-            </div>
-          )}
-
-          {/* Game Over State */}
-          {gameOver && (
-            <div className={`text-center mb-8 p-6 rounded-2xl border max-w-md mx-auto ${
-              won 
-                ? 'bg-green-900/30 border-green-500/40' 
-                : 'bg-red-900/30 border-red-500/40'
-            }`}>
-              <div className={`text-4xl mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
-                {won ? '🎉 Correct!' : '😔 Game Over'}
-              </div>
-              <div className="flex items-center justify-center gap-4 mb-4">
-                {targetCard && (
-                  <>
-                    <img
-                      src={getCardImageUrl(targetCard)}
-                      alt={targetCard.name}
-                      className="w-16 h-16 object-contain rounded-lg bg-gray-800/50"
-                    />
-                    <div className="text-xl font-bold text-white">
-                      {getCardNameTranslated(targetCard.id)}
-                    </div>
-                  </>
-                )}
-              </div>
-              {won && (
-                <div className="text-sm text-green-300/80">
-                  Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'} with {revealedCount} {revealedCount === 1 ? 'clue' : 'clues'}!
-                </div>
-              )}
-              <button
-                onClick={initGame}
-                className="mt-4 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold transition-all shadow-lg border-2 border-amber-600"
-              >
-                Play Again
-              </button>
-            </div>
-          )}
-
-          {/* Search Input */}
-          {!gameOver && (
-            <div className="max-w-md mx-auto mb-8">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type at least 2 letters..."
-                  className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#0d3b4c]/90 border-2 border-cyan-700/50 text-white placeholder:text-gray-400 focus:outline-none focus:border-cyan-500 transition-all text-lg"
-                />
-                
-                {/* Suggestions Dropdown */}
-                {showSuggestions && filteredCards.length > 0 && (
-                  <div className="absolute z-50 w-full mt-2 bg-[#0a2530] border border-cyan-700/50 rounded-xl shadow-2xl shadow-black/50 overflow-hidden max-h-80 overflow-y-auto">
-                    {filteredCards.map((card) => (
-                      <button
-                        key={card.id}
-                        onClick={() => handleGuess(card)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-cyan-900/40 transition-colors text-left border-b border-cyan-800/30 last:border-b-0"
-                      >
-                        <img
-                          src={getCardImageUrl(card)}
-                          alt={card.name}
-                          className="w-10 h-10 object-contain rounded-lg bg-gray-800/50"
-                        />
-                        <div>
-                          <div className="font-semibold text-white">{getCardNameTranslated(card.id)}</div>
-                          <div className="text-xs text-gray-400">{card.type} • {card.rarity}</div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Previous Guesses */}
-          {guesses.length > 0 && (
-            <div className="max-w-md mx-auto mb-8">
-              <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wide mb-3 text-center">
-                Previous Guesses
-              </h3>
-              <div className="flex flex-wrap justify-center gap-2">
-                {guesses.map((card, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                      card.id === targetCard?.id
-                        ? 'bg-green-900/40 border-green-500/50'
-                        : 'bg-gray-900/60 border-red-500/30'
-                    }`}
-                  >
-                    <img
-                      src={getCardImageUrl(card)}
-                      alt={card.name}
-                      className="w-8 h-8 object-contain rounded"
-                    />
-                    <span className={`text-sm font-medium ${
-                      card.id === targetCard?.id ? 'text-green-300' : 'text-red-300'
-                    }`}>
-                      {getCardNameTranslated(card.id)}
-                    </span>
-                    <span className="text-xs">
-                      {card.id === targetCard?.id ? '✅' : '❌'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* How to Play */}
-          <div className="mt-12 max-w-lg mx-auto text-center">
-            <h3 className="text-lg font-bold text-amber-400 mb-4">How to Play</h3>
-            <div className="text-sm text-gray-400 space-y-2 bg-gray-900/60 border border-gray-700/50 rounded-xl p-6">
-              <p>🔮 A sequence of emojis represents a Clash Royale card</p>
-              <p>🧩 Abstract clues appear first, key hints come later</p>
-              <p>💡 Each wrong guess reveals another emoji clue</p>
-              <p>✨ After 2 guesses, you can request a bonus hint!</p>
-              <p>🎯 You have {MAX_GUESSES} attempts to guess correctly!</p>
-            </div>
+        {/* How to Play */}
+        <div className="mt-12 max-w-lg mx-auto text-center">
+          <h3 className="text-lg font-bold text-amber-400 mb-4 flex items-center justify-center gap-2">
+            <HelpCircle size={20} />
+            How to Play
+          </h3>
+          <div 
+            className="text-sm text-slate-300 space-y-2 border-2 border-slate-700/50 rounded-xl p-6"
+            style={{
+              background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
+            }}
+          >
+            <p>🔮 A sequence of emojis represents a Clash Royale card</p>
+            <p>🧩 Abstract clues appear first, key hints come later</p>
+            <p>💡 Each wrong guess reveals another emoji clue</p>
+            <p>✨ After 2 guesses, you can request a bonus hint!</p>
+            <p>🎯 You have {MAX_GUESSES} attempts to guess correctly!</p>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
+
+      {/* Keyframes for animations */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
