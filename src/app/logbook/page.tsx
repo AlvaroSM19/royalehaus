@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { getProgress, updateUserProfile, syncProgressNowAsync, type UserProgress } from '@/lib/progress';
-import { MessageSquare, Calendar, Trophy, Gamepad2, Star, X, Flame } from 'lucide-react';
+import { MessageSquare, Calendar, Trophy, Gamepad2, Star, X, Flame, CalendarCog } from 'lucide-react';
 import cards from '@/data/cards.json';
 
 // Daily Streak Types
@@ -268,13 +268,22 @@ export default function LogbookPage() {
             {/* Actions */}
             <div className="flex items-center gap-3 flex-wrap">
               {authUser?.role === 'admin' && (
-                <Link
-                  href="/admin/feedback"
-                  className="px-5 py-2.5 bg-gradient-to-b from-pink-500 to-rose-600 text-white font-bold text-sm rounded-lg hover:from-pink-400 hover:to-rose-500 transition-all border border-pink-400/50 shadow-lg shadow-pink-900/20 flex items-center gap-2"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Feedback
-                </Link>
+                <>
+                  <Link
+                    href="/admin/daily"
+                    className="px-5 py-2.5 bg-gradient-to-b from-purple-500 to-indigo-600 text-white font-bold text-sm rounded-lg hover:from-purple-400 hover:to-indigo-500 transition-all border border-purple-400/50 shadow-lg shadow-purple-900/20 flex items-center gap-2"
+                  >
+                    <CalendarCog className="w-4 h-4" />
+                    Daily
+                  </Link>
+                  <Link
+                    href="/admin/feedback"
+                    className="px-5 py-2.5 bg-gradient-to-b from-pink-500 to-rose-600 text-white font-bold text-sm rounded-lg hover:from-pink-400 hover:to-rose-500 transition-all border border-pink-400/50 shadow-lg shadow-pink-900/20 flex items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Feedback
+                  </Link>
+                </>
               )}
               <Link
                 href="/"
