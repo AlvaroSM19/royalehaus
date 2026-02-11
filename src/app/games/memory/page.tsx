@@ -341,23 +341,24 @@ export default function RoyaleMemoryGame() {
     <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* Header */}
       <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center justify-between">
           <Link 
             href="/" 
-            className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
+            className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 transition-colors group"
           >
-            <Home size={20} className="group-hover:scale-110 transition-transform" />
-            <span className="font-medium hidden sm:inline">Home</span>
+            <Home size={18} className="xs:w-5 xs:h-5 group-hover:scale-110 transition-transform" />
+            <span className="font-medium hidden sm:inline text-sm">Home</span>
           </Link>
-          <h1 className="text-lg sm:text-xl font-bold text-amber-400 flex items-center gap-2">
-            <Brain size={22} className="text-cyan-400" />
-            <span>Royale Memory</span>
+          <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-amber-400 flex items-center gap-1.5 xs:gap-2">
+            <Brain size={18} className="xs:w-5 xs:h-5 sm:w-[22px] sm:h-[22px] text-cyan-400" />
+            <span className="hidden xs:inline">Royale Memory</span>
+            <span className="xs:hidden">Memory</span>
           </h1>
           <button
             onClick={initGame}
-            className="flex items-center gap-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 px-3 py-1.5 rounded-lg transition-all hover:scale-105 border border-amber-500/30"
+            className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md sm:rounded-lg transition-all hover:scale-105 border border-amber-500/30 text-xs xs:text-sm"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={14} className="xs:w-4 xs:h-4" />
             <span className="hidden sm:inline">New Game</span>
           </button>
         </div>
@@ -365,22 +366,23 @@ export default function RoyaleMemoryGame() {
 
       {/* Stats Panel */}
       <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-center gap-4 sm:gap-8 text-sm">
-          <div className="flex items-center gap-2 text-cyan-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-cyan-500/20">
-            <Timer size={16} />
+        <div className="max-w-5xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex flex-wrap items-center justify-center gap-2 xs:gap-3 sm:gap-4 md:gap-8 text-xs xs:text-sm">
+          <div className="flex items-center gap-1.5 xs:gap-2 text-cyan-400 bg-slate-800/60 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md sm:rounded-lg border border-cyan-500/20">
+            <Timer size={14} className="xs:w-4 xs:h-4" />
             <span className="font-mono font-bold">{formatTime(timer)}</span>
           </div>
-          <div className="flex items-center gap-2 text-amber-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-amber-500/20">
-            <span className="text-xs text-amber-400/70">Moves</span>
+          <div className="flex items-center gap-1.5 xs:gap-2 text-amber-400 bg-slate-800/60 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md sm:rounded-lg border border-amber-500/20">
+            <span className="text-[10px] xs:text-xs text-amber-400/70 hidden xs:inline">Moves</span>
+            <span className="text-[10px] xs:hidden text-amber-400/70">M</span>
             <span className="font-bold">{moves}</span>
           </div>
-          <div className="flex items-center gap-2 text-green-400 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-green-500/20">
-            <Sparkles size={16} />
+          <div className="flex items-center gap-1.5 xs:gap-2 text-green-400 bg-slate-800/60 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md sm:rounded-lg border border-green-500/20">
+            <Sparkles size={14} className="xs:w-4 xs:h-4" />
             <span className="font-bold">{matchedPairs}/{TOTAL_PAIRS}</span>
           </div>
           {bestScore && (
-            <div className="flex items-center gap-2 text-yellow-400 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 px-3 py-1.5 rounded-lg border border-yellow-500/30">
-              <Trophy size={16} />
+            <div className="flex items-center gap-1.5 xs:gap-2 text-yellow-400 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md sm:rounded-lg border border-yellow-500/30">
+              <Trophy size={14} className="xs:w-4 xs:h-4" />
               <span className="font-bold">{bestScore}</span>
             </div>
           )}
@@ -389,19 +391,18 @@ export default function RoyaleMemoryGame() {
 
       {/* Preview countdown */}
       {showPreview && (
-        <div className="text-center py-3 bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 text-amber-300 font-bold text-sm animate-pulse border-b border-amber-500/30">
-          <span className="flex items-center justify-center gap-2">
-            <Brain size={18} className="animate-bounce" />
+        <div className="text-center py-2 xs:py-2.5 sm:py-3 bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-amber-500/20 text-amber-300 font-bold text-xs xs:text-sm animate-pulse border-b border-amber-500/30">
+          <span className="flex items-center justify-center gap-1.5 xs:gap-2">
+            <Brain size={16} className="xs:w-[18px] xs:h-[18px] animate-bounce" />
             Memorize the cards!
           </span>
         </div>
       )}
 
       {/* Game Board 6x3 grid */}
-      <main className="flex-1 flex items-center justify-center p-4">
+      <main className="flex-1 flex items-center justify-center p-2 xs:p-3 sm:p-4">
         <div
-          className="grid gap-2 sm:gap-3"
-          style={{ gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', maxWidth: 680 }}
+          className="grid grid-cols-6 gap-1 xs:gap-1.5 sm:gap-2 md:gap-3 w-full max-w-[320px] xs:max-w-[380px] sm:max-w-[480px] md:max-w-[600px] lg:max-w-[680px]"
         >
           {cards.map(card => {
             const faceUp = card.isFlipped || card.isMatched
@@ -411,30 +412,30 @@ export default function RoyaleMemoryGame() {
                 onClick={() => handleCardClick(card.id)}
                 disabled={card.isMatched || card.isFlipped || isChecking || showPreview}
                 className={`
-                  relative aspect-[3/4] w-[82px] sm:w-[100px] rounded-xl overflow-hidden
-                  transition-all duration-300 transform
-                  ${!faceUp ? 'hover:scale-105 hover:-translate-y-1 cursor-pointer' : ''}
-                  ${card.isMatched ? 'ring-2 ring-green-400 shadow-lg shadow-green-400/30 scale-95' : ''}
+                  relative aspect-[3/4] w-full rounded-md xs:rounded-lg sm:rounded-xl overflow-hidden
+                  transition-all duration-300 transform touch-manipulation
+                  ${!faceUp ? 'hover:scale-105 hover:-translate-y-1 cursor-pointer active:scale-95' : ''}
+                  ${card.isMatched ? 'ring-1 xs:ring-2 ring-green-400 shadow-md xs:shadow-lg shadow-green-400/30 scale-95' : ''}
                 `}
                 style={{ perspective: '1000px' }}
               >
                 {/* Card Back */}
                 {!faceUp && (
                   <div 
-                    className="absolute inset-0 rounded-xl flex items-center justify-center shadow-lg border-2 border-amber-500/50"
+                    className="absolute inset-0 rounded-md xs:rounded-lg sm:rounded-xl flex items-center justify-center shadow-md xs:shadow-lg border xs:border-2 border-amber-500/50"
                     style={{
                       background: 'linear-gradient(145deg, rgba(180, 130, 40, 0.9) 0%, rgba(120, 80, 20, 0.95) 100%)',
                     }}
                   >
                     <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjEuNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIuMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')]"></div>
-                    <span className="text-4xl sm:text-5xl select-none drop-shadow-lg z-10">👑</span>
+                    <span className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl select-none drop-shadow-lg z-10">👑</span>
                   </div>
                 )}
 
                 {/* Card Front */}
                 {faceUp && (
                   <div 
-                    className={`absolute inset-0 rounded-xl flex flex-col items-center justify-center p-1 shadow-lg border-2 ${
+                    className={`absolute inset-0 rounded-md xs:rounded-lg sm:rounded-xl flex flex-col items-center justify-center p-0.5 xs:p-1 shadow-md xs:shadow-lg border xs:border-2 ${
                       card.isMatched ? 'border-green-400' : 'border-cyan-500/60'
                     }`}
                     style={{
@@ -444,13 +445,13 @@ export default function RoyaleMemoryGame() {
                     <img
                       src={`/images/cards/${card.card.id}.webp`}
                       alt={card.card.name}
-                      className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-md"
+                      className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 object-contain drop-shadow-md"
                     />
-                    <p className="text-[8px] sm:text-[10px] text-white text-center mt-0.5 leading-tight line-clamp-2 font-medium px-0.5">
+                    <p className="text-[6px] xs:text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] text-white text-center mt-0.5 leading-tight line-clamp-2 font-medium px-0.5">
                       {card.card.name}
                     </p>
                     {card.isMatched && (
-                      <span className="text-sm mt-0.5 drop-shadow-md">{REL_EMOJI[card.relationship]}</span>
+                      <span className="text-[10px] xs:text-xs sm:text-sm mt-0.5 drop-shadow-md">{REL_EMOJI[card.relationship]}</span>
                     )}
                   </div>
                 )}
@@ -462,57 +463,57 @@ export default function RoyaleMemoryGame() {
 
       {/* Match Popup (toast) */}
       {matchPopup && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-[fadeIn_0.4s_ease-out]">
+        <div className="fixed bottom-4 xs:bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 animate-[fadeIn_0.4s_ease-out] w-[90%] xs:w-auto">
           <div 
-            className={`bg-gradient-to-r ${REL_COLOR[matchPopup.relationship]} rounded-xl px-6 py-4 shadow-2xl backdrop-blur-sm max-w-sm text-center border border-white/20`}
+            className={`bg-gradient-to-r ${REL_COLOR[matchPopup.relationship]} rounded-lg xs:rounded-xl px-4 xs:px-5 sm:px-6 py-3 xs:py-3.5 sm:py-4 shadow-2xl backdrop-blur-sm max-w-sm text-center border border-white/20`}
             style={{
               animation: 'bounceIn 0.4s ease-out forwards',
             }}
           >
-            <p className="text-white font-black text-lg drop-shadow-md">
+            <p className="text-white font-black text-sm xs:text-base sm:text-lg drop-shadow-md">
               {REL_EMOJI[matchPopup.relationship]} {REL_LABEL[matchPopup.relationship]}!
             </p>
-            <p className="text-white/90 text-sm mt-1">{matchPopup.description}</p>
+            <p className="text-white/90 text-xs xs:text-sm mt-0.5 xs:mt-1">{matchPopup.description}</p>
           </div>
         </div>
       )}
 
       {/* Win Modal */}
       {gameWon && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 xs:p-4 animate-[fadeIn_0.3s_ease-out]">
           <div 
-            className="relative rounded-2xl p-8 max-w-md w-full text-center border-2 border-amber-500/50 overflow-hidden"
+            className="relative rounded-xl xs:rounded-2xl p-4 xs:p-5 sm:p-6 md:p-8 max-w-sm xs:max-w-md w-full text-center border xs:border-2 border-amber-500/50 overflow-hidden mx-2"
             style={{
               background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.98) 0%, rgba(15, 28, 50, 0.99) 100%)',
               animation: 'fadeIn 0.4s ease-out',
             }}
           >
             {/* Decorative corners */}
-            <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-amber-400/60"></div>
-            <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-amber-400/60"></div>
-            <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-amber-400/60"></div>
-            <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-amber-400/60"></div>
+            <div className="absolute top-1.5 xs:top-2 left-1.5 xs:left-2 w-3 xs:w-4 h-3 xs:h-4 border-l xs:border-l-2 border-t xs:border-t-2 border-amber-400/60"></div>
+            <div className="absolute top-1.5 xs:top-2 right-1.5 xs:right-2 w-3 xs:w-4 h-3 xs:h-4 border-r xs:border-r-2 border-t xs:border-t-2 border-amber-400/60"></div>
+            <div className="absolute bottom-1.5 xs:bottom-2 left-1.5 xs:left-2 w-3 xs:w-4 h-3 xs:h-4 border-l xs:border-l-2 border-b xs:border-b-2 border-amber-400/60"></div>
+            <div className="absolute bottom-1.5 xs:bottom-2 right-1.5 xs:right-2 w-3 xs:w-4 h-3 xs:h-4 border-r xs:border-r-2 border-b xs:border-b-2 border-amber-400/60"></div>
 
-            <div className="text-6xl mb-4 animate-bounce">🎉</div>
-            <h2 className="text-3xl font-bold text-amber-400 mb-2 drop-shadow-lg">Victory!</h2>
-            <p className="text-slate-300 mb-6">
+            <div className="text-4xl xs:text-5xl sm:text-6xl mb-2 xs:mb-3 sm:mb-4 animate-bounce">🎉</div>
+            <h2 className="text-xl xs:text-2xl sm:text-3xl font-bold text-amber-400 mb-1.5 xs:mb-2 drop-shadow-lg">Victory!</h2>
+            <p className="text-slate-300 text-sm xs:text-base mb-4 xs:mb-5 sm:mb-6">
               Completed in <span className="text-amber-400 font-bold">{moves} moves</span> and{' '}
               <span className="text-cyan-400 font-bold">{formatTime(timer)}</span>
             </p>
 
             {/* Matched pairs summary */}
-            <div className="bg-slate-800/60 rounded-xl p-4 mb-6 border border-slate-700/50">
-              <h3 className="text-amber-200 font-medium mb-3 flex items-center justify-center gap-2">
-                <Sparkles size={16} className="text-amber-400" />
+            <div className="bg-slate-800/60 rounded-lg xs:rounded-xl p-3 xs:p-4 mb-4 xs:mb-5 sm:mb-6 border border-slate-700/50">
+              <h3 className="text-amber-200 font-medium mb-2 xs:mb-3 flex items-center justify-center gap-1.5 xs:gap-2 text-sm xs:text-base">
+                <Sparkles size={14} className="xs:w-4 xs:h-4 text-amber-400" />
                 Pairs Found
               </h3>
-              <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+              <div className="space-y-1.5 xs:space-y-2 max-h-28 xs:max-h-32 sm:max-h-40 overflow-y-auto custom-scrollbar">
                 {matchHistory.map((pair, i) => (
-                  <div key={i} className="flex items-center justify-center gap-2 text-sm py-1 hover:bg-slate-700/30 rounded-lg transition-colors">
-                    <span className="text-base">{REL_EMOJI[pair.relationship]}</span>
-                    <span className="text-white font-medium">{pair.card1Name}</span>
+                  <div key={i} className="flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 text-[11px] xs:text-xs sm:text-sm py-0.5 xs:py-1 hover:bg-slate-700/30 rounded-md xs:rounded-lg transition-colors flex-wrap">
+                    <span className="text-sm xs:text-base">{REL_EMOJI[pair.relationship]}</span>
+                    <span className="text-white font-medium truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none">{pair.card1Name}</span>
                     <span className="text-slate-500">+</span>
-                    <span className="text-white font-medium">{pair.card2Name}</span>
+                    <span className="text-white font-medium truncate max-w-[80px] xs:max-w-[100px] sm:max-w-none">{pair.card2Name}</span>
                   </div>
                 ))}
               </div>
@@ -520,9 +521,9 @@ export default function RoyaleMemoryGame() {
 
             <button
               onClick={initGame}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold py-3 px-4 rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-2 border border-amber-400/50"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold py-2 xs:py-2.5 sm:py-3 px-3 xs:px-4 rounded-lg xs:rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-1.5 xs:gap-2 border border-amber-400/50 text-sm xs:text-base"
             >
-              <RotateCcw size={18} />
+              <RotateCcw size={16} className="xs:w-[18px] xs:h-[18px]" />
               Play Again
             </button>
           </div>
