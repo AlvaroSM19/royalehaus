@@ -173,4 +173,11 @@ export const GAME_SCHEMAS = {
     url: 'https://royalehaus.com/games/sound-quiz',
     image: 'https://royalehaus.com/images/games/8.webp',
   }),
+  
+  royaleGuesser: generateGameSchema({
+    name: 'Royale Guesser - Find All Matching Cards',
+    description: 'Given 3 conditions, find all Clash Royale cards that match. Test your knowledge of card types, rarities, and more!',
+    url: 'https://royalehaus.com/games/royale-guesser',
+    image: 'https://royalehaus.com/images/games/royale-guesser.webp',
+  }),
 };
