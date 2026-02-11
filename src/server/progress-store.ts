@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { prisma } from './prisma';
 import { getSession } from './auth-store';
+import { xpForLevel, levelFromXp } from './xp-service';
 
 const dataDir = process.env.DATA_DIR || path.join(process.cwd(), '.data');
 const progressFile = path.join(dataDir, 'royale-progress.json');
@@ -22,11 +23,13 @@ function extractAppProgress(dbData: any): any {
   if (dbData[APP_NAMESPACE]) {
     return dbData[APP_NAMESPACE];
   }
-  // Legacy data: check if it looks like RoyaleHaus data (has royaledle/higherlower games)
-  // If it has our game IDs in gamesPlayedById, it's legacy RoyaleHaus data
+  // Legacy data: check if it looks like RoyaleHaus data
+  // ONLY accept data with RoyaleHaus-UNIQUE game IDs to avoid confusion with OnePieceHaus
+  // royaledle, higherlower, pixel-royale, emoji-riddle are unique to RoyaleHaus
+  const UNIQUE_ROYALE_GAMES = ['royaledle', 'higherlower', 'pixel-royale', 'emoji-riddle'];
   const gamesById = dbData?.stats?.gamesPlayedById || {};
-  const hasRoyaleGames = KNOWN_GAME_IDS.some(id => typeof gamesById[id] === 'number' && gamesById[id] > 0);
-  if (hasRoyaleGames) {
+  const hasUniqueRoyaleGames = UNIQUE_ROYALE_GAMES.some(id => typeof gamesById[id] === 'number' && gamesById[id] > 0);
+  if (hasUniqueRoyaleGames) {
     // Return as-is for backward compatibility (will be migrated on next save)
     return dbData;
   }
@@ -274,13 +277,7 @@ export async function listTopXp(limit = 10): Promise<XpEntry[]> {
         ORDER BY xp DESC
         LIMIT ${limit}
       `;
-      // Calculate level from XP (same formula as xp-service)
-      const xpForLevel = (lv: number) => 100 + (lv - 1) * 50;
-      const levelFromXp = (totalXp: number): number => {
-        let lvl = 1, acc = 0;
-        while (acc + xpForLevel(lvl) <= totalXp) { acc += xpForLevel(lvl); lvl++; }
-        return lvl;
-      };
+      // Use imported levelFromXp from xp-service for consistent level calculation
       return rows.map((r: RawRow) => {
         const xpNum = Number(r.xp);
         return { userId: r.userId, username: r.username, avatarId: r.royaleAvatarId, level: levelFromXp(xpNum), xpTotal: xpNum };

@@ -133,6 +133,8 @@ export default function RoyaledlePage() {
   const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
   const [countdown, setCountdown] = useState(getTimeUntilReset());
   const [dailyStreak, setDailyStreak] = useState(getDailyStreakData());
+  
+  const isDaily = mode === 'daily';
 
   // Countdown timer effect
   useEffect(() => {
