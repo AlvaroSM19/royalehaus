@@ -15,56 +15,59 @@ const MAX_GUESSES = 5;
 const CARDS_WITH_SOUNDS: number[] = [
   // Troops with distinctive sounds
   1,   // Knight
-  5,   // P.E.K.K.A
-  7,   // Balloon
-  8,   // Witch
-  10,  // Golem
-  16,  // Baby Dragon
-  17,  // Prince
-  18,  // Wizard
-  22,  // Hog Rider
-  24,  // Ice Wizard
-  31,  // Lava Hound
-  33,  // Sparky
-  38,  // Inferno Dragon
-  41,  // Electro Wizard
-  46,  // Bandit
-  50,  // Mega Knight
-  73,  // Phoenix
-  // Spells
-  81,  // Zap
-  82,  // Fireball
-  84,  // Rocket
-  85,  // Lightning
-  92,  // Tornado
-  // Champions
-  114, // Golden Knight
-  115, // Archer Queen
-  116, // Skeleton King
-  118, // Monk
-];
-
-export default function SoundQuizPage() {
-  const { getCardNameTranslated } = useLanguage();
-  const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
-  const [guesses, setGuesses] = useState<ClashCard[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [won, setWon] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playCount, setPlayCount] = useState(0);
-  const [isLoadingSound, setIsLoadingSound] = useState(false);
-  const [audioMode, setAudioMode] = useState<'file' | 'fallback' | 'unavailable'>('file');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const fallbackNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
-  const fallbackTimerRef = useRef<number | null>(null);
-
-  const cardsWithSounds = useMemo(() => {
-    return baseCards.filter(card => CARDS_WITH_SOUNDS.includes(card.id));
-  }, []);
-
+        {!gameOver && (
+          <div className="w-full max-w-[280px] xs:max-w-xs sm:max-w-sm md:max-w-md mx-auto mb-4 xs:mb-5 sm:mb-6 md:mb-8">
+            {/* Scroll hint for mobile */}
+            <div className="block sm:hidden text-center mb-1 select-none pointer-events-none">
+              <span className="inline-block bg-slate-900/80 text-cyan-300 text-xs px-3 py-1 rounded-full shadow-md animate-pulse">Desliza para ver sugerencias →</span>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 xs:left-4 top-1/2 -translate-y-1/2 w-4 h-4 xs:w-5 xs:h-5 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a card name..."
+                className="w-full pl-9 xs:pl-10 sm:pl-12 pr-3 xs:pr-4 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg xs:rounded-xl border-2 border-cyan-700/50 text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm xs:text-base sm:text-lg"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+                }}
+              />
+              {/* Suggestions Dropdown - horizontal scroll on mobile */}
+              {showSuggestions && filteredCards.length > 0 && (
+                <div 
+                  className="absolute z-50 w-full mt-1.5 xs:mt-2 border-2 border-cyan-700/50 rounded-lg xs:rounded-xl shadow-2xl shadow-black/50 overflow-x-auto overflow-y-hidden sm:overflow-y-auto backdrop-blur-xl max-h-60 xs:max-h-72 sm:max-h-80 flex sm:block"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(15, 35, 55, 0.98) 0%, rgba(10, 25, 40, 0.99) 100%)',
+                  }}
+                >
+                  {filteredCards.map((card) => (
+                    <button
+                      key={card.id}
+                      onClick={() => handleGuess(card)}
+                      className="flex-shrink-0 w-full sm:w-auto flex items-center gap-2 xs:gap-3 px-2.5 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 hover:bg-cyan-900/40 transition-colors text-left border-b border-slate-700/30 last:border-b-0"
+                    >
+                      <img
+                        src={getCardImageUrl(card)}
+                        alt={card.name}
+                        className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 object-contain rounded-md xs:rounded-lg bg-slate-800/50 p-0.5"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-white text-sm xs:text-base truncate">{getCardNameTranslated(card.id)}</div>
+                        <div className="text-[10px] xs:text-xs text-slate-400">{card.type} • {card.rarity}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
   const stopSound = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
