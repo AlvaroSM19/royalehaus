@@ -396,7 +396,7 @@ export default function PixelRoyalePage() {
           </div>
         </header>
 
-        <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 flex-1">
+        <main className="container mx-auto w-full px-2 xs:px-3 sm:px-4 py-6 xs:py-8 sm:py-10 md:py-14 flex-1">
           {/* Stats Panel */}
           <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
             <div 
