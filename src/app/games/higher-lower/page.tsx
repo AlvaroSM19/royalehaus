@@ -210,53 +210,59 @@ export default function HigherLowerGame() {
         </div>
 
         {/* Game Area */}
-        <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-12">
-          {/* Mode Selector - Mobile visible */}
-          <div className="flex flex-wrap gap-2 mb-4 justify-center lg:hidden">
-            <button
-              onClick={() => { setCompareMode('damage'); initGame() }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 ${
-                compareMode === 'damage'
-                  ? 'bg-purple-600 text-white border-purple-500'
-                  : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              <Sword className="w-3.5 h-3.5" />
-              Damage
-            </button>
-            <button
-              onClick={() => { setCompareMode('elixir'); initGame() }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 ${
-                compareMode === 'elixir'
-                  ? 'bg-purple-600 text-white border-purple-500'
-                  : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              <img src="/images/elixir.webp" alt="Elixir" className="w-4 h-4" />
-              Elixir
-            </button>
-            <button
-              onClick={() => { setCompareMode('release_year'); initGame() }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 ${
-                compareMode === 'release_year'
-                  ? 'bg-purple-600 text-white border-purple-500'
-                  : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              Year
-            </button>
-            <button
-              onClick={() => { setCompareMode('attack_speed'); initGame() }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 ${
-                compareMode === 'attack_speed'
-                  ? 'bg-purple-600 text-white border-purple-500'
-                  : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
-              }`}
-            >
-              <Timer className="w-3.5 h-3.5" />
-              Speed
-            </button>
+        <div className="container mx-auto px-2 xs:px-3 sm:px-4 py-4 sm:py-8">
+          {/* Mode Selector - Mobile visible, scrollable */}
+          <div className="relative mb-4 lg:hidden">
+            {/* Scroll hint for mobile */}
+            <div className="block sm:hidden absolute -top-7 left-0 w-full text-center z-10 pointer-events-none select-none">
+              <span className="inline-block bg-slate-900/80 text-cyan-300 text-xs px-3 py-1 rounded-full shadow-md animate-pulse">Desliza para ver modos →</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 px-1">
+              <button
+                onClick={() => { setCompareMode('damage'); initGame() }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 min-w-[100px] ${
+                  compareMode === 'damage'
+                    ? 'bg-purple-600 text-white border-purple-500'
+                    : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
+                }`}
+              >
+                <Sword className="w-3.5 h-3.5" />
+                Damage
+              </button>
+              <button
+                onClick={() => { setCompareMode('elixir'); initGame() }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 min-w-[100px] ${
+                  compareMode === 'elixir'
+                    ? 'bg-purple-600 text-white border-purple-500'
+                    : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
+                }`}
+              >
+                <img src="/images/elixir.webp" alt="Elixir" className="w-4 h-4" />
+                Elixir
+              </button>
+              <button
+                onClick={() => { setCompareMode('release_year'); initGame() }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 min-w-[100px] ${
+                  compareMode === 'release_year'
+                    ? 'bg-purple-600 text-white border-purple-500'
+                    : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                Year
+              </button>
+              <button
+                onClick={() => { setCompareMode('attack_speed'); initGame() }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all text-xs border-2 min-w-[100px] ${
+                  compareMode === 'attack_speed'
+                    ? 'bg-purple-600 text-white border-purple-500'
+                    : 'bg-gray-800 text-gray-400 border-gray-600 hover:bg-gray-700'
+                }`}
+              >
+                <Timer className="w-3.5 h-3.5" />
+                Speed
+              </button>
+            </div>
           </div>
 
           {/* Cards Container - Stack on mobile, side by side on desktop */}
