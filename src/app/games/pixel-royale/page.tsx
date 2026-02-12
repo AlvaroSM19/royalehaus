@@ -11,9 +11,12 @@ import { recordPixelRoyaleSession } from '@/lib/progress';
 
 const MAX_GUESSES = 6;
 
-// Blur (px) and scale for each attempt step (index 0 = initial state before any guess)
-const BLUR_STEPS  = [40, 32, 24, 16, 8, 3, 0];
-const SCALE_STEPS = [3.5, 3.0, 2.5, 2.0, 1.5, 1.2, 1.0];
+// Pixelation levels for each step (lower = more pixelated)
+// Step 0: very pixelated (hard), Step 6: full resolution (revealed)
+// Using pixel sizes: larger number = bigger pixels = harder to see
+const PIXEL_SIZES = [32, 20, 12, 8, 4, 2, 1]; // Pixel block size
+const BLUR_STEPS  = [8, 5, 3, 2, 1, 0, 0];     // Additional blur for smoothness
+const SCALE_STEPS = [1.8, 1.6, 1.4, 1.2, 1.1, 1.05, 1.0]; // Slight zoom
 
 // Daily challenge helpers
 interface DailyResult {
@@ -113,6 +116,86 @@ function getDailyCard(): ClashCard {
   return baseCards[index];
 }
 
+// Pixelated Image Component using Canvas
+interface PixelatedImageProps {
+  src: string;
+  pixelSize: number;
+  blur: number;
+  scale: number;
+  className?: string;
+  onLoad?: () => void;
+}
+
+function PixelatedImage({ src, pixelSize, blur, scale, className, onLoad }: PixelatedImageProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      imgRef.current = img;
+      setLoaded(true);
+      onLoad?.();
+    };
+    img.src = src;
+  }, [src, onLoad]);
+
+  useEffect(() => {
+    if (!loaded || !imgRef.current || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = imgRef.current;
+    const size = 256; // Canvas size
+    canvas.width = size;
+    canvas.height = size;
+
+    // If pixelSize is 1, draw at full resolution
+    if (pixelSize <= 1) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(img, 0, 0, size, size);
+      return;
+    }
+
+    // Calculate the small size for pixelation
+    const smallSize = Math.max(4, Math.floor(size / pixelSize));
+
+    // Create an offscreen canvas for the small version
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = smallSize;
+    offCanvas.height = smallSize;
+    const offCtx = offCanvas.getContext('2d');
+    if (!offCtx) return;
+
+    // Draw the image small (this creates the pixelation)
+    offCtx.imageSmoothingEnabled = true;
+    offCtx.drawImage(img, 0, 0, smallSize, smallSize);
+
+    // Draw the small image back to the main canvas, scaled up with no smoothing
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(offCanvas, 0, 0, smallSize, smallSize, 0, 0, size, size);
+
+  }, [loaded, pixelSize]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={className}
+      style={{
+        filter: blur > 0 ? `blur(${blur}px)` : undefined,
+        transform: `scale(${scale})`,
+        opacity: loaded ? 1 : 0,
+        transition: 'all 0.7s ease-out',
+        imageRendering: 'pixelated',
+      }}
+    />
+  );
+}
+
 export default function PixelRoyalePage() {
   // This is now a daily-only game
   
@@ -128,7 +211,6 @@ export default function PixelRoyalePage() {
   const [imageReady, setImageReady] = useState(false);
   const [step, setStep] = useState(0);
   const [bestScore, setBestScore] = useState<number | null>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
   
   // Daily mode state
   const [dailyCompleted, setDailyCompleted] = useState(false);
@@ -190,13 +272,6 @@ export default function PixelRoyalePage() {
     
     setTargetCard(getDailyCard());
   }, [dailyCompleted]);
-
-  useEffect(() => {
-    if (!targetCard) return;
-    const img = new Image();
-    img.src = `/images/cards/${targetCard.id}.webp`;
-    img.onload = () => setImageReady(true);
-  }, [targetCard]);
 
   useEffect(() => {
     initGame();
@@ -279,6 +354,7 @@ export default function PixelRoyalePage() {
     return [`${targetCard.elixir} elixir`, targetCard.type, targetCard.rarity].join(' • ');
   };
 
+  const currentPixelSize = PIXEL_SIZES[Math.min(step, PIXEL_SIZES.length - 1)];
   const currentBlur = BLUR_STEPS[Math.min(step, BLUR_STEPS.length - 1)];
   const currentScale = SCALE_STEPS[Math.min(step, SCALE_STEPS.length - 1)];
 
@@ -388,22 +464,19 @@ export default function PixelRoyalePage() {
               <div className="aspect-square relative">
                 {/* Image Area */}
                 <div 
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
                   style={{
                     background: 'linear-gradient(180deg, rgba(40, 60, 90, 0.4) 0%, rgba(20, 35, 60, 0.5) 100%)',
                   }}
                 >
                   {targetCard && (
-                    <img
-                      ref={imgRef}
+                    <PixelatedImage
                       src={getCardImageUrl(targetCard)}
-                      alt="Mystery Card"
-                      className="w-full h-full object-contain p-2 sm:p-3 transition-all duration-700 ease-out"
-                      style={{
-                        filter: imageReady ? `blur(${currentBlur}px)` : 'blur(60px)',
-                        transform: imageReady ? `scale(${currentScale})` : 'scale(4)',
-                        opacity: imageReady ? 1 : 0,
-                      }}
+                      pixelSize={currentPixelSize}
+                      blur={currentBlur}
+                      scale={currentScale}
+                      className="w-full h-full object-contain p-2 sm:p-3"
+                      onLoad={() => setImageReady(true)}
                     />
                   )}
                 </div>
