@@ -11,71 +11,75 @@ import { recordMemorySession } from '@/lib/progress'
 type Relationship = 'counter' | 'ranged' | 'hero' | 'evolution' | 'same_year'
 
 interface PairDef {
-  card1Name: string
-  card2Name: string
-  relationship: Relationship
-  description: string
-}
+      {/* Game Board 6x3 grid - scroll horizontal en móvil */}
+      <main className="flex-1 flex items-center justify-center px-2 xs:px-3 sm:px-4 py-2 xs:py-3 sm:py-4">
+        {/* Scroll hint for mobile */}
+        <div className="block sm:hidden text-center mb-2 select-none pointer-events-none w-full">
+          <span className="inline-block bg-slate-900/80 text-cyan-300 text-xs px-3 py-1 rounded-full shadow-md animate-pulse">Desliza para ver todas las cartas →</span>
+        </div>
+        <div className="w-full max-w-[680px] overflow-x-auto pb-2 sm:overflow-visible">
+          <div className="grid grid-cols-6 gap-1 xs:gap-1.5 sm:gap-2 md:gap-3 min-w-[340px] xs:min-w-[400px] sm:min-w-[520px] md:min-w-[640px] lg:min-w-[680px]">
+            {cards.map(card => {
+              const faceUp = card.isFlipped || card.isMatched
+              return (
+                <button
+                  key={card.id}
+                  onClick={() => handleCardClick(card.id)}
+                  disabled={card.isMatched || card.isFlipped || isChecking || showPreview}
+                  className={`
+                    relative aspect-[3/4] w-full rounded-md xs:rounded-lg sm:rounded-xl overflow-hidden
+                    transition-all duration-300 transform touch-manipulation
+                    ${!faceUp ? 'hover:scale-105 hover:-translate-y-1 cursor-pointer active:scale-95' : ''}
+                    ${card.isMatched ? 'ring-1 xs:ring-2 ring-green-400 shadow-md xs:shadow-lg shadow-green-400/30 scale-95' : ''}
+                  `}
+                  style={{ perspective: '1000px' }}
+                >
+                  {/* Card Back */}
+                  {!faceUp && (
+                    <div 
+                      className="absolute inset-0 rounded-md xs:rounded-lg sm:rounded-xl flex items-center justify-center shadow-md xs:shadow-lg border xs:border-2 border-amber-500/50"
+                      style={{
+                        background: 'linear-gradient(145deg, rgba(180, 130, 40, 0.9) 0%, rgba(120, 80, 20, 0.95) 100%)',
+                      }}
+                    >
+                      <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTAgMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjEuNSIgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIuMyIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')]"></div>
+                      <img 
+                        src="/images/card-back.svg" 
+                        alt="Card back" 
+                        className="w-10 h-12 xs:w-12 xs:h-14 sm:w-14 sm:h-16 md:w-16 md:h-20 object-contain z-10 drop-shadow-lg"
+                      />
+                    </div>
+                  )}
 
-interface MemoryCard {
-  id: number
-  pairId: number
-  card: ClashCard
-  isFlipped: boolean
-  isMatched: boolean
-  relationship: Relationship
-  matchDescription: string
-}
-
-// ── Pair Pools ─────────────────────────────────────────────────────────────
-// Counter pairs: one card clearly counters the other.
-// Avoided: both ranged, both hero, or base+evolution match.
-const COUNTER_POOL: PairDef[] = [
-  { card1Name: 'Skeleton Army', card2Name: 'The Log', relationship: 'counter', description: 'The Log destroys Skeleton Army' },
-  { card1Name: 'Minion Horde', card2Name: 'Arrows', relationship: 'counter', description: 'Arrows destroy Minion Horde' },
-  { card1Name: 'Balloon', card2Name: 'Tesla', relationship: 'counter', description: 'Tesla targets air & counters Balloon' },
-  { card1Name: 'Hog Rider', card2Name: 'Cannon', relationship: 'counter', description: 'Cannon pulls & counters Hog Rider' },
-  { card1Name: 'Giant', card2Name: 'Mini P.E.K.K.A', relationship: 'counter', description: 'Mini P.E.K.K.A melts Giant with high DPS' },
-  { card1Name: 'Mega Knight', card2Name: 'P.E.K.K.A', relationship: 'counter', description: 'P.E.K.K.A defeats Mega Knight 1 v 1' },
-  { card1Name: 'Witch', card2Name: 'Lightning', relationship: 'counter', description: 'Lightning eliminates the Witch' },
-  { card1Name: 'Goblin Barrel', card2Name: 'Barbarian Barrel', relationship: 'counter', description: 'Barbarian Barrel perfectly counters Goblin Barrel' },
-  { card1Name: 'Elite Barbarians', card2Name: 'Bowler', relationship: 'counter', description: 'Bowler pushes back Elite Barbarians' },
-  { card1Name: 'X-Bow', card2Name: 'Earthquake', relationship: 'counter', description: 'Earthquake deals extra damage to buildings' },
-  { card1Name: 'Royal Giant', card2Name: 'Inferno Tower', relationship: 'counter', description: 'Inferno Tower melts Royal Giant' },
-  { card1Name: 'Golem', card2Name: 'Inferno Dragon', relationship: 'counter', description: 'Inferno Dragon melts Golem with ramping damage' },
-  { card1Name: 'Sparky', card2Name: 'Electro Spirit', relationship: 'counter', description: 'Electro Spirit resets Sparky' },
-  { card1Name: 'Lava Hound', card2Name: 'Mega Minion', relationship: 'counter', description: 'Mega Minion targets Lava Hound in the air' },
-  { card1Name: 'Prince', card2Name: 'Guards', relationship: 'counter', description: 'Guards absorb Prince charge with shields' },
-]
-
-// Ranged pairs: both cards have ranged attack type.
-// None are heroes or base+evolution matches.
-const RANGED_POOL: PairDef[] = [
-  { card1Name: 'Musketeer', card2Name: 'Wizard', relationship: 'ranged', description: 'Both are ranged troops' },
-  { card1Name: 'Princess', card2Name: 'Dart Goblin', relationship: 'ranged', description: 'Both are ranged troops' },
-  { card1Name: 'Magic Archer', card2Name: 'Firecracker', relationship: 'ranged', description: 'Both are ranged troops' },
-  { card1Name: 'Electro Wizard', card2Name: 'Ice Wizard', relationship: 'ranged', description: 'Both are ranged Wizards' },
-  { card1Name: 'Flying Machine', card2Name: 'Baby Dragon', relationship: 'ranged', description: 'Both are ranged flying troops' },
-  { card1Name: 'Mother Witch', card2Name: 'Spear Goblins', relationship: 'ranged', description: 'Both are ranged troops' },
-  { card1Name: 'Archers', card2Name: 'Hunter', relationship: 'ranged', description: 'Both are ranged troops' },
-  { card1Name: 'Executioner', card2Name: 'Bomber', relationship: 'ranged', description: 'Both are ranged splash troops' },
-]
-
-// Hero pairs: both are Hero type cards.
-const HERO_POOL: PairDef[] = [
-  { card1Name: 'Hero Knight', card2Name: 'Hero Mini P.E.K.K.A', relationship: 'hero', description: 'Both are Hero cards' },
-  { card1Name: 'Hero Musketeer', card2Name: 'Hero Giant', relationship: 'hero', description: 'Both are Hero cards' },
-]
-
-// Spell evolution pairs – ensures there's always a "spell + evolution" possibility.
-const SPELL_EVOLUTION_POOL: PairDef[] = [
-  { card1Name: 'Zap', card2Name: 'Zap Evolution', relationship: 'evolution', description: 'Zap Evolution is the evolution of the spell Zap' },
-  { card1Name: 'Giant Snowball', card2Name: 'Giant Snowball Evolution', relationship: 'evolution', description: 'Giant Snowball Evolution is the evolution of the spell' },
-  { card1Name: 'Goblin Drill', card2Name: 'Goblin Drill Evolution', relationship: 'evolution', description: 'Goblin Drill Evolution is the evolution of Goblin Drill' },
-]
-
-// Generate troop/building evolution pairs from data (skipping spells handled above).
-function generateEvolutionPool(): PairDef[] {
+                  {/* Card Front */}
+                  {faceUp && (
+                    <div 
+                      className={`absolute inset-0 rounded-md xs:rounded-lg sm:rounded-xl flex flex-col items-center justify-center p-0.5 xs:p-1 shadow-md xs:shadow-lg border xs:border-2 ${
+                        card.isMatched ? 'border-green-400' : 'border-cyan-500/60'
+                      }`}
+                      style={{
+                        background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+                      }}
+                    >
+                      <img
+                        src={`/images/cards/${card.card.id}.webp`}
+                        alt={card.card.name}
+                        className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 object-contain drop-shadow-md"
+                      />
+                      <p className="text-[6px] xs:text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] text-white text-center mt-0.5 leading-tight line-clamp-2 font-medium px-0.5">
+                        {card.card.name}
+                      </p>
+                      {card.isMatched && (
+                        <span className="text-[10px] xs:text-xs sm:text-sm mt-0.5 drop-shadow-md">{REL_EMOJI[card.relationship]}</span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </main>
   const pairs: PairDef[] = []
   const spellEvoNames = new Set(SPELL_EVOLUTION_POOL.flatMap(p => [p.card1Name, p.card2Name]))
   const evolutionCards = cardsData.filter(c => c.type === 'Evolution')
