@@ -160,7 +160,6 @@ export default function RoyaleGuesserPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
-  const [showHint, setShowHint] = useState(false);
   const [gaveUp, setGaveUp] = useState(false);
 
   const initGame = useCallback(() => {
@@ -173,7 +172,6 @@ export default function RoyaleGuesserPage() {
       setSearchTerm('');
       setGameOver(false);
       setWon(false);
-      setShowHint(false);
       setGaveUp(false);
     }
   }, []);
@@ -359,29 +357,6 @@ export default function RoyaleGuesserPage() {
                   ))}
                 </div>
                 
-                {/* Hint section */}
-                <div className="h-px bg-slate-600/40 my-4" />
-                
-                {!showHint && !gameOver && (
-                  <button
-                    onClick={() => setShowHint(true)}
-                    className="w-full text-center text-xs sm:text-sm text-cyan-400/70 hover:text-cyan-400 transition-colors font-medium flex items-center justify-center gap-2"
-                  >
-                    <HelpCircle className="w-4 h-4" />
-                    Show hint: How many cards?
-                  </button>
-                )}
-                {showHint && !gameOver && (
-                  <div className="text-center text-sm sm:text-base font-bold animate-pulse"
-                    style={{
-                      background: 'linear-gradient(180deg, #fbbf24 0%, #d97706 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    There {targetCards.length === 1 ? 'is' : 'are'} {targetCards.length} card{targetCards.length !== 1 ? 's' : ''} to find!
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -646,10 +621,6 @@ export default function RoyaleGuesserPage() {
                 <p className="flex items-start gap-2">
                   <span className="text-amber-400 font-bold">4.</span>
                   <span>You can only make {maxWrongGuesses} wrong guesses!</span>
-                </p>
-                <p className="flex items-start gap-2">
-                  <span className="text-amber-400 font-bold">5.</span>
-                  <span>Click &quot;Show hint&quot; to see how many cards</span>
                 </p>
               </div>
             </div>
