@@ -462,16 +462,20 @@ export default function WordlePage() {
             })}
           </div>
 
-          {/* Keyboard */}
-          <div className="flex flex-col gap-2">
+          {/* Keyboard - horizontal scroll on mobile */}
+          <div className="flex flex-col gap-2 mt-2">
+            {/* Scroll hint for mobile */}
+            <div className="block sm:hidden text-center mb-1 select-none pointer-events-none">
+              <span className="inline-block bg-slate-900/80 text-cyan-300 text-xs px-3 py-1 rounded-full shadow-md animate-pulse">Desliza el teclado →</span>
+            </div>
             {KEYBOARD_ROWS.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex gap-1 justify-center">
+              <div key={rowIndex} className="flex gap-1 justify-center overflow-x-auto pb-1 px-1 sm:overflow-visible">
                 {row.map((key) => (
                   <button
                     key={key}
                     onClick={() => handleKeyPress(key)}
                     disabled={gameOver}
-                    className={`${key === 'ENTER' || key === 'BACK' ? 'px-3 md:px-4 text-xs' : 'w-9 md:w-11'} h-12 md:h-14 rounded-lg border-2 font-bold transition-all ${getKeyClass(key)} disabled:opacity-50`}
+                    className={`${key === 'ENTER' || key === 'BACK' ? 'px-3 md:px-4 text-xs' : 'w-11 md:w-14'} h-12 md:h-14 rounded-lg border-2 font-bold transition-all ${getKeyClass(key)} disabled:opacity-50`}
                   >
                     {key === 'BACK' ? <Delete className="w-5 h-5 mx-auto" /> : key}
                   </button>
