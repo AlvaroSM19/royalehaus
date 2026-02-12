@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, Gamepad2, BookOpen, Trophy, User, Image, MessageSquare, Home } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Menu, X, Gamepad2, BookOpen, Trophy, User, Image, MessageSquare, LogIn, UserPlus, LogOut, Shield } from 'lucide-react';
+import { useAuth } from '@/lib/useAuth';
 
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   // Close menu when pressing escape
   useEffect(() => {
@@ -28,7 +33,14 @@ export default function MobileMenu() {
   // Close menu on route change
   useEffect(() => {
     setIsOpen(false);
-  }, []);
+    setConfirmLogout(false);
+  }, [pathname]);
+
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
+    setConfirmLogout(false);
+  };
 
   const menuItems = [
     { href: '/', label: 'GAMES', icon: Gamepad2 },
@@ -59,12 +71,12 @@ export default function MobileMenu() {
 
       {/* Slide-out Menu */}
       <div 
-        className={`fixed top-0 left-0 z-[101] h-full w-72 max-w-[85vw] bg-gradient-to-b from-slate-900 via-slate-950 to-black border-r border-amber-700/30 transform transition-transform duration-300 ease-out md:hidden ${
+        className={`fixed top-0 left-0 z-[101] h-full w-72 max-w-[85vw] bg-gradient-to-b from-slate-900 via-slate-950 to-black border-r border-amber-700/30 transform transition-transform duration-300 ease-out md:hidden flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Menu Header */}
-        <div className="flex items-center justify-between p-4 border-b border-amber-700/30">
+        <div className="flex items-center justify-between p-4 border-b border-amber-700/30 shrink-0">
           <Link 
             href="/" 
             onClick={() => setIsOpen(false)}
@@ -81,42 +93,122 @@ export default function MobileMenu() {
           </button>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="p-4 space-y-1">
-          {menuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-amber-100/80 hover:text-amber-50 hover:bg-amber-500/10 transition-colors font-semibold tracking-wide text-sm"
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Navigation Links */}
+          <nav className="p-4 space-y-1">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-semibold tracking-wide text-sm ${
+                    isActive 
+                      ? 'bg-amber-500/20 text-amber-100 border border-amber-500/30' 
+                      : 'text-amber-100/80 hover:text-amber-50 hover:bg-amber-500/10'
+                  }`}
+                >
+                  <item.icon className={`w-5 h-5 ${isActive ? 'text-amber-400' : 'text-amber-400/70'}`} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Divider */}
+          <div className="mx-4 h-px bg-amber-700/30" />
+
+          {/* Account Section */}
+          <div className="p-4">
+            <p className="text-[10px] uppercase tracking-wider text-amber-500/50 font-bold mb-3 px-4">
+              Account
+            </p>
+            
+            {user ? (
+              <div className="space-y-1">
+                {user.role === 'admin' && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 transition-colors font-semibold tracking-wide text-sm"
+                  >
+                    <Shield className="w-5 h-5 text-purple-400" />
+                    ADMIN PANEL
+                  </Link>
+                )}
+                
+                {!confirmLogout ? (
+                  <button
+                    onClick={() => setConfirmLogout(true)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-300/80 hover:text-red-200 hover:bg-red-500/10 transition-colors font-semibold tracking-wide text-sm w-full text-left"
+                  >
+                    <LogOut className="w-5 h-5 text-red-400/70" />
+                    LOGOUT
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 rounded-lg">
+                    <span className="text-xs text-amber-100/70">Confirm logout?</span>
+                    <button
+                      onClick={handleLogout}
+                      className="px-3 py-1 rounded bg-red-600 text-xs font-bold text-white hover:bg-red-500"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      onClick={() => setConfirmLogout(false)}
+                      className="px-3 py-1 rounded bg-slate-700 text-xs font-bold text-slate-300 hover:bg-slate-600"
+                    >
+                      No
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <Link
+                  href="/auth?mode=login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-amber-100/80 hover:text-amber-50 hover:bg-amber-500/10 transition-colors font-semibold tracking-wide text-sm"
+                >
+                  <LogIn className="w-5 h-5 text-amber-400/70" />
+                  LOGIN
+                </Link>
+                <Link
+                  href="/auth?mode=register"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg bg-rose-600/20 text-rose-200 hover:bg-rose-600/30 transition-colors font-semibold tracking-wide text-sm border border-rose-500/30"
+                >
+                  <UserPlus className="w-5 h-5 text-rose-400" />
+                  REGISTER
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="mx-4 h-px bg-amber-700/30" />
+
+          {/* Haus Universe Section */}
+          <div className="p-4">
+            <p className="text-[10px] uppercase tracking-wider text-amber-500/50 font-bold mb-3 px-4">
+              Haus Universe
+            </p>
+            <a
+              href="https://onepiecehaus.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-amber-100/60 hover:text-amber-50 hover:bg-amber-500/10 transition-colors font-semibold tracking-wide text-sm"
             >
-              <item.icon className="w-5 h-5 text-amber-400/70" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Divider */}
-        <div className="mx-4 h-px bg-amber-700/30" />
-
-        {/* Haus Universe Section */}
-        <div className="p-4">
-          <p className="text-[10px] uppercase tracking-wider text-amber-500/50 font-bold mb-3 px-4">
-            Haus Universe
-          </p>
-          <a
-            href="https://onepiecehaus.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-amber-100/60 hover:text-amber-50 hover:bg-amber-500/10 transition-colors font-semibold tracking-wide text-sm"
-          >
-            <img src="/images/onepiece-logo.svg" alt="" className="w-5 h-5" />
-            ONEPIECEHAUS
-          </a>
+              <img src="/images/onepiece-logo.svg" alt="" className="w-5 h-5" />
+              ONEPIECEHAUS
+            </a>
+          </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-amber-700/30 bg-slate-950/80">
+        {/* Bottom Section - Fixed */}
+        <div className="shrink-0 p-4 border-t border-amber-700/30 bg-slate-950/80">
           <div className="flex gap-3">
             <Link
               href="/privacy"

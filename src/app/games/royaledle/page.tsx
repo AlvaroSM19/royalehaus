@@ -571,28 +571,37 @@ export default function RoyaledlePage() {
           )}
 
           {/* Guesses */}
-          <div className="space-y-3 max-w-6xl mx-auto overflow-x-auto">
-            {/* Header Row */}
+          <div className="space-y-3 max-w-6xl mx-auto">
+            {/* Scroll hint for mobile */}
             {guesses.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1 px-3 text-xs text-gray-200 uppercase tracking-wider font-bold min-w-[700px]">
-                <div className="w-12 flex-shrink-0"></div>
-                <div className="flex-1 text-center">Type</div>
-                <div className="flex-1 text-center">Rarity</div>
-                <div className="flex-1 text-center">Elixir</div>
-                <div className="flex-1 text-center">Year</div>
-                <div className="flex-1 text-center">Evo</div>
-                <div className="flex-1 text-center">Attack</div>
-                <div className="flex-1 text-center min-w-[70px]">Air Target</div>
-                <div className="flex-1 text-center">Speed</div>
-                <div className="flex-1 text-center">Hero</div>
-              </div>
+              <p className="text-center text-gray-400 text-xs sm:hidden pb-1">
+                ← Scroll horizontally →
+              </p>
             )}
             
-            {guesses.map((guess, guessIndex) => (
-              <div 
-                key={guessIndex} 
-                className="bg-[#0d3b4c]/80 backdrop-blur-sm rounded-xl p-2 border border-cyan-800/30 min-w-[700px] sm:min-w-0"
-              >
+            <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+              {/* Header Row */}
+              {guesses.length > 0 && (
+                <div className="hidden sm:flex items-center gap-1 px-3 text-xs text-gray-200 uppercase tracking-wider font-bold min-w-[680px]">
+                  <div className="w-12 flex-shrink-0"></div>
+                  <div className="flex-1 text-center">Type</div>
+                  <div className="flex-1 text-center">Rarity</div>
+                  <div className="flex-1 text-center">Elixir</div>
+                  <div className="flex-1 text-center">Year</div>
+                  <div className="flex-1 text-center">Evo</div>
+                  <div className="flex-1 text-center">Attack</div>
+                  <div className="flex-1 text-center">Air</div>
+                  <div className="flex-1 text-center">Speed</div>
+                  <div className="flex-1 text-center">Hero</div>
+                </div>
+              )}
+              
+              <div className="space-y-3">
+              {guesses.map((guess, guessIndex) => (
+                <div 
+                  key={guessIndex} 
+                  className="bg-[#0d3b4c]/80 backdrop-blur-sm rounded-xl p-2 border border-cyan-800/30 min-w-[680px]"
+                >
                 <div className="flex items-center gap-1">
                   {/* Card Image */}
                   <div 
@@ -746,6 +755,8 @@ export default function RoyaledlePage() {
                 </div>
               </div>
             ))}
+              </div>
+            </div>
           </div>
 
           {/* Game Over */}

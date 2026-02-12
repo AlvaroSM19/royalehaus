@@ -160,14 +160,14 @@ export default function RootLayout({
                     ROYALEHAUS
                   </a>
                 </div>
-                {/* Desktop: all icons, Mobile: only essential */}
+                {/* Desktop: all icons, Mobile: only wallpaper */}
                 <nav className="flex items-center space-x-2 sm:space-x-4">
                   <span className="hidden sm:inline-flex"><VisitCounter /></span>
                   <WallpaperSelector />
                   <span className="hidden sm:inline-flex"><LevelBadge /></span>
                   <span className="hidden sm:inline-flex"><FeedbackModal /></span>
                   <span className="hidden sm:inline-flex"><LanguageSelector /></span>
-                  <AuthNav />
+                  <span className="hidden md:inline-flex"><AuthNav /></span>
                 </nav>
               </div>
             </div>

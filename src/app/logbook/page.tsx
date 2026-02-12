@@ -183,12 +183,12 @@ export default function LogbookPage() {
         <div className="max-w-5xl mx-auto px-6">
           
           {/* Header Section */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4 sm:gap-5">
               {/* Avatar */}
-              <div className="relative group">
+              <div className="relative group shrink-0">
                 <div 
-                  className="w-20 h-[96px] rounded-xl overflow-hidden p-[2px] cursor-pointer hover:scale-105 transition-all shadow-lg bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-amber-500/30"
+                  className="w-16 h-[77px] sm:w-20 sm:h-[96px] rounded-xl overflow-hidden p-[2px] cursor-pointer hover:scale-105 transition-all shadow-lg bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-amber-500/30"
                   onClick={() => setAvatarPickerOpen(true)}
                   title="Click to change avatar"
                 >
@@ -210,41 +210,41 @@ export default function LogbookPage() {
               </div>
 
               {/* Username */}
-              <div>
-                <h1 className="text-4xl sm:text-5xl font-black text-amber-400 tracking-wide uppercase drop-shadow-lg">
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-amber-400 tracking-wide uppercase drop-shadow-lg truncate">
                   {username}
                 </h1>
-                <p className="text-gray-500 text-sm mt-1 font-medium flex items-center gap-2">
+                <p className="text-gray-500 text-xs sm:text-sm mt-1 font-medium flex items-center gap-2">
                   <Trophy className="w-3 h-3" /> Player Profile
                 </p>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               {authUser?.role === 'admin' && (
                 <>
                   <Link
                     href="/admin/daily"
-                    className="px-5 py-2.5 bg-gradient-to-b from-purple-500 to-indigo-600 text-white font-bold text-sm rounded-lg hover:from-purple-400 hover:to-indigo-500 transition-all border border-purple-400/50 shadow-lg shadow-purple-900/20 flex items-center gap-2"
+                    className="px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-b from-purple-500 to-indigo-600 text-white font-bold text-xs sm:text-sm rounded-lg hover:from-purple-400 hover:to-indigo-500 transition-all border border-purple-400/50 shadow-lg shadow-purple-900/20 flex items-center gap-1.5 sm:gap-2"
                   >
-                    <CalendarCog className="w-4 h-4" />
-                    Daily
+                    <CalendarCog className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Daily</span>
                   </Link>
                   <Link
                     href="/admin/feedback"
-                    className="px-5 py-2.5 bg-gradient-to-b from-pink-500 to-rose-600 text-white font-bold text-sm rounded-lg hover:from-pink-400 hover:to-rose-500 transition-all border border-pink-400/50 shadow-lg shadow-pink-900/20 flex items-center gap-2"
+                    className="px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-b from-pink-500 to-rose-600 text-white font-bold text-xs sm:text-sm rounded-lg hover:from-pink-400 hover:to-rose-500 transition-all border border-pink-400/50 shadow-lg shadow-pink-900/20 flex items-center gap-1.5 sm:gap-2"
                   >
-                    <MessageSquare className="w-4 h-4" />
-                    Feedback
+                    <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Feedback</span>
                   </Link>
                 </>
               )}
               <Link
                 href="/"
-                className="px-5 py-2.5 bg-gradient-to-b from-amber-500 to-amber-600 text-black font-bold text-sm rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all border border-amber-400/50 shadow-lg shadow-amber-900/20 flex items-center gap-2"
+                className="px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-b from-amber-500 to-amber-600 text-black font-bold text-xs sm:text-sm rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all border border-amber-400/50 shadow-lg shadow-amber-900/20 flex items-center gap-1.5 sm:gap-2"
               >
-                <Gamepad2 className="w-4 h-4" /> Games
+                <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Games</span>
               </Link>
               {authUser ? (
                 <button
@@ -253,14 +253,14 @@ export default function LogbookPage() {
                     localStorage.removeItem('authUser');
                     window.location.reload();
                   }}
-                  className="px-5 py-2.5 bg-gradient-to-b from-gray-700 to-gray-800 border border-gray-600 text-gray-200 font-bold text-sm rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg"
+                  className="px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-b from-gray-700 to-gray-800 border border-gray-600 text-gray-200 font-bold text-xs sm:text-sm rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg"
                 >
                   Sign Out
                 </button>
               ) : (
                 <Link
                   href="/auth"
-                  className="px-5 py-2.5 bg-gradient-to-b from-gray-700 to-gray-800 border border-gray-600 text-gray-200 font-bold text-sm rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg"
+                  className="px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-b from-gray-700 to-gray-800 border border-gray-600 text-gray-200 font-bold text-xs sm:text-sm rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg"
                 >
                   Sign In
                 </Link>
@@ -284,28 +284,28 @@ export default function LogbookPage() {
               Account
             </h2>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
               {/* Level */}
-              <div className="p-5 bg-gradient-to-br from-amber-600/20 to-yellow-600/10 border border-amber-500/40 rounded-xl">
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-600/20 to-yellow-600/10 border border-amber-500/40 rounded-xl">
                 <div className="text-amber-400 text-xs font-semibold tracking-wider uppercase mb-2">Level</div>
-                <div className="text-4xl font-bold text-amber-400">{progress?.xp?.level || 1}</div>
+                <div className="text-3xl sm:text-4xl font-bold text-amber-400">{progress?.xp?.level || 1}</div>
                 <div className="text-gray-500 text-xs mt-1">current level</div>
               </div>
 
               {/* XP */}
-              <div className="p-5 bg-gradient-to-br from-cyan-600/20 to-blue-600/10 border border-cyan-500/40 rounded-xl">
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-cyan-600/20 to-blue-600/10 border border-cyan-500/40 rounded-xl">
                 <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Experience</div>
-                <div className="text-4xl font-bold text-cyan-400">{progress?.xp?.totalXP || 0}</div>
+                <div className="text-3xl sm:text-4xl font-bold text-cyan-400">{progress?.xp?.totalXP || 0}</div>
                 <div className="text-gray-500 text-xs mt-1">total XP</div>
               </div>
 
               {/* Activity Streak */}
-              <div className="p-5 bg-gradient-to-br from-orange-600/20 to-red-600/10 border border-orange-500/40 rounded-xl">
+              <div className="p-4 sm:p-5 bg-gradient-to-br from-orange-600/20 to-red-600/10 border border-orange-500/40 rounded-xl">
                 <div className="text-orange-400 text-xs font-semibold tracking-wider uppercase mb-2 flex items-center gap-1.5">
                   <Flame className="w-3.5 h-3.5" />
                   Activity Streak
                 </div>
-                <div className="text-4xl font-bold text-orange-400">{streak}</div>
+                <div className="text-3xl sm:text-4xl font-bold text-orange-400">{streak}</div>
                 <div className="text-gray-500 text-xs mt-1">days in a row</div>
               </div>
             </div>

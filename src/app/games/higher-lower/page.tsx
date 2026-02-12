@@ -301,8 +301,8 @@ export default function HigherLowerGame() {
 
             {/* Center - Buttons */}
             <div className="flex flex-col items-center gap-3 sm:gap-5 px-4 sm:px-8 order-first lg:order-none">
-              {/* Mode Selector */}
-              <div className="flex flex-wrap gap-2 mb-2 justify-center">
+              {/* Mode Selector - Hidden on mobile, shown on desktop */}
+              <div className="hidden lg:flex flex-wrap gap-2 mb-2 justify-center">
                 <button
                   onClick={() => { setCompareMode('damage'); initGame() }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all text-sm border-2 ${
