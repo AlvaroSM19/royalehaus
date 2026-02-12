@@ -122,7 +122,6 @@ function getTimeUntilReset(): { hours: number; minutes: number; seconds: number 
 export default function RoyaledlePage() {
   const { getCardNameTranslated } = useLanguage();
   const { user } = useAuth();
-  const [mode, setMode] = useState<GameMode>('daily');
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,8 +132,6 @@ export default function RoyaledlePage() {
   const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
   const [countdown, setCountdown] = useState(getTimeUntilReset());
   const [dailyStreak, setDailyStreak] = useState(getDailyStreakData());
-  
-  const isDaily = mode === 'daily';
 
   // Countdown timer effect
   useEffect(() => {
@@ -144,36 +141,32 @@ export default function RoyaledlePage() {
     return () => clearInterval(timer);
   }, []);
 
-  const initGame = useCallback((gameMode: GameMode = 'daily') => {
-    // For daily mode, check if already completed today
-    if (gameMode === 'daily') {
-      const today = new Date().toISOString().split('T')[0];
-      const lastDaily = localStorage.getItem('royaledle-last-daily');
-      const lastDailyResultStr = localStorage.getItem('royaledle-daily-result');
-      
-      if (lastDaily === today && lastDailyResultStr) {
-        try {
-          const result = JSON.parse(lastDailyResultStr) as DailyResult;
-          setDailyCompleted(true);
-          setDailyResult(result);
-          // Still set the target card so we can show it
-          const card = getDailyCard();
-          setTargetCard(card);
-          setMode(gameMode);
-          setGameOver(true);
-          setWon(result.won);
-          return; // Don't reset the game state
-        } catch (e) {
-          // Invalid stored data, continue with new game
-        }
-      } else {
-        setDailyCompleted(false);
-        setDailyResult(null);
+  const initGame = useCallback(() => {
+    // Check if already completed today
+    const today = new Date().toISOString().split('T')[0];
+    const lastDaily = localStorage.getItem('royaledle-last-daily');
+    const lastDailyResultStr = localStorage.getItem('royaledle-daily-result');
+    
+    if (lastDaily === today && lastDailyResultStr) {
+      try {
+        const result = JSON.parse(lastDailyResultStr) as DailyResult;
+        setDailyCompleted(true);
+        setDailyResult(result);
+        // Still set the target card so we can show it
+        const card = getDailyCard();
+        setTargetCard(card);
+        setGameOver(true);
+        setWon(result.won);
+        return; // Don't reset the game state
+      } catch (e) {
+        // Invalid stored data, continue with new game
       }
+    } else {
+      setDailyCompleted(false);
+      setDailyResult(null);
     }
     
-    const card = gameMode === 'daily' ? getDailyCard() : getRandomPracticeCard();
-    setMode(gameMode);
+    const card = getDailyCard();
     setTargetCard(card);
     setGuesses([]);
     setSearchTerm('');
@@ -301,19 +294,17 @@ export default function RoyaledlePage() {
       recordRoyaledleSession(newGuesses.length, isWin);
       
       // Save daily result to prevent replaying
-      if (mode === 'daily') {
-        const today = new Date().toISOString().split('T')[0];
-        localStorage.setItem('royaledle-last-daily', today);
-        localStorage.setItem('royaledle-daily-result', JSON.stringify({
-          won: isWin,
-          guesses: newGuesses.length,
-          cardId: targetCard?.id
-        }));
-        // Update daily streak
-        const newStreak = updateDailyStreak();
-        setDailyStreak(newStreak);
-        setDailyCompleted(true);
-      }
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('royaledle-last-daily', today);
+      localStorage.setItem('royaledle-daily-result', JSON.stringify({
+        won: isWin,
+        guesses: newGuesses.length,
+        cardId: targetCard?.id
+      }));
+      // Update daily streak
+      const newStreak = updateDailyStreak();
+      setDailyStreak(newStreak);
+      setDailyCompleted(true);
     }
   };
 
@@ -382,46 +373,23 @@ export default function RoyaledlePage() {
                     <Home className="w-4 h-4" />
                   </Link>
                   <span className="text-gray-600">/</span>
-                  <h1 className="text-lg font-black text-yellow-400 tracking-wide">ROYALEDLE</h1>
+                  <h1 className="text-lg font-black text-yellow-400 tracking-wide flex items-center gap-2">
+                    ROYALEDLE
+                    <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded-full font-bold">
+                      DAILY
+                    </span>
+                  </h1>
                 </div>
                 <span className="text-gray-400 text-sm">
                   <span className="text-white font-bold">{guesses.length}</span>/{MAX_GUESSES}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex rounded-lg overflow-hidden border border-gray-600 flex-1">
-                  <button
-                    onClick={() => initGame('daily')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-medium transition-colors ${
-                      mode === 'daily'
-                        ? 'bg-amber-500 text-gray-900'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    Daily
-                  </button>
-                  <button
-                    onClick={() => initGame('practice')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-medium transition-colors ${
-                      mode === 'practice'
-                        ? 'bg-amber-500 text-gray-900'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <Shuffle className="w-3.5 h-3.5" />
-                    Practice
-                  </button>
+              {dailyCompleted && (
+                <div className="flex items-center justify-center gap-2 text-gray-400 text-xs">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Next in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
                 </div>
-                {mode === 'practice' && (
-                  <button
-                    onClick={() => initGame('practice')}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    New
-                  </button>
-                )}
+              )}
               </div>
             </div>
             
@@ -433,47 +401,23 @@ export default function RoyaledlePage() {
                   <span>Home</span>
                 </Link>
                 <span className="text-gray-600">/</span>
-                <h1 className="text-xl font-black text-yellow-400 tracking-wide">ROYALEDLE</h1>
+                <h1 className="text-xl font-black text-yellow-400 tracking-wide flex items-center gap-2">
+                  ROYALEDLE
+                  <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 text-amber-400 rounded-full font-bold">
+                    DAILY
+                  </span>
+                </h1>
               </div>
               
               <div className="flex items-center gap-4">
-                {/* Mode Toggle */}
-                <div className="flex rounded-lg overflow-hidden border border-gray-600">
-                  <button
-                    onClick={() => initGame('daily')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
-                      mode === 'daily'
-                        ? 'bg-amber-500 text-gray-900'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    Daily
-                  </button>
-                  <button
-                    onClick={() => initGame('practice')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
-                      mode === 'practice'
-                        ? 'bg-amber-500 text-gray-900'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <Shuffle className="w-3.5 h-3.5" />
-                    Practice
-                  </button>
-                </div>
-                
                 <span className="text-gray-400 text-sm">
-                  ATTEMPTS: <span className="text-white font-bold">{guesses.length}</span>
+                  ATTEMPTS: <span className="text-white font-bold">{guesses.length}</span>/{MAX_GUESSES}
                 </span>
-                {mode === 'practice' && (
-                  <button
-                    onClick={() => initGame('practice')}
-                    className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    New Game
-                  </button>
+                {dailyCompleted && (
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>Next in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -501,7 +445,7 @@ export default function RoyaledlePage() {
         {/* Game Area */}
         <div className="container mx-auto px-4 pb-8">
           {/* Daily Completed Banner */}
-          {mode === 'daily' && dailyCompleted && dailyResult && (
+          {dailyCompleted && dailyResult && (
             <div className="mb-8 max-w-2xl mx-auto">
               <div 
                 className="relative rounded-2xl p-6 text-center overflow-hidden"
@@ -812,7 +756,7 @@ export default function RoyaledlePage() {
                 <>
                   <h2 className="text-2xl font-bold text-green-400 mb-2">Victory!</h2>
                   <p className="text-gray-300">
-                    You found <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span> in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
+                    The card was <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span>
                   </p>
                 </>
               ) : (
@@ -830,16 +774,17 @@ export default function RoyaledlePage() {
                   </div>
                 </>
               )}
-              
-              <button
-                onClick={() => initGame()}
-                className="mt-4 px-6 py-3 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors border-2 border-amber-500"
-              >
-                Play Again
-              </button>
+
+              {/* Next daily countdown */}
+              {dailyCompleted && (
+                <div className="mt-4 flex items-center justify-center gap-2 text-gray-400 text-sm">
+                  <Clock className="w-4 h-4" />
+                  <span>Next daily in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
+                </div>
+              )}
 
               {/* Daily Streak Display */}
-              {isDaily && dailyStreak && dailyStreak.currentStreak > 0 && (
+              {dailyStreak && dailyStreak.currentStreak > 0 && (
                 <div className="mt-4 flex items-center justify-center gap-2 text-amber-400">
                   <Flame className="w-5 h-5" />
                   <span className="font-bold">{dailyStreak.currentStreak} day streak</span>

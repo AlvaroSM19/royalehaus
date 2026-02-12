@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { getProgress, updateUserProfile, syncProgressNowAsync, type UserProgress } from '@/lib/progress';
-import { MessageSquare, Calendar, Trophy, Gamepad2, Star, X, Flame, CalendarCog } from 'lucide-react';
+import { MessageSquare, Trophy, Gamepad2, X, Flame, CalendarCog, Calendar } from 'lucide-react';
 import cards from '@/data/cards.json';
 
 // Daily Streak Types
@@ -39,58 +39,6 @@ const GAME_LABELS: Record<string, string> = {
 };
 
 const DAYS_TO_SHOW = 56; // 8 weeks
-
-// Card frame design variants (inspired by AnimeHaus)
-const FRAME_VARIANTS = {
-  gold: {
-    label: 'GOLD',
-    frame: 'bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600',
-    inner: 'bg-[#0b0b0d]/95',
-    glow: 'shadow-amber-500/30',
-  },
-  silver: {
-    label: 'SILVER',
-    frame: 'bg-gradient-to-br from-zinc-200 via-slate-100 to-zinc-400',
-    inner: 'bg-[#0d1013]/95',
-    glow: 'shadow-zinc-400/30',
-  },
-  rainbow: {
-    label: 'RAINBOW',
-    frame: 'bg-gradient-to-br from-pink-400 via-cyan-400 to-violet-500',
-    inner: 'bg-[#05060b]/95',
-    glow: 'shadow-pink-500/30',
-  },
-  cosmic: {
-    label: 'COSMIC',
-    frame: 'bg-gradient-to-br from-indigo-500 via-fuchsia-600 to-cyan-500',
-    inner: 'bg-gradient-to-b from-[#0a0d21] via-[#120a24] to-[#02060f]',
-    glow: 'shadow-indigo-500/30',
-  },
-  oceanic: {
-    label: 'OCEANIC',
-    frame: 'bg-gradient-to-br from-teal-300 via-emerald-400 to-cyan-500',
-    inner: 'bg-gradient-to-b from-[#021d23] via-[#022f38] to-[#031316]',
-    glow: 'shadow-teal-500/30',
-  },
-  ember: {
-    label: 'EMBER',
-    frame: 'bg-gradient-to-br from-orange-500 via-amber-600 to-red-600',
-    inner: 'bg-gradient-to-b from-[#1a0b02] via-[#2b0f04] to-[#100401]',
-    glow: 'shadow-orange-500/30',
-  },
-  neon: {
-    label: 'NEON',
-    frame: 'bg-gradient-to-br from-fuchsia-500 via-violet-600 to-blue-600',
-    inner: 'bg-[#05060a]/95',
-    glow: 'shadow-fuchsia-500/30',
-  },
-  prism: {
-    label: 'PRISM',
-    frame: 'bg-gradient-to-br from-amber-300 via-white to-amber-400',
-    inner: 'bg-gradient-to-b from-[#0c0c0e] via-[#141418] to-[#050506]',
-    glow: 'shadow-white/30',
-  },
-};
 
 // RoyaleHaus uses numeric card IDs (1-171). If avatarId is not numeric, it's from OnePieceHaus - use default
 function getCardImage(cardId: number | string): string {
@@ -133,10 +81,15 @@ export default function LogbookPage() {
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [avatarSearch, setAvatarSearch] = useState('');
   const [authUser, setAuthUser] = useState<any>(null);
-  const [dailyStreaks, setDailyStreaks] = useState<{ royaledle: DailyStreakData | null }>({
-    royaledle: null
+  const [dailyStreaks, setDailyStreaks] = useState<{ 
+    royaledle: DailyStreakData | null;
+    'pixel-royale': DailyStreakData | null;
+    'emoji-riddle': DailyStreakData | null;
+  }>({
+    royaledle: null,
+    'pixel-royale': null,
+    'emoji-riddle': null
   });
-  const [selectedFrame, setSelectedFrame] = useState<keyof typeof FRAME_VARIANTS>('gold');
 
   useEffect(() => {
     const loadData = () => {
@@ -147,7 +100,9 @@ export default function LogbookPage() {
       } catch {}
       // Load daily streaks
       setDailyStreaks({
-        royaledle: getDailyStreakData('royaledle')
+        royaledle: getDailyStreakData('royaledle'),
+        'pixel-royale': getDailyStreakData('pixel-royale'),
+        'emoji-riddle': getDailyStreakData('emoji-riddle')
       });
     };
     
@@ -233,11 +188,11 @@ export default function LogbookPage() {
               {/* Avatar */}
               <div className="relative group">
                 <div 
-                  className={`w-20 h-[96px] rounded-xl overflow-hidden p-[2px] cursor-pointer hover:scale-105 transition-all shadow-lg ${FRAME_VARIANTS[selectedFrame].frame} ${FRAME_VARIANTS[selectedFrame].glow}`}
+                  className="w-20 h-[96px] rounded-xl overflow-hidden p-[2px] cursor-pointer hover:scale-105 transition-all shadow-lg bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-amber-500/30"
                   onClick={() => setAvatarPickerOpen(true)}
                   title="Click to change avatar"
                 >
-                  <div className={`w-full h-full rounded-[10px] overflow-hidden ${FRAME_VARIANTS[selectedFrame].inner}`}>
+                  <div className="w-full h-full rounded-[10px] overflow-hidden bg-[#0b0b0d]/95">
                     <img 
                       src={getCardImage(avatarId)} 
                       alt="Avatar" 
@@ -322,48 +277,37 @@ export default function LogbookPage() {
             </div>
           )}
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {/* Daily Streak - Featured */}
-            <div className="p-5 bg-amber-600/10 border border-amber-600/30 rounded-xl">
-              <div className="text-amber-500 text-xs font-semibold tracking-wider uppercase mb-2">Daily Streak</div>
-              <div className="text-4xl font-bold text-amber-400">{streak}</div>
-              <div className="text-gray-500 text-xs mt-1">consecutive days</div>
-            </div>
+          {/* Account Section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
+              <span className="w-1 h-6 bg-gradient-to-b from-amber-500 to-yellow-600 rounded-full" />
+              Account
+            </h2>
+            
+            <div className="grid grid-cols-3 gap-4">
+              {/* Level */}
+              <div className="p-5 bg-gradient-to-br from-amber-600/20 to-yellow-600/10 border border-amber-500/40 rounded-xl">
+                <div className="text-amber-400 text-xs font-semibold tracking-wider uppercase mb-2">Level</div>
+                <div className="text-4xl font-bold text-amber-400">{progress?.xp?.level || 1}</div>
+                <div className="text-gray-500 text-xs mt-1">current level</div>
+              </div>
 
-            {/* Higher Lower */}
-            <div className="p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/[0.07] hover:border-white/20 transition-all">
-              <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">Higher Lower</div>
-              <div className="text-3xl font-bold text-white">{progress?.highScores?.higherlower?.bestStreak || 0}</div>
-              <div className="text-gray-500 text-xs mt-1">best streak</div>
-            </div>
+              {/* XP */}
+              <div className="p-5 bg-gradient-to-br from-cyan-600/20 to-blue-600/10 border border-cyan-500/40 rounded-xl">
+                <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Experience</div>
+                <div className="text-4xl font-bold text-cyan-400">{progress?.xp?.totalXP || 0}</div>
+                <div className="text-gray-500 text-xs mt-1">total XP</div>
+              </div>
 
-            {/* Royaledle */}
-            <div className="p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/[0.07] hover:border-white/20 transition-all">
-              <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">Royaledle</div>
-              <div className="text-3xl font-bold text-white">{progress?.highScores?.royaledle?.bestWinAttempts || '—'}</div>
-              <div className="text-gray-500 text-xs mt-1">best attempts</div>
-            </div>
-
-            {/* Impostor */}
-            <div className="p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/[0.07] hover:border-white/20 transition-all">
-              <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">Impostor</div>
-              <div className="text-3xl font-bold text-white">{progress?.highScores?.impostor?.bestStreak || 0}</div>
-              <div className="text-gray-500 text-xs mt-1">best streak</div>
-            </div>
-          </div>
-
-          {/* Wordle Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/[0.07] hover:border-white/20 transition-all">
-              <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">Wordle Best</div>
-              <div className="text-3xl font-bold text-white">{progress?.highScores?.wordle?.bestAttempts || '—'}</div>
-              <div className="text-gray-500 text-xs mt-1">attempts</div>
-            </div>
-            <div className="p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm hover:bg-white/[0.07] hover:border-white/20 transition-all">
-              <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">Longest Word</div>
-              <div className="text-3xl font-bold text-white">{progress?.highScores?.wordle?.longestWordLength || '—'}</div>
-              <div className="text-gray-500 text-xs mt-1">letters</div>
+              {/* Activity Streak */}
+              <div className="p-5 bg-gradient-to-br from-orange-600/20 to-red-600/10 border border-orange-500/40 rounded-xl">
+                <div className="text-orange-400 text-xs font-semibold tracking-wider uppercase mb-2 flex items-center gap-1.5">
+                  <Flame className="w-3.5 h-3.5" />
+                  Activity Streak
+                </div>
+                <div className="text-4xl font-bold text-orange-400">{streak}</div>
+                <div className="text-gray-500 text-xs mt-1">days in a row</div>
+              </div>
             </div>
           </div>
 
@@ -372,14 +316,15 @@ export default function LogbookPage() {
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
               <span className="w-1 h-6 bg-gradient-to-b from-orange-500 to-red-600 rounded-full" />
               <Flame className="w-5 h-5 text-orange-400" />
-              Daily Games Streak
+              Daily Games Streaks
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Royaledle Daily */}
-              <div className="p-5 bg-gradient-to-br from-orange-500/10 to-amber-500/5 border border-orange-500/30 rounded-xl">
+              <div className="p-5 bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="text-orange-400 text-sm font-bold uppercase tracking-wider">Royaledle Daily</div>
+                  <span className="text-lg">🎯</span>
+                  <div className="text-amber-400 text-sm font-bold uppercase tracking-wider">Royaledle</div>
                 </div>
                 
                 {dailyStreaks.royaledle ? (
@@ -387,14 +332,14 @@ export default function LogbookPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Flame className="w-6 h-6 text-orange-400" />
-                          <span className="text-4xl font-bold text-orange-400">{dailyStreaks.royaledle.currentStreak}</span>
+                          <Flame className="w-5 h-5 text-amber-400" />
+                          <span className="text-3xl font-bold text-amber-400">{dailyStreaks.royaledle.currentStreak}</span>
                         </div>
                         <div className="text-gray-500 text-xs mt-1">current streak</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-amber-400">{dailyStreaks.royaledle.bestStreak}</div>
-                        <div className="text-gray-500 text-xs mt-1">best streak</div>
+                        <div className="text-xl font-bold text-amber-300">{dailyStreaks.royaledle.bestStreak}</div>
+                        <div className="text-gray-500 text-xs mt-1">best</div>
                       </div>
                     </div>
                     
@@ -406,10 +351,10 @@ export default function LogbookPage() {
                           {dailyStreaks.royaledle.history.slice(-7).map((date, i) => (
                             <div
                               key={i}
-                              className="w-6 h-6 rounded bg-orange-500/50 flex items-center justify-center"
+                              className="w-5 h-5 rounded bg-amber-500/50 flex items-center justify-center"
                               title={date}
                             >
-                              <Flame className="w-3 h-3 text-orange-300" />
+                              <Flame className="w-2.5 h-2.5 text-amber-300" />
                             </div>
                           ))}
                         </div>
@@ -418,24 +363,115 @@ export default function LogbookPage() {
                   </div>
                 ) : (
                   <div className="text-gray-500 text-sm">
-                    Play the Royaledle daily challenge to start your streak!
+                    Play Royaledle daily to start your streak!
                   </div>
                 )}
               </div>
 
-              {/* Coming Soon - Other Daily Games */}
-              <div className="p-5 bg-white/5 border border-white/10 border-dashed rounded-xl flex flex-col items-center justify-center text-center">
-                <div className="text-gray-500 text-sm mb-2">More daily challenges coming soon!</div>
-                <div className="text-gray-600 text-xs">Complete daily games to build your streak</div>
+              {/* Pixel Royale Daily */}
+              <div className="p-5 bg-gradient-to-br from-purple-500/10 to-violet-500/5 border border-purple-500/30 rounded-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">🎨</span>
+                  <div className="text-purple-400 text-sm font-bold uppercase tracking-wider">Pixel Royale</div>
+                </div>
+                
+                {dailyStreaks['pixel-royale'] ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Flame className="w-5 h-5 text-purple-400" />
+                          <span className="text-3xl font-bold text-purple-400">{dailyStreaks['pixel-royale'].currentStreak}</span>
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1">current streak</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-purple-300">{dailyStreaks['pixel-royale'].bestStreak}</div>
+                        <div className="text-gray-500 text-xs mt-1">best</div>
+                      </div>
+                    </div>
+                    
+                    {/* Recent History */}
+                    {dailyStreaks['pixel-royale'].history && dailyStreaks['pixel-royale'].history.length > 0 && (
+                      <div className="pt-3 border-t border-white/10">
+                        <div className="text-gray-500 text-xs mb-2">Last {Math.min(7, dailyStreaks['pixel-royale'].history.length)} days</div>
+                        <div className="flex gap-1">
+                          {dailyStreaks['pixel-royale'].history.slice(-7).map((date, i) => (
+                            <div
+                              key={i}
+                              className="w-5 h-5 rounded bg-purple-500/50 flex items-center justify-center"
+                              title={date}
+                            >
+                              <Flame className="w-2.5 h-2.5 text-purple-300" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-gray-500 text-sm">
+                    Play Pixel Royale daily to start your streak!
+                  </div>
+                )}
+              </div>
+
+              {/* Emoji Riddle Daily */}
+              <div className="p-5 bg-gradient-to-br from-pink-500/10 to-rose-500/5 border border-pink-500/30 rounded-xl">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">🔮</span>
+                  <div className="text-pink-400 text-sm font-bold uppercase tracking-wider">Emoji Riddle</div>
+                </div>
+                
+                {dailyStreaks['emoji-riddle'] ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Flame className="w-5 h-5 text-pink-400" />
+                          <span className="text-3xl font-bold text-pink-400">{dailyStreaks['emoji-riddle'].currentStreak}</span>
+                        </div>
+                        <div className="text-gray-500 text-xs mt-1">current streak</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-pink-300">{dailyStreaks['emoji-riddle'].bestStreak}</div>
+                        <div className="text-gray-500 text-xs mt-1">best</div>
+                      </div>
+                    </div>
+                    
+                    {/* Recent History */}
+                    {dailyStreaks['emoji-riddle'].history && dailyStreaks['emoji-riddle'].history.length > 0 && (
+                      <div className="pt-3 border-t border-white/10">
+                        <div className="text-gray-500 text-xs mb-2">Last {Math.min(7, dailyStreaks['emoji-riddle'].history.length)} days</div>
+                        <div className="flex gap-1">
+                          {dailyStreaks['emoji-riddle'].history.slice(-7).map((date, i) => (
+                            <div
+                              key={i}
+                              className="w-5 h-5 rounded bg-pink-500/50 flex items-center justify-center"
+                              title={date}
+                            >
+                              <Flame className="w-2.5 h-2.5 text-pink-300" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-gray-500 text-sm">
+                    Play Emoji Riddle daily to start your streak!
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Games Overview */}
+          {/* Game Statistics */}
           <div className="mb-8">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
               <span className="w-1 h-6 bg-gradient-to-b from-amber-500 to-yellow-600 rounded-full" />
-              Games Overview
+              <Gamepad2 className="w-5 h-5 text-amber-400" />
+              Game Statistics
             </h2>
             
             {/* Total */}
@@ -446,6 +482,30 @@ export default function LogbookPage() {
                   <div className="text-5xl font-bold text-amber-400">{totalGames}</div>
                 </div>
                 <div className="text-gray-500 text-sm">{GAME_IDS.length} game modes</div>
+              </div>
+            </div>
+
+            {/* High Scores */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Higher Lower</div>
+                <div className="text-2xl font-bold text-white">{progress?.highScores?.higherlower?.bestStreak || 0}</div>
+                <div className="text-gray-500 text-xs mt-1">best streak</div>
+              </div>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Impostor</div>
+                <div className="text-2xl font-bold text-white">{progress?.highScores?.impostor?.bestStreak || 0}</div>
+                <div className="text-gray-500 text-xs mt-1">best streak</div>
+              </div>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Wordle Best</div>
+                <div className="text-2xl font-bold text-white">{progress?.highScores?.wordle?.bestAttempts || '—'}</div>
+                <div className="text-gray-500 text-xs mt-1">attempts</div>
+              </div>
+              <div className="p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Longest Word</div>
+                <div className="text-2xl font-bold text-white">{progress?.highScores?.wordle?.longestWordLength || '—'}</div>
+                <div className="text-gray-500 text-xs mt-1">letters</div>
               </div>
             </div>
 
@@ -486,38 +546,6 @@ export default function LogbookPage() {
                 ))}
               </div>
               <p className="text-gray-500 text-xs mt-4 text-center">Last {DAYS_TO_SHOW} days — Highlighted days indicate activity</p>
-            </div>
-          </div>
-
-          {/* Frame Variants Showcase */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
-              <span className="w-1 h-6 bg-gradient-to-b from-amber-500 to-yellow-600 rounded-full" />
-              Avatar Frame Style
-            </h2>
-            
-            <div className="p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
-              <p className="text-gray-400 text-sm mb-4">Choose a frame style for your avatar card:</p>
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-                {(Object.keys(FRAME_VARIANTS) as Array<keyof typeof FRAME_VARIANTS>).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedFrame(key)}
-                    className={`relative aspect-[3/4] rounded-lg p-[2px] transition-all hover:scale-105 ${FRAME_VARIANTS[key].frame} ${
-                      selectedFrame === key ? 'ring-2 ring-white scale-105' : ''
-                    }`}
-                  >
-                    <div className={`w-full h-full rounded-[6px] ${FRAME_VARIANTS[key].inner} flex items-center justify-center`}>
-                      <span className="text-[8px] font-bold text-white/70">{FRAME_VARIANTS[key].label}</span>
-                    </div>
-                    {selectedFrame === key && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                        <Star className="w-2.5 h-2.5 text-white fill-white" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -564,10 +592,10 @@ export default function LogbookPage() {
                 <button
                   key={card.id}
                   onClick={() => handleSelectAvatar(card.id)}
-                  className={`relative aspect-[5/6] rounded-lg overflow-hidden p-[2px] transition-all hover:scale-105 hover:ring-2 ring-amber-500 ${FRAME_VARIANTS[selectedFrame].frame}`}
+                  className="relative aspect-[5/6] rounded-lg overflow-hidden p-[2px] transition-all hover:scale-105 hover:ring-2 ring-amber-500 bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600"
                   title={card.name}
                 >
-                  <div className={`w-full h-full rounded-[6px] overflow-hidden ${FRAME_VARIANTS[selectedFrame].inner}`}>
+                  <div className="w-full h-full rounded-[6px] overflow-hidden bg-[#0b0b0d]/95">
                     <img 
                       src={getCardImage(card.id)} 
                       alt={card.name}
@@ -580,7 +608,7 @@ export default function LogbookPage() {
             </div>
             <div className="mt-4 pt-4 border-t border-slate-700">
               <p className="text-xs text-slate-400 text-center">
-                Click on a card to select it as your avatar. Use the frame picker above to change the style.
+                Click on a card to select it as your avatar.
               </p>
             </div>
           </div>

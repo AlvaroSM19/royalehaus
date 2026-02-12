@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { baseCards, getRandomCard } from '@/data';
+import { baseCards } from '@/data';
 import { emojiRiddles } from '@/data/emoji-riddles';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Sparkles, Trophy, HelpCircle, CheckCircle, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
+import { Home, Search, Sparkles, Trophy, HelpCircle, CheckCircle, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
 
@@ -178,9 +177,7 @@ function reorderEmojisForDifficulty(emojis: string[]): string[] {
 }
 
 export default function EmojiRiddlePage() {
-  const searchParams = useSearchParams();
-  const mode = searchParams.get('mode');
-  const isDaily = mode === 'daily';
+  // This is now a daily-only game
   
   const { user } = useAuth();
   const { getCardNameTranslated } = useLanguage();
@@ -203,52 +200,42 @@ export default function EmojiRiddlePage() {
 
   // Check daily completion status
   useEffect(() => {
-    if (isDaily) {
-      const today = new Date().toISOString().slice(0, 10);
-      const lastDaily = localStorage.getItem('emoji-riddle-last-daily');
-      const lastDailyResultStr = localStorage.getItem('emoji-riddle-daily-result');
-      
-      if (lastDaily === today && lastDailyResultStr) {
-        try {
-          const result = JSON.parse(lastDailyResultStr) as DailyResult;
-          setDailyCompleted(true);
-          setDailyResult(result);
-          setDailyStreak(getDailyStreakData());
-          
-          // Load the daily card for display
-          const dailyCard = getDailyCard();
-          const originalEmojis = emojiRiddles[dailyCard.id] || [];
-          setTargetCard(dailyCard);
-          setEmojis(originalEmojis);
-          setGameOver(true);
-          setWon(result.won);
-        } catch {}
-      } else {
-        setDailyCompleted(false);
-        setDailyResult(null);
-      }
-      
-      // Countdown timer
-      const updateCountdown = () => setCountdown(getTimeUntilReset());
-      updateCountdown();
-      const interval = setInterval(updateCountdown, 1000);
-      return () => clearInterval(interval);
+    const today = new Date().toISOString().slice(0, 10);
+    const lastDaily = localStorage.getItem('emoji-riddle-last-daily');
+    const lastDailyResultStr = localStorage.getItem('emoji-riddle-daily-result');
+    
+    if (lastDaily === today && lastDailyResultStr) {
+      try {
+        const result = JSON.parse(lastDailyResultStr) as DailyResult;
+        setDailyCompleted(true);
+        setDailyResult(result);
+        setDailyStreak(getDailyStreakData());
+        
+        // Load the daily card for display
+        const dailyCard = getDailyCard();
+        const originalEmojis = emojiRiddles[dailyCard.id] || [];
+        setTargetCard(dailyCard);
+        setEmojis(originalEmojis);
+        setGameOver(true);
+        setWon(result.won);
+      } catch {}
+    } else {
+      setDailyCompleted(false);
+      setDailyResult(null);
     }
-  }, [isDaily]);
+    
+    // Countdown timer
+    const updateCountdown = () => setCountdown(getTimeUntilReset());
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const initGame = useCallback(() => {
     // For daily mode, only allow one attempt per day
-    if (isDaily && dailyCompleted) return;
+    if (dailyCompleted) return;
     
-    let cardToUse: ClashCard;
-    
-    if (isDaily) {
-      cardToUse = getDailyCard();
-    } else {
-      // Get a random card that has emojis defined
-      const cardsWithEmojis = baseCards.filter(card => emojiRiddles[card.id]);
-      cardToUse = cardsWithEmojis[Math.floor(Math.random() * cardsWithEmojis.length)];
-    }
+    const cardToUse = getDailyCard();
     
     // Get original emojis and reorder for difficulty
     const originalEmojis = emojiRiddles[cardToUse.id] || [];
@@ -263,7 +250,7 @@ export default function EmojiRiddlePage() {
     setWon(false);
     setShowAnswer(false);
     setShowBonusHint(false);
-  }, [isDaily, dailyCompleted]);
+  }, [dailyCompleted]);
 
   useEffect(() => {
     initGame();
@@ -287,7 +274,7 @@ export default function EmojiRiddlePage() {
 
   const handleGuess = (card: ClashCard) => {
     if (gameOver || !targetCard) return;
-    if (isDaily && dailyCompleted) return;
+    if (dailyCompleted) return;
 
     const newGuesses = [...guesses, card];
     setGuesses(newGuesses);
@@ -310,7 +297,7 @@ export default function EmojiRiddlePage() {
     }
 
     // Save daily result
-    if (isDaily && (isWin || isLoss)) {
+    if (isWin || isLoss) {
       const today = new Date().toISOString().slice(0, 10);
       localStorage.setItem('emoji-riddle-last-daily', today);
       localStorage.setItem('emoji-riddle-daily-result', JSON.stringify({
@@ -373,28 +360,16 @@ export default function EmojiRiddlePage() {
           <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-amber-400 flex items-center gap-1.5 xs:gap-2">
             <span className="text-lg xs:text-xl sm:text-2xl">🔮</span>
             <span>Emoji Riddle</span>
-            {isDaily && (
-              <span className="text-[10px] px-2 py-0.5 bg-pink-500/20 border border-pink-500/50 text-pink-400 rounded-full font-bold">
-                DAILY
-              </span>
-            )}
+            <span className="text-[10px] px-2 py-0.5 bg-pink-500/20 border border-pink-500/50 text-pink-400 rounded-full font-bold">
+              DAILY
+            </span>
           </h1>
           <div className="flex items-center gap-2">
-            {isDaily && dailyCompleted && (
+            {dailyCompleted && (
               <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                 <Clock className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{countdown}</span>
               </div>
-            )}
-            {!isDaily && (
-              <button
-                onClick={initGame}
-                className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md xs:rounded-lg transition-all hover:scale-105 font-bold text-xs xs:text-sm border border-amber-400/50"
-              >
-                <RotateCcw className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">New</span>
-                <span className="hidden sm:inline"> Game</span>
-              </button>
             )}
           </div>
         </div>
@@ -515,15 +490,9 @@ export default function EmojiRiddlePage() {
                 </>
               )}
             </div>
-            {won && (
-              <div className="text-xs xs:text-sm text-green-300/80 flex items-center justify-center gap-1.5 xs:gap-2 flex-wrap">
-                <Trophy className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
-                <span>Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'} with {revealedCount} {revealedCount === 1 ? 'clue' : 'clues'}!</span>
-              </div>
-            )}
 
             {/* Daily Streak Display */}
-            {isDaily && dailyStreak && dailyStreak.currentStreak > 0 && (
+            {dailyStreak && dailyStreak.currentStreak > 0 && (
               <div className="mt-3 flex items-center justify-center gap-2 text-amber-400">
                 <Flame className="w-5 h-5" />
                 <span className="font-bold">{dailyStreak.currentStreak} day streak</span>
@@ -533,31 +502,15 @@ export default function EmojiRiddlePage() {
               </div>
             )}
 
-            {/* Next daily countdown for daily mode */}
-            {isDaily && dailyCompleted && (
+            {/* Next daily countdown */}
+            {dailyCompleted && (
               <div className="mt-2 flex items-center justify-center gap-2 text-gray-400 text-sm">
                 <Clock className="w-4 h-4" />
                 <span>Next daily in {countdown}</span>
               </div>
             )}
 
-            {isDaily ? (
-              <Link
-                href="/games/emoji-riddle"
-                className="mt-3 xs:mt-4 px-4 xs:px-5 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold text-sm xs:text-base transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50 inline-block"
-              >
-                Practice Mode
-              </Link>
-            ) : (
-              <button
-                onClick={initGame}
-                className="mt-3 xs:mt-4 px-4 xs:px-5 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold text-sm xs:text-base transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50"
-              >
-                Play Again
-              </button>
-            )}
-
-            {/* Account Creation Reminder */}
+            {/* Account Creation Reminder */}}
             {!user && (
               <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">

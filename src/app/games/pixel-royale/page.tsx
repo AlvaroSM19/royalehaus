@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { baseCards, getRandomCard } from '@/data';
+import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, HelpCircle, Trophy, Check, X, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
+import { Home, Search, HelpCircle, Trophy, Check, X, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
 
@@ -114,9 +113,7 @@ function getDailyCard(): ClashCard {
 }
 
 export default function PixelRoyalePage() {
-  const searchParams = useSearchParams();
-  const mode = searchParams.get('mode');
-  const isDaily = mode === 'daily';
+  // This is now a daily-only game
   
   const { user } = useAuth();
   const { getCardNameTranslated } = useLanguage();
@@ -148,41 +145,39 @@ export default function PixelRoyalePage() {
 
   // Check daily completion status
   useEffect(() => {
-    if (isDaily) {
-      const today = new Date().toISOString().slice(0, 10);
-      const lastDaily = localStorage.getItem('pixel-royale-last-daily');
-      const lastDailyResultStr = localStorage.getItem('pixel-royale-daily-result');
-      
-      if (lastDaily === today && lastDailyResultStr) {
-        try {
-          const result = JSON.parse(lastDailyResultStr) as DailyResult;
-          setDailyCompleted(true);
-          setDailyResult(result);
-          setDailyStreak(getDailyStreakData());
-          
-          // Load the daily card for display
-          const dailyCard = getDailyCard();
-          setTargetCard(dailyCard);
-          setGameOver(true);
-          setWon(result.won);
-          setStep(MAX_GUESSES);
-        } catch {}
-      } else {
-        setDailyCompleted(false);
-        setDailyResult(null);
-      }
-      
-      // Countdown timer
-      const updateCountdown = () => setCountdown(getTimeUntilReset());
-      updateCountdown();
-      const interval = setInterval(updateCountdown, 1000);
-      return () => clearInterval(interval);
+    const today = new Date().toISOString().slice(0, 10);
+    const lastDaily = localStorage.getItem('pixel-royale-last-daily');
+    const lastDailyResultStr = localStorage.getItem('pixel-royale-daily-result');
+    
+    if (lastDaily === today && lastDailyResultStr) {
+      try {
+        const result = JSON.parse(lastDailyResultStr) as DailyResult;
+        setDailyCompleted(true);
+        setDailyResult(result);
+        setDailyStreak(getDailyStreakData());
+        
+        // Load the daily card for display
+        const dailyCard = getDailyCard();
+        setTargetCard(dailyCard);
+        setGameOver(true);
+        setWon(result.won);
+        setStep(MAX_GUESSES);
+      } catch {}
+    } else {
+      setDailyCompleted(false);
+      setDailyResult(null);
     }
-  }, [isDaily]);
+    
+    // Countdown timer
+    const updateCountdown = () => setCountdown(getTimeUntilReset());
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const initGame = useCallback(() => {
     // For daily mode, only allow one attempt per day
-    if (isDaily && dailyCompleted) return;
+    if (dailyCompleted) return;
     
     setImageReady(false);
     setStep(0);
@@ -192,12 +187,8 @@ export default function PixelRoyalePage() {
     setWon(false);
     setShowHint(false);
     
-    if (isDaily) {
-      setTargetCard(getDailyCard());
-    } else {
-      setTargetCard(getRandomCard());
-    }
-  }, [isDaily, dailyCompleted]);
+    setTargetCard(getDailyCard());
+  }, [dailyCompleted]);
 
   useEffect(() => {
     if (!targetCard) return;
@@ -228,7 +219,7 @@ export default function PixelRoyalePage() {
 
   const handleGuess = (card: ClashCard) => {
     if (gameOver || !targetCard) return;
-    if (isDaily && dailyCompleted) return;
+    if (dailyCompleted) return;
 
     const newGuesses = [...guesses, card];
     setGuesses(newGuesses);
@@ -256,7 +247,7 @@ export default function PixelRoyalePage() {
     }
 
     // Save daily result
-    if (isDaily && (isWin || isLoss)) {
+    if (isWin || isLoss) {
       const today = new Date().toISOString().slice(0, 10);
       localStorage.setItem('pixel-royale-last-daily', today);
       localStorage.setItem('pixel-royale-daily-result', JSON.stringify({
@@ -305,11 +296,9 @@ export default function PixelRoyalePage() {
               <span className="text-slate-600">/</span>
               <h1 className="text-base sm:text-lg md:text-xl font-black text-amber-400 tracking-wider flex items-center gap-2">
                 PIXEL ROYALE
-                {isDaily && (
-                  <span className="text-[10px] px-2 py-0.5 bg-purple-500/20 border border-purple-500/50 text-purple-400 rounded-full font-bold">
-                    DAILY
-                  </span>
-                )}
+                <span className="text-[10px] px-2 py-0.5 bg-purple-500/20 border border-purple-500/50 text-purple-400 rounded-full font-bold">
+                  DAILY
+                </span>
               </h1>
             </div>
 
@@ -317,16 +306,7 @@ export default function PixelRoyalePage() {
               <span className="text-slate-400 text-[10px] sm:text-xs uppercase tracking-wide hidden sm:inline">
                 Guesses: <span className="text-white font-bold">{guesses.length}/{MAX_GUESSES}</span>
               </span>
-              {!isDaily && (
-                <button
-                  onClick={initGame}
-                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold rounded-lg hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/20 text-xs transition-all"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">New Game</span>
-                </button>
-              )}
-              {isDaily && dailyCompleted && (
+              {dailyCompleted && (
                 <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                   <Clock className="w-3.5 h-3.5" />
                   <span>{countdown}</span>
@@ -629,26 +609,17 @@ export default function PixelRoyalePage() {
                     </div>
                   </div>
 
-                  {/* Score Badge */}
-                  {won && (
-                    <div className="inline-block px-3 xs:px-4 py-1 xs:py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 mb-3 sm:mb-4">
-                      <span className="text-cyan-400 font-bold text-xs xs:text-sm">
-                        Found in {guesses.length} {guesses.length === 1 ? 'guess' : 'guesses'}!
-                      </span>
-                    </div>
-                  )}
-
                   {/* Separator */}
                   <div className="flex items-center gap-2 xs:gap-3 my-3 sm:my-4 md:my-6">
                     <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
                     <span className="text-amber-500/60 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest whitespace-nowrap">
-                      {isDaily && dailyCompleted ? 'Daily Complete!' : 'Play Again?'}
+                      {dailyCompleted ? 'Daily Complete!' : 'Daily Challenge'}
                     </span>
                     <div className="flex-1 h-px bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
                   </div>
 
                   {/* Daily Streak Display */}
-                  {isDaily && dailyStreak && dailyStreak.currentStreak > 0 && (
+                  {dailyStreak && dailyStreak.currentStreak > 0 && (
                     <div className="mb-4 flex items-center justify-center gap-2 text-amber-400">
                       <Flame className="w-5 h-5" />
                       <span className="font-bold">{dailyStreak.currentStreak} day streak</span>
@@ -658,48 +629,13 @@ export default function PixelRoyalePage() {
                     </div>
                   )}
 
-                  {/* Next daily countdown for daily mode */}
-                  {isDaily && dailyCompleted && (
+                  {/* Next daily countdown */}
+                  {dailyCompleted && (
                     <div className="mb-4 flex items-center justify-center gap-2 text-gray-400 text-sm">
                       <Clock className="w-4 h-4" />
                       <span>Next daily in {countdown}</span>
                     </div>
                   )}
-
-                  {/* Buttons */}
-                  <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 justify-center">
-                    {isDaily ? (
-                      <Link
-                        href="/games/pixel-royale"
-                        className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-black uppercase tracking-wider text-xs xs:text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
-                        style={{
-                          background: 'linear-gradient(90deg, #f59e0b 0%, #eab308 50%, #f59e0b 100%)',
-                          color: '#1e1b18',
-                          boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)'
-                        }}
-                      >
-                        Practice Mode
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={initGame}
-                        className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-black uppercase tracking-wider text-xs xs:text-sm sm:text-base transition-all hover:scale-105 active:scale-95"
-                        style={{
-                          background: 'linear-gradient(90deg, #f59e0b 0%, #eab308 50%, #f59e0b 100%)',
-                          color: '#1e1b18',
-                          boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)'
-                        }}
-                      >
-                        New Game
-                      </button>
-                    )}
-                    <Link
-                      href="/"
-                      className="px-5 xs:px-6 sm:px-8 py-2 xs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold uppercase tracking-wider text-xs xs:text-sm sm:text-base bg-slate-800/80 text-slate-300 hover:bg-slate-700 border border-slate-600/50 transition-all text-center"
-                    >
-                      Home
-                    </Link>
-                  </div>
 
                   {/* Account Creation Reminder */}
                   {!user && (

@@ -8,7 +8,7 @@ const dailyGames = [
     title: 'ROYALEDLE', 
     description: 'Guess the card from clues',
     image: '/images/games/3.webp',
-    href: '/games/royaledle?mode=daily', 
+    href: '/games/royaledle', 
     color: '#f59e0b',
   },
   { 
@@ -16,7 +16,7 @@ const dailyGames = [
     title: 'EMOJI RIDDLE', 
     description: 'Decode the emoji combo',
     image: '/images/games/8.webp',
-    href: '/games/emoji-riddle?mode=daily', 
+    href: '/games/emoji-riddle', 
     color: '#ec4899',
   },
   { 
@@ -24,7 +24,7 @@ const dailyGames = [
     title: 'PIXEL ROYALE', 
     description: 'Identify the pixelated card',
     image: '/images/games/6.webp',
-    href: '/games/pixel-royale?mode=daily', 
+    href: '/games/pixel-royale', 
     color: '#8b5cf6',
   },
 ]
@@ -49,34 +49,16 @@ const games = [
     href: '/games/higher-lower', 
   },
   { 
-    id: 'royaledle', 
-    title: 'ROYALEDLE', 
-    image: '/images/games/3.webp',
-    href: '/games/royaledle', 
-  },
-  { 
     id: 'wordle', 
     title: 'WORDLE', 
     image: '/images/games/4.webp',
     href: '/games/wordle', 
   },
   { 
-    id: 'pixel-royale', 
-    title: 'PIXEL ROYALE', 
-    image: '/images/games/6.webp',
-    href: '/games/pixel-royale', 
-  },
-  { 
     id: 'memory', 
     title: 'ROYALE MEMORY', 
     image: '/images/games/7.webp',
     href: '/games/memory', 
-  },
-  { 
-    id: 'emoji-riddle', 
-    title: 'EMOJI RIDDLE', 
-    image: '/images/games/8.webp',
-    href: '/games/emoji-riddle', 
   },
   { 
     id: 'sound-quiz', 
