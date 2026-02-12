@@ -6,6 +6,7 @@ import { cardsData } from '@/data'
 import type { ClashCard, CardType, CardRarity } from '@/types/card'
 import { RARITY_COLORS, TYPE_ICONS } from '@/types/card'
 import { useLanguage } from '@/lib/useLanguage'
+import { includesNormalized } from '@/lib/text-utils'
 
 const cardTypes: CardType[] = ['Troop', 'Spell', 'Building', 'Champion', 'Tower Troop', 'Evolution', 'Hero']
 const cardRarities: CardRarity[] = ['Common', 'Rare', 'Epic', 'Legendary', 'Champion', 'Heroic']
@@ -22,10 +23,10 @@ export default function CardsPage() {
   const filteredCards = useMemo(() => {
     let filtered = cardsData
 
-    // Search filter
+    // Search filter (accent-insensitive)
     if (searchQuery) {
       filtered = filtered.filter(card => 
-        getCardNameTranslated(card.id).toLowerCase().includes(searchQuery.toLowerCase())
+        includesNormalized(getCardNameTranslated(card.id), searchQuery)
       )
     }
 

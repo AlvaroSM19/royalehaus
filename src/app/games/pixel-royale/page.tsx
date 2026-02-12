@@ -8,6 +8,7 @@ import { Home, Search, HelpCircle, Trophy, Check, X, XCircle, Clock, UserPlus, F
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
 import { recordPixelRoyaleSession } from '@/lib/progress';
+import { includesNormalized } from '@/lib/text-utils';
 
 const MAX_GUESSES = 6;
 
@@ -281,13 +282,12 @@ export default function PixelRoyalePage() {
 
   const filteredCards = useMemo(() => {
     if (!searchTerm || searchTerm.length < 2) return [];
-    const term = searchTerm.toLowerCase();
     return baseCards
       .filter(card => !guessedCardIds.has(card.id))
       .filter(card => {
-        const englishMatch = card.name.toLowerCase().includes(term);
+        const englishMatch = includesNormalized(card.name, searchTerm);
         const translatedName = getCardNameTranslated(card.id);
-        const translatedMatch = translatedName.toLowerCase().includes(term);
+        const translatedMatch = includesNormalized(translatedName, searchTerm);
         return englishMatch || translatedMatch;
       })
       .slice(0, 8);

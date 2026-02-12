@@ -9,6 +9,7 @@ import { Home, Search, Sparkles, Trophy, HelpCircle, CheckCircle, XCircle, Clock
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
 import { recordEmojiRiddleSession } from '@/lib/progress';
+import { includesNormalized } from '@/lib/text-utils';
 
 const MAX_GUESSES = 5;
 
@@ -261,13 +262,12 @@ export default function EmojiRiddlePage() {
 
   const filteredCards = useMemo(() => {
     if (!searchTerm || searchTerm.length < 2) return [];
-    const term = searchTerm.toLowerCase();
     return baseCards
       .filter(card => !guessedCardIds.has(card.id))
       .filter(card => {
-        const englishMatch = card.name.toLowerCase().includes(term);
+        const englishMatch = includesNormalized(card.name, searchTerm);
         const translatedName = getCardNameTranslated(card.id);
-        const translatedMatch = translatedName.toLowerCase().includes(term);
+        const translatedMatch = includesNormalized(translatedName, searchTerm);
         return englishMatch || translatedMatch;
       })
       .slice(0, 8);
@@ -421,9 +421,7 @@ export default function EmojiRiddlePage() {
                 `}
               >
                 {item.revealed ? (
-                  <span className={`transform transition-all duration-300 hover:scale-110 ${
-                    item.isKeyEmoji ? 'animate-pulse' : ''
-                  }`}>
+                  <span className="transform transition-all duration-300 hover:scale-110">
                     {item.emoji}
                   </span>
                 ) : (
@@ -448,7 +446,7 @@ export default function EmojiRiddlePage() {
         )}
         
         {showBonusHint && !gameOver && (
-          <div className="text-center mb-4 xs:mb-5 sm:mb-6 text-amber-300 text-[10px] xs:text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-md xs:rounded-lg py-1.5 xs:py-2 px-3 xs:px-4 max-w-[280px] xs:max-w-xs sm:max-w-md mx-auto animate-pulse flex items-center justify-center gap-2">
+          <div className="text-center mb-4 xs:mb-5 sm:mb-6 text-amber-300 text-[10px] xs:text-xs font-medium bg-amber-900/20 border border-amber-500/20 rounded-md xs:rounded-lg py-1.5 xs:py-2 px-3 xs:px-4 max-w-[280px] xs:max-w-xs sm:max-w-md mx-auto flex items-center justify-center gap-2">
             <Sparkles className="w-3.5 h-3.5" /> Bonus clue revealed!
           </div>
         )}

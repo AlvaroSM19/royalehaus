@@ -6,6 +6,7 @@ import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
 import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2, Trophy, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
+import { includesNormalized } from '@/lib/text-utils';
 
 const MAX_GUESSES = 5;
 
@@ -119,13 +120,12 @@ export default function SoundQuizPage() {
 
   const filteredCards = useMemo(() => {
     if (!searchTerm || searchTerm.length < 2) return [];
-    const term = searchTerm.toLowerCase();
     return baseCards
       .filter(card => !guessedCardIds.has(card.id))
       .filter(card => {
-        const englishMatch = card.name.toLowerCase().includes(term);
+        const englishMatch = includesNormalized(card.name, searchTerm);
         const translatedName = getCardNameTranslated(card.id);
-        const translatedMatch = translatedName.toLowerCase().includes(term);
+        const translatedMatch = includesNormalized(translatedName, searchTerm);
         return englishMatch || translatedMatch;
       })
       .slice(0, 8);

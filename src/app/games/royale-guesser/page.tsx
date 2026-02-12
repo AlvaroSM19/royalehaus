@@ -6,6 +6,7 @@ import { baseCards } from '@/data';
 import { ClashCard, CardType, CardRarity, AttackType, AttackSpeed } from '@/types/card';
 import { Home, RotateCcw, Search, Trophy, HelpCircle, CheckCircle, XCircle, Target, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
+import { includesNormalized } from '@/lib/text-utils';
 
 // Condition types that can be combined
 interface Condition {
@@ -186,13 +187,12 @@ export default function RoyaleGuesserPage() {
 
   const filteredCards = useMemo(() => {
     if (!searchTerm || searchTerm.length < 2) return [];
-    const term = searchTerm.toLowerCase();
     return baseCards
       .filter(card => !guessedCardIds.has(card.id))
       .filter(card => {
-        const englishMatch = card.name.toLowerCase().includes(term);
+        const englishMatch = includesNormalized(card.name, searchTerm);
         const translatedName = getCardNameTranslated(card.id);
-        const translatedMatch = translatedName.toLowerCase().includes(term);
+        const translatedMatch = includesNormalized(translatedName, searchTerm);
         return englishMatch || translatedMatch;
       })
       .slice(0, 8);

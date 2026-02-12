@@ -9,6 +9,7 @@ import { Home, RotateCcw, Search, Calendar, Shuffle, Clock, Trophy, CheckCircle,
 import { recordRoyaledleSession } from '@/lib/progress';
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
+import { includesNormalized } from '@/lib/text-utils';
 
 type GameMode = 'daily' | 'practice';
 
@@ -310,7 +311,7 @@ export default function RoyaledlePage() {
 
   const filteredCards = baseCards
     .filter(card => 
-      getCardNameTranslated(card.id).toLowerCase().includes(searchTerm.toLowerCase()) &&
+      includesNormalized(getCardNameTranslated(card.id), searchTerm) &&
       !guesses.some(g => g.card.id === card.id)
     )
     .slice(0, 8);
