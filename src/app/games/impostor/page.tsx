@@ -665,69 +665,119 @@ export default function ImpostorPage() {
             borderColor: 'rgba(0, 150, 180, 0.2)'
           }}
         >
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2 text-cyan-400/70 hover:text-cyan-300 transition-colors font-medium">
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Link>
-              <div className="w-px h-6 bg-cyan-700/30" />
-              <h1 
-                className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300 uppercase tracking-wider"
-              >
-                IMPOSTOR
-              </h1>
+          <div className="container mx-auto px-4 py-3">
+            {/* Mobile Layout - Stacked */}
+            <div className="flex flex-col gap-3 lg:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Link href="/" className="text-cyan-400/70 hover:text-cyan-300 transition-colors">
+                    <Home className="w-4 h-4" />
+                  </Link>
+                  <div className="w-px h-5 bg-cyan-700/30" />
+                  <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300 uppercase tracking-wider">
+                    IMPOSTOR
+                  </h1>
+                </div>
+                <button
+                  onClick={newGame}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(217, 119, 6, 0.95) 100%)',
+                    border: '1px solid rgba(252, 211, 77, 0.4)',
+                    color: '#1a1a1a'
+                  }}
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                  <Award className="w-3 h-3 text-amber-400" />
+                  <span className="text-white font-bold text-sm">{score}</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                  <Zap className="w-3 h-3 text-cyan-400" />
+                  <span className="text-white font-bold text-sm">{streak}</span>
+                </div>
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg ${
+                  timeLeft <= 5 
+                    ? 'bg-red-500/20 border border-red-500/50' 
+                    : 'bg-slate-700/30 border border-slate-600/30'
+                }`}>
+                  <Clock className={`w-3.5 h-3.5 ${timeLeft <= 5 ? 'text-red-400' : 'text-slate-400'}`} />
+                  <span className={`font-black text-lg ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
+                    {formatTime(timeLeft)}
+                  </span>
+                </div>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-6">
-              {/* Score */}
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                <Award className="w-4 h-4 text-amber-400" />
-                <span className="text-amber-400 text-sm font-bold uppercase tracking-wide">Score</span>
-                <span className="text-white font-black text-lg">{score}</span>
+
+            {/* Desktop Layout */}
+            <div className="hidden lg:flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link href="/" className="flex items-center gap-2 text-cyan-400/70 hover:text-cyan-300 transition-colors font-medium">
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </Link>
+                <div className="w-px h-6 bg-cyan-700/30" />
+                <h1 
+                  className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300 uppercase tracking-wider"
+                >
+                  IMPOSTOR
+                </h1>
               </div>
               
-              {/* Streak */}
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
-                <Zap className="w-4 h-4 text-cyan-400" />
-                <span className="text-cyan-400 text-sm font-bold uppercase tracking-wide">Streak</span>
-                <span className="text-white font-black text-lg">{streak}</span>
+              <div className="flex items-center gap-6">
+                {/* Score */}
+                <div className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  <span className="text-amber-400 text-sm font-bold uppercase tracking-wide">Score</span>
+                  <span className="text-white font-black text-lg">{score}</span>
+                </div>
+                
+                {/* Streak */}
+                <div className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+                  <Zap className="w-4 h-4 text-cyan-400" />
+                  <span className="text-cyan-400 text-sm font-bold uppercase tracking-wide">Streak</span>
+                  <span className="text-white font-black text-lg">{streak}</span>
+                </div>
+                
+                {/* Timer */}
+                <div className={`flex items-center gap-2 px-4 py-1.5 rounded-lg ${
+                  timeLeft <= 5 
+                    ? 'bg-red-500/20 border border-red-500/50' 
+                    : 'bg-slate-700/30 border border-slate-600/30'
+                }`}>
+                  <Clock className={`w-4 h-4 ${timeLeft <= 5 ? 'text-red-400' : 'text-slate-400'}`} />
+                  <span className={`font-black text-2xl ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
+                    {formatTime(timeLeft)}
+                  </span>
+                </div>
+                
+                {/* New Game */}
+                <button
+                  onClick={newGame}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wide transition-all hover:scale-105"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(217, 119, 6, 0.95) 100%)',
+                    border: '1px solid rgba(252, 211, 77, 0.4)',
+                    color: '#1a1a1a'
+                  }}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset
+                </button>
               </div>
-              
-              {/* Timer */}
-              <div className={`flex items-center gap-2 px-4 py-1.5 rounded-lg ${
-                timeLeft <= 5 
-                  ? 'bg-red-500/20 border border-red-500/50' 
-                  : 'bg-slate-700/30 border border-slate-600/30'
-              }`}>
-                <Clock className={`w-4 h-4 ${timeLeft <= 5 ? 'text-red-400' : 'text-slate-400'}`} />
-                <span className={`font-black text-2xl ${timeLeft <= 5 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
-                  {formatTime(timeLeft)}
-                </span>
-              </div>
-              
-              {/* New Game */}
-              <button
-                onClick={newGame}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wide transition-all hover:scale-105"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.9) 0%, rgba(217, 119, 6, 0.95) 100%)',
-                  border: '1px solid rgba(252, 211, 77, 0.4)',
-                  color: '#1a1a1a'
-                }}
-              >
-                <RotateCcw className="w-4 h-4" />
-                Reset
-              </button>
             </div>
           </div>
         </div>
 
         {/* Game Area */}
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
           {/* Title Box */}
           <div 
-            className="rounded-2xl p-5 mb-10 text-center max-w-2xl mx-auto relative overflow-hidden"
+            className="rounded-xl sm:rounded-2xl p-3 sm:p-5 mb-6 sm:mb-10 text-center max-w-2xl mx-auto relative overflow-hidden"
             style={{
               background: 'linear-gradient(180deg, rgba(15, 60, 80, 0.95) 0%, rgba(10, 45, 60, 0.98) 100%)',
               boxShadow: '0 10px 40px rgba(0, 150, 180, 0.15)',
@@ -736,16 +786,16 @@ export default function ImpostorPage() {
           >
             <div className="absolute inset-1 rounded-xl border border-cyan-500/15 pointer-events-none" />
             <p 
-              className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 uppercase tracking-wider"
+              className="text-xl sm:text-2xl lg:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 uppercase tracking-wider"
               style={{ textShadow: '0 0 20px rgba(245, 180, 50, 0.3)' }}
             >
               Find the Impostor!
             </p>
-            <p className="text-cyan-400 text-sm mt-2 font-medium tracking-wide">One card doesn&apos;t belong with the others</p>
+            <p className="text-cyan-400 text-xs sm:text-sm mt-1 sm:mt-2 font-medium tracking-wide">One card doesn&apos;t belong with the others</p>
           </div>
 
           {/* Cards Grid */}
-          <div className="flex flex-wrap justify-center gap-5 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap justify-center gap-2 sm:gap-3 lg:gap-5 mb-6 sm:mb-8">
             {cards.map((card, index) => {
               const isImpostor = index === impostorIndex;
               const isSelected = selectedIndex === index;
@@ -757,11 +807,13 @@ export default function ImpostorPage() {
                   key={card.id}
                   onClick={() => handleSelect(index)}
                   disabled={showResult}
-                  className={`relative overflow-hidden rounded-2xl transition-all duration-300 transform ${
+                  className={`relative overflow-hidden rounded-xl sm:rounded-2xl transition-all duration-300 transform ${
                     showResult && !isImpostor && !isSelected ? 'opacity-50 scale-95' : ''
                   } ${!showResult ? 'hover:scale-105 hover:-translate-y-2 cursor-pointer' : ''}`}
                   style={{ 
-                    width: '170px',
+                    width: 'auto',
+                    minWidth: '100px',
+                    maxWidth: '170px',
                     background: isCorrect 
                       ? 'linear-gradient(180deg, rgba(60, 30, 15, 0.98) 0%, rgba(40, 20, 10, 0.99) 100%)'
                       : isWrong

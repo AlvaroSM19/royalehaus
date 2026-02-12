@@ -373,55 +373,109 @@ export default function RoyaledlePage() {
       <div className="relative z-10">
         {/* Header Banner */}
         <div className="bg-gray-900/90 border-b border-gray-700/50">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Link>
-              <span className="text-gray-600">/</span>
-              <h1 className="text-xl font-black text-yellow-400 tracking-wide">ROYALEDLE</h1>
+          <div className="container mx-auto px-4 py-3">
+            {/* Mobile Header - Stacked */}
+            <div className="flex flex-col gap-3 sm:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Link href="/" className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors">
+                    <Home className="w-4 h-4" />
+                  </Link>
+                  <span className="text-gray-600">/</span>
+                  <h1 className="text-lg font-black text-yellow-400 tracking-wide">ROYALEDLE</h1>
+                </div>
+                <span className="text-gray-400 text-sm">
+                  <span className="text-white font-bold">{guesses.length}</span>/{MAX_GUESSES}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex rounded-lg overflow-hidden border border-gray-600 flex-1">
+                  <button
+                    onClick={() => initGame('daily')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-medium transition-colors ${
+                      mode === 'daily'
+                        ? 'bg-amber-500 text-gray-900'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Daily
+                  </button>
+                  <button
+                    onClick={() => initGame('practice')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm font-medium transition-colors ${
+                      mode === 'practice'
+                        ? 'bg-amber-500 text-gray-900'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <Shuffle className="w-3.5 h-3.5" />
+                    Practice
+                  </button>
+                </div>
+                {mode === 'practice' && (
+                  <button
+                    onClick={() => initGame('practice')}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    New
+                  </button>
+                )}
+              </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              {/* Mode Toggle */}
-              <div className="flex rounded-lg overflow-hidden border border-gray-600">
-                <button
-                  onClick={() => initGame('daily')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
-                    mode === 'daily'
-                      ? 'bg-amber-500 text-gray-900'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  Daily
-                </button>
-                <button
-                  onClick={() => initGame('practice')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
-                    mode === 'practice'
-                      ? 'bg-amber-500 text-gray-900'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
-                >
-                  <Shuffle className="w-3.5 h-3.5" />
-                  Practice
-                </button>
+            {/* Desktop Header */}
+            <div className="hidden sm:flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </Link>
+                <span className="text-gray-600">/</span>
+                <h1 className="text-xl font-black text-yellow-400 tracking-wide">ROYALEDLE</h1>
               </div>
               
-              <span className="text-gray-400 text-sm">
-                ATTEMPTS: <span className="text-white font-bold">{guesses.length}</span>
-              </span>
-              {mode === 'practice' && (
-                <button
-                  onClick={() => initGame('practice')}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  New Game
-                </button>
-              )}
+              <div className="flex items-center gap-4">
+                {/* Mode Toggle */}
+                <div className="flex rounded-lg overflow-hidden border border-gray-600">
+                  <button
+                    onClick={() => initGame('daily')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                      mode === 'daily'
+                        ? 'bg-amber-500 text-gray-900'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Daily
+                  </button>
+                  <button
+                    onClick={() => initGame('practice')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors ${
+                      mode === 'practice'
+                        ? 'bg-amber-500 text-gray-900'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    }`}
+                  >
+                    <Shuffle className="w-3.5 h-3.5" />
+                    Practice
+                  </button>
+                </div>
+                
+                <span className="text-gray-400 text-sm">
+                  ATTEMPTS: <span className="text-white font-bold">{guesses.length}</span>
+                </span>
+                {mode === 'practice' && (
+                  <button
+                    onClick={() => initGame('practice')}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    New Game
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -574,10 +628,10 @@ export default function RoyaledlePage() {
           )}
 
           {/* Guesses */}
-          <div className="space-y-3 max-w-6xl mx-auto">
+          <div className="space-y-3 max-w-6xl mx-auto overflow-x-auto">
             {/* Header Row */}
             {guesses.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1 px-3 text-xs text-gray-200 uppercase tracking-wider font-bold">
+              <div className="hidden sm:flex items-center gap-1 px-3 text-xs text-gray-200 uppercase tracking-wider font-bold min-w-[700px]">
                 <div className="w-12 flex-shrink-0"></div>
                 <div className="flex-1 text-center">Type</div>
                 <div className="flex-1 text-center">Rarity</div>
@@ -594,7 +648,7 @@ export default function RoyaledlePage() {
             {guesses.map((guess, guessIndex) => (
               <div 
                 key={guessIndex} 
-                className="bg-[#0d3b4c]/80 backdrop-blur-sm rounded-xl p-2 border border-cyan-800/30"
+                className="bg-[#0d3b4c]/80 backdrop-blur-sm rounded-xl p-2 border border-cyan-800/30 min-w-[700px] sm:min-w-0"
               >
                 <div className="flex items-center gap-1">
                   {/* Card Image */}

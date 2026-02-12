@@ -227,33 +227,65 @@ export default function WordlePage() {
       <div className="relative z-10">
         {/* Header */}
         <div className="bg-gray-900/80 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Link>
-              <h1 className="text-xl font-black text-yellow-400 tracking-wide">ROYALE WORDLE</h1>
+          <div className="container mx-auto px-4 py-3">
+            {/* Mobile Layout */}
+            <div className="flex flex-col gap-2 sm:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+                    <Home className="w-4 h-4" />
+                  </Link>
+                  <h1 className="text-lg font-black text-yellow-400 tracking-wide">ROYALE WORDLE</h1>
+                </div>
+                <button
+                  onClick={initGame}
+                  className="flex items-center gap-1 px-2 py-1.5 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-xs border-2 border-amber-500"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  New
+                </button>
+              </div>
+              <div className="flex items-center justify-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Trophy className="w-3.5 h-3.5 text-yellow-500" />
+                  <span className="text-white font-bold text-sm">{score}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Gamepad2 className="w-3.5 h-3.5 text-yellow-500" />
+                  <span className="text-white font-bold text-sm">{gamesPlayed}</span>
+                </div>
+              </div>
             </div>
             
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-500" />
-                <span className="text-gray-400 text-sm">Score:</span>
-                <span className="text-white font-bold">{score}</span>
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                  <Home className="w-4 h-4" />
+                  <span>Home</span>
+                </Link>
+                <h1 className="text-xl font-black text-yellow-400 tracking-wide">ROYALE WORDLE</h1>
               </div>
-              <div className="flex items-center gap-2">
-                <Gamepad2 className="w-4 h-4 text-yellow-500" />
-                <span className="text-gray-400 text-sm">Games:</span>
-                <span className="text-white font-bold">{gamesPlayed}</span>
+              
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-500" />
+                  <span className="text-gray-400 text-sm">Score:</span>
+                  <span className="text-white font-bold">{score}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4 text-yellow-500" />
+                  <span className="text-gray-400 text-sm">Games:</span>
+                  <span className="text-white font-bold">{gamesPlayed}</span>
+                </div>
+                <button
+                  onClick={initGame}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  New Game
+                </button>
               </div>
-              <button
-                onClick={initGame}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-gray-900 font-bold rounded-lg hover:bg-amber-300 transition-colors text-sm border-2 border-amber-500"
-              >
-                <RotateCcw className="w-4 h-4" />
-                New Game
-              </button>
             </div>
           </div>
         </div>
@@ -309,61 +341,61 @@ export default function WordlePage() {
         )}
 
         {/* Game Area */}
-        <div className="container mx-auto px-4 py-6 flex flex-col items-center">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex flex-col items-center">
           {/* Hints Section */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
             {/* Rarity Hint - Unlocks at 3 attempts */}
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+            <div className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg border-2 transition-all ${
               guesses.length >= 3 
                 ? 'bg-purple-900/50 border-purple-500' 
                 : 'bg-gray-900/50 border-gray-700'
             }`}>
-              <Sparkles className={`w-4 h-4 ${guesses.length >= 3 ? 'text-purple-400' : 'text-gray-600'}`} />
-              <span className="text-xs text-gray-400 uppercase">Rarity</span>
+              <Sparkles className={`w-3 h-3 sm:w-4 sm:h-4 ${guesses.length >= 3 ? 'text-purple-400' : 'text-gray-600'}`} />
+              <span className="text-[10px] sm:text-xs text-gray-400 uppercase">Rarity</span>
               {guesses.length >= 3 && targetCard ? (
-                <span className="font-bold" style={{ color: RARITY_COLORS[targetCard.rarity]?.glow || '#fff' }}>
+                <span className="font-bold text-sm sm:text-base" style={{ color: RARITY_COLORS[targetCard.rarity]?.glow || '#fff' }}>
                   {targetCard.rarity}
                 </span>
               ) : (
-                <span className="text-gray-600 text-xs flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> 3 tries
+                <span className="text-gray-600 text-[10px] sm:text-xs flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> 3
                 </span>
               )}
             </div>
 
             {/* Elixir Hint - Unlocks at 5 attempts */}
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+            <div className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg border-2 transition-all ${
               guesses.length >= 5 
                 ? 'bg-cyan-900/50 border-cyan-500' 
                 : 'bg-gray-900/50 border-gray-700'
             }`}>
-              <Droplets className={`w-4 h-4 ${guesses.length >= 5 ? 'text-cyan-400' : 'text-gray-600'}`} />
-              <span className="text-xs text-gray-400 uppercase">Elixir</span>
+              <Droplets className={`w-3 h-3 sm:w-4 sm:h-4 ${guesses.length >= 5 ? 'text-cyan-400' : 'text-gray-600'}`} />
+              <span className="text-[10px] sm:text-xs text-gray-400 uppercase">Elixir</span>
               {guesses.length >= 5 && targetCard ? (
-                <span className="font-bold text-cyan-400 flex items-center gap-1">
+                <span className="font-bold text-cyan-400 flex items-center gap-1 text-sm sm:text-base">
                   {targetCard.elixir}
-                  <img src="/images/elixir.webp" alt="Clash Royale Elixir Cost" className="w-4 h-4" />
+                  <img src="/images/elixir.webp" alt="Clash Royale Elixir Cost" className="w-3 h-3 sm:w-4 sm:h-4" />
                 </span>
               ) : (
-                <span className="text-gray-600 text-xs flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> 5 tries
+                <span className="text-gray-600 text-[10px] sm:text-xs flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> 5
                 </span>
               )}
             </div>
 
             {/* Type Hint - Unlocks at 7 attempts */}
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+            <div className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg border-2 transition-all ${
               guesses.length >= 7 
                 ? 'bg-amber-900/50 border-amber-500' 
                 : 'bg-gray-900/50 border-gray-700'
             }`}>
-              <Sword className={`w-4 h-4 ${guesses.length >= 7 ? 'text-amber-400' : 'text-gray-600'}`} />
-              <span className="text-xs text-gray-400 uppercase">Type</span>
+              <Sword className={`w-3 h-3 sm:w-4 sm:h-4 ${guesses.length >= 7 ? 'text-amber-400' : 'text-gray-600'}`} />
+              <span className="text-[10px] sm:text-xs text-gray-400 uppercase">Type</span>
               {guesses.length >= 7 && targetCard ? (
-                <span className="font-bold text-amber-400">{targetCard.type}</span>
+                <span className="font-bold text-amber-400 text-sm sm:text-base">{targetCard.type}</span>
               ) : (
-                <span className="text-gray-600 text-xs flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> 7 tries
+                <span className="text-gray-600 text-[10px] sm:text-xs flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> 7
                 </span>
               )}
             </div>
