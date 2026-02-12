@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards, getRandomCard } from '@/data';
 import { ClashCard } from '@/types/card';
@@ -12,14 +12,31 @@ import { useLanguage } from '@/lib/useLanguage';
 const MAX_GUESSES = 8;
 const KEYBOARD_ROWS = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ñ'],
   ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK'],
 ];
 
 type LetterState = 'correct' | 'present' | 'absent' | 'empty';
 
+// Normalize text: remove accents, keep Ñ, and convert to uppercase
+function normalizeText(text: string): string {
+  // First convert to uppercase
+  let result = text.toUpperCase();
+  // Replace accented vowels with their base form
+  result = result.replace(/[ÁÀÂÄÃ]/g, 'A');
+  result = result.replace(/[ÉÈÊË]/g, 'E');
+  result = result.replace(/[ÍÌÎÏ]/g, 'I');
+  result = result.replace(/[ÓÒÔÖÕ]/g, 'O');
+  result = result.replace(/[ÚÙÛÜ]/g, 'U');
+  // Keep Ñ as is, remove other non-letter characters
+  result = result.replace(/[^A-ZÑ]/g, '');
+  return result;
+}
+
 export default function WordlePage() {
-  const { getCardNameTranslated } = useLanguage();
+  const { getCardNameTranslated, language } = useLanguage();
+  // Store the language used when the game started to prevent mid-game changes
+  const gameLanguageRef = useRef<string>('en');
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [targetWord, setTargetWord] = useState('');
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -34,14 +51,21 @@ export default function WordlePage() {
   const [isRevealing, setIsRevealing] = useState(false);
 
   const initGame = useCallback(() => {
+    // Store the current language for this game session
+    gameLanguageRef.current = language;
+    
     // Get a random card with a name that's reasonable length (3-8 chars)
     let card = getRandomCard();
-    let word = card.name.toUpperCase().replace(/[^A-Z]/g, '');
+    let cardName = getCardNameTranslated(card.id);
+    let word = normalizeText(cardName);
     
     // Keep trying until we get a word of reasonable length
-    while (word.length < 3 || word.length > 8) {
+    let attempts = 0;
+    while ((word.length < 3 || word.length > 8) && attempts < 100) {
       card = getRandomCard();
-      word = card.name.toUpperCase().replace(/[^A-Z]/g, '');
+      cardName = getCardNameTranslated(card.id);
+      word = normalizeText(cardName);
+      attempts++;
     }
     
     setTargetCard(card);
@@ -53,7 +77,7 @@ export default function WordlePage() {
     setLetterStates({});
     setRevealRow(null);
     setIsRevealing(false);
-  }, []);
+  }, [language, getCardNameTranslated]);
 
   useEffect(() => {
     initGame();
@@ -179,8 +203,12 @@ export default function WordlePage() {
         handleKeyPress('ENTER');
       } else if (e.key === 'Backspace') {
         handleKeyPress('BACK');
-      } else if (/^[a-zA-Z]$/.test(e.key)) {
-        handleKeyPress(e.key.toUpperCase());
+      } else if (/^[a-zA-ZñÑ]$/.test(e.key)) {
+        // Normalize accented characters to base letter, keep Ñ
+        const normalized = normalizeText(e.key);
+        if (normalized) {
+          handleKeyPress(normalized);
+        }
       }
     };
 
