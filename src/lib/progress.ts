@@ -7,6 +7,8 @@ export interface ImpostorHighScore { bestStreak: number; bestScore: number; upda
 export interface TapOneHighScore { bestRank: number; bestScore: number; updatedAt: string }
 export interface MemoryHighScore { bestMoves: number; bestTime: number; difficulty: string; updatedAt: string }
 export interface StatBattleHighScore { bestScore: number; bestStreak: number; updatedAt: string }
+export interface PixelRoyaleHighScore { bestWinAttempts: number; updatedAt: string }
+export interface EmojiRiddleHighScore { bestWinAttempts: number; updatedAt: string }
 
 export interface UserProgress { 
   version: number; 
@@ -20,6 +22,8 @@ export interface UserProgress {
     tapone?: TapOneHighScore;
     memory?: MemoryHighScore;
     statbattle?: StatBattleHighScore;
+    pixelroyale?: PixelRoyaleHighScore;
+    emojiriddle?: EmojiRiddleHighScore;
     [k: string]: any 
   }; 
   stickers: string[]; 
@@ -141,6 +145,62 @@ export function recordRoyaledleSession(attempts: number, won: boolean) {
   
   try { 
     const grant = computeGameXp('royaledle', { attempts, won }); 
+    if (grant) fetch('/api/xp', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      credentials: 'include', 
+      body: JSON.stringify(grant) 
+    }).then(() => { 
+      try { window.dispatchEvent(new Event('xp:updated')); } catch {} 
+    }).catch(() => {}); 
+  } catch {}
+}
+
+export function recordPixelRoyaleSession(attempts: number, won: boolean) {
+  if (typeof window === 'undefined') return;
+  let p = getProgress() || initProgress();
+  p = ensureDaily(p)!;
+  p.stats.gamesPlayedTotal++;
+  p.stats.gamesPlayedById.pixelroyale = (p.stats.gamesPlayedById.pixelroyale || 0) + 1;
+  
+  const prev = p.highScores.pixelroyale;
+  if (won && (!prev || !prev.bestWinAttempts || attempts < prev.bestWinAttempts)) {
+    p.highScores.pixelroyale = { ...prev, bestWinAttempts: attempts, updatedAt: new Date().toISOString() };
+  }
+  saveProgress(p);
+  scheduleServerSync();
+  scheduleServerSync(true);
+  
+  try { 
+    const grant = computeGameXp('pixelroyale', { attempts, won }); 
+    if (grant) fetch('/api/xp', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      credentials: 'include', 
+      body: JSON.stringify(grant) 
+    }).then(() => { 
+      try { window.dispatchEvent(new Event('xp:updated')); } catch {} 
+    }).catch(() => {}); 
+  } catch {}
+}
+
+export function recordEmojiRiddleSession(attempts: number, won: boolean) {
+  if (typeof window === 'undefined') return;
+  let p = getProgress() || initProgress();
+  p = ensureDaily(p)!;
+  p.stats.gamesPlayedTotal++;
+  p.stats.gamesPlayedById.emojiriddle = (p.stats.gamesPlayedById.emojiriddle || 0) + 1;
+  
+  const prev = p.highScores.emojiriddle;
+  if (won && (!prev || !prev.bestWinAttempts || attempts < prev.bestWinAttempts)) {
+    p.highScores.emojiriddle = { ...prev, bestWinAttempts: attempts, updatedAt: new Date().toISOString() };
+  }
+  saveProgress(p);
+  scheduleServerSync();
+  scheduleServerSync(true);
+  
+  try { 
+    const grant = computeGameXp('emojiriddle', { attempts, won }); 
     if (grant) fetch('/api/xp', { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 

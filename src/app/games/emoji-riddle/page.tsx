@@ -8,6 +8,7 @@ import { ClashCard } from '@/types/card';
 import { Home, Search, Sparkles, Trophy, HelpCircle, CheckCircle, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
+import { recordEmojiRiddleSession } from '@/lib/progress';
 
 const MAX_GUESSES = 5;
 
@@ -309,6 +310,9 @@ export default function EmojiRiddlePage() {
       setDailyResult({ won: isWin, guesses: newGuesses.length, cardId: targetCard.id });
       const newStreak = updateDailyStreak();
       setDailyStreak(newStreak);
+      
+      // Record session for XP
+      recordEmojiRiddleSession(newGuesses.length, isWin);
     }
   };
 

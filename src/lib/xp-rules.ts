@@ -57,6 +57,18 @@ const XP_VALUES = {
     highScore10: 100, // Bonus for reaching 10 points
     highScore20: 200, // Bonus for reaching 20 points
   },
+  // Pixel Royale (daily guess from pixelated image)
+  pixelroyale: {
+    win: 100,
+    firstTry: 200,    // Bonus for guessing on first attempt
+    quickWin: 50,     // Bonus for winning in <= 3 attempts
+  },
+  // Emoji Riddle (daily guess from emojis)
+  emojiriddle: {
+    win: 100,
+    firstTry: 200,    // Bonus for guessing on first attempt
+    quickWin: 50,     // Bonus for winning in <= 3 attempts
+  },
 };
 
 export function computeGameXp(gameId: string, data: any): XpGrant | null {
@@ -150,6 +162,22 @@ export function computeGameXp(gameId: string, data: any): XpGrant | null {
       else if (score >= 10) amount += XP_VALUES.statbattle.highScore10;
       
       return { kind: `game:statbattle:complete`, amount };
+    }
+    
+    case 'pixelroyale': {
+      if (!data.won) return null;
+      let amount = XP_VALUES.pixelroyale.win;
+      if (data.attempts === 1) amount += XP_VALUES.pixelroyale.firstTry;
+      else if (data.attempts <= 3) amount += XP_VALUES.pixelroyale.quickWin;
+      return { kind: `game:pixelroyale:win`, amount };
+    }
+    
+    case 'emojiriddle': {
+      if (!data.won) return null;
+      let amount = XP_VALUES.emojiriddle.win;
+      if (data.attempts === 1) amount += XP_VALUES.emojiriddle.firstTry;
+      else if (data.attempts <= 3) amount += XP_VALUES.emojiriddle.quickWin;
+      return { kind: `game:emojiriddle:win`, amount };
     }
     
     default:

@@ -7,6 +7,7 @@ import { ClashCard } from '@/types/card';
 import { Home, Search, HelpCircle, Trophy, Check, X, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
+import { recordPixelRoyaleSession } from '@/lib/progress';
 
 const MAX_GUESSES = 6;
 
@@ -259,6 +260,9 @@ export default function PixelRoyalePage() {
       setDailyResult({ won: isWin, guesses: newGuesses.length, cardId: targetCard.id });
       const newStreak = updateDailyStreak();
       setDailyStreak(newStreak);
+      
+      // Record session for XP
+      recordPixelRoyaleSession(newGuesses.length, isWin);
     }
   };
 
