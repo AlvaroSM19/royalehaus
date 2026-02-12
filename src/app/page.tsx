@@ -121,7 +121,7 @@ export default function HomePage() {
             >
               Daily Challenges
             </h2>
-            <p className="text-amber-100/40 mt-2 text-sm">
+            <p className="mt-3 text-sm font-medium px-4 py-1.5 rounded-full inline-block bg-black/30 border border-amber-600/20 text-amber-200/80">
               One attempt per day • Build your streak!
             </p>
           </div>

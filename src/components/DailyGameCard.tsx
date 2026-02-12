@@ -193,12 +193,12 @@ export function DailyGameCard({ game }: DailyGameCardProps) {
         </h3>
         
         {completed ? (
-          <div className="flex items-center justify-center gap-1.5 text-gray-400 text-[11px] mt-1">
+          <div className="flex items-center justify-center gap-1.5 text-gray-300 text-[11px] mt-1.5 bg-black/20 rounded-full px-2.5 py-0.5 mx-auto w-fit">
             <Clock className="w-3 h-3" />
             <span>Next in {countdown}</span>
           </div>
         ) : (
-          <p className="text-center text-amber-100/40 text-[11px] mt-1">{game.description}</p>
+          <p className="text-center text-amber-100/70 text-[11px] mt-1.5 font-medium">{game.description}</p>
         )}
       </div>
     </Link>
