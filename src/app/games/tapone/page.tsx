@@ -421,13 +421,22 @@ export default function TapOnePage() {
         </div>
 
         {/* Game Grid - Responsive */}
-        <div className="flex-1 flex items-center justify-center p-2 sm:p-3 md:p-4">
+        <div className="flex-1 flex items-center justify-center px-2 xs:px-3 sm:px-4 py-2 sm:py-3 md:py-4">
           <div className="w-full max-w-5xl">
-            {/* Mobile: 2 columns, Tablet: 3 columns, Desktop: 5 columns */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-              {categories.map((cat, i) => renderCard(cat, i))}
+            {/* Mobile: horizontal scroll, Tablet: 3 columns, Desktop: 5 columns */}
+            <div className="relative">
+              {/* Scroll hint for mobile */}
+              <div className="block sm:hidden absolute -top-7 left-0 w-full text-center z-10 pointer-events-none select-none">
+                <span className="inline-block bg-slate-900/80 text-cyan-300 text-xs px-3 py-1 rounded-full shadow-md animate-pulse">Desliza para ver más categorías →</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3 sm:overflow-visible">
+                {categories.map((cat, i) => (
+                  <div key={cat.id} className="min-w-[140px] max-w-[180px] w-full sm:min-w-0 sm:max-w-none">
+                    {renderCard(cat, i)}
+                  </div>
+                ))}
+              </div>
             </div>
-            
             {/* Best Rank Panel - Desktop only */}
             <div className="hidden sm:block mt-3">
               {renderBestRankPanel()}
