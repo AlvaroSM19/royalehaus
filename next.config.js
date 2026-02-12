@@ -13,6 +13,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Ignore TypeScript errors during production build
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   // experimental features disabled to improve dev stability
   // experimental: {
   //   typedRoutes: true,

@@ -390,7 +390,6 @@ export default function RoyaledlePage() {
                   <span>Next in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
                 </div>
               )}
-              </div>
             </div>
             
             {/* Desktop Header */}
@@ -823,19 +822,6 @@ export default function RoyaledlePage() {
           )}
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }

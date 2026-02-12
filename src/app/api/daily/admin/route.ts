@@ -23,7 +23,9 @@ async function isAdmin(): Promise<boolean> {
 // GET: Fetch all challenges for a date range (admin only)
 export async function GET(req: NextRequest) {
   try {
-    if (!(await isAdmin())) {
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      console.log('[ADMIN_API] GET: Not admin - denied');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -35,6 +37,8 @@ export async function GET(req: NextRequest) {
       return d.toISOString().slice(0, 10);
     })();
 
+    console.log(`[ADMIN_API] GET: Fetching challenges from ${startDate} to ${endDate}`);
+
     const challenges = await prisma.dailyChallenge.findMany({
       where: {
         date: { gte: startDate, lte: endDate },
@@ -42,22 +46,26 @@ export async function GET(req: NextRequest) {
       orderBy: [{ date: 'asc' }, { gameType: 'asc' }],
     });
 
+    console.log(`[ADMIN_API] GET: Found ${challenges.length} challenges`);
     return NextResponse.json({ challenges });
-  } catch (error) {
-    console.error('GET /api/daily/admin error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('[ADMIN_API] GET error:', error?.message, error?.code, error?.meta);
+    return NextResponse.json({ error: 'Server error', details: error?.message }, { status: 500 });
   }
 }
 
 // POST: Create or update a daily challenge (admin only)
 export async function POST(req: NextRequest) {
   try {
-    if (!(await isAdmin())) {
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      console.log('[ADMIN_API] POST: Not admin - denied');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const body = await req.json();
     const { date, gameType, cardId } = body;
+    console.log(`[ADMIN_API] POST: date=${date}, gameType=${gameType}, cardId=${cardId}`);
 
     if (!date || !gameType || cardId === undefined) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -85,22 +93,26 @@ export async function POST(req: NextRequest) {
       create: { date, gameType, cardId: numCardId },
     });
 
+    console.log(`[ADMIN_API] POST: Challenge saved`, challenge);
     return NextResponse.json({ challenge });
-  } catch (error) {
-    console.error('POST /api/daily/admin error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('[ADMIN_API] POST error:', error?.message, error?.code, error?.meta);
+    return NextResponse.json({ error: 'Server error', details: error?.message }, { status: 500 });
   }
 }
 
 // PUT: Bulk create/update challenges (for auto-generation)
 export async function PUT(req: NextRequest) {
   try {
-    if (!(await isAdmin())) {
+    const adminCheck = await isAdmin();
+    if (!adminCheck) {
+      console.log('[ADMIN_API] PUT: Not admin - denied');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const body = await req.json();
     const { challenges } = body as { challenges: { date: string; gameType: GameType; cardId: number }[] };
+    console.log(`[ADMIN_API] PUT: Received ${challenges?.length || 0} challenges`);
 
     if (!Array.isArray(challenges)) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
@@ -123,9 +135,10 @@ export async function PUT(req: NextRequest) {
       results.push(challenge);
     }
 
+    console.log(`[ADMIN_API] PUT: Created/updated ${results.length} challenges`);
     return NextResponse.json({ created: results.length, challenges: results });
-  } catch (error) {
-    console.error('PUT /api/daily/admin error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('[ADMIN_API] PUT error:', error?.message, error?.code, error?.meta);
+    return NextResponse.json({ error: 'Server error', details: error?.message }, { status: 500 });
   }
 }
