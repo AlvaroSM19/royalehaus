@@ -514,7 +514,7 @@ export default function EmojiRiddlePage() {
               </div>
             )}
 
-            {/* Account Creation Reminder */}}
+            {/* Account Creation Reminder */}
             {!user && (
               <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                 <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">

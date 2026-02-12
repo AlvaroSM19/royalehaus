@@ -175,7 +175,7 @@ export default function RoyaledlePage() {
   }, []);
 
   useEffect(() => {
-    initGame('daily');
+    initGame();
   }, [initGame]);
 
   const getYear = (dateString: string): number => {
@@ -480,7 +480,7 @@ export default function RoyaledlePage() {
                           {dailyResult.won ? (
                             <span className="flex items-center gap-1">
                               <Trophy className="w-4 h-4" />
-                              Found in {dailyResult.guesses} {dailyResult.guesses === 1 ? 'guess' : 'guesses'}!
+                              Correct!
                             </span>
                           ) : (
                             <span>Better luck tomorrow!</span>
@@ -515,12 +515,24 @@ export default function RoyaledlePage() {
                   </div>
                 </div>
                 
-                <button
-                  onClick={() => initGame('practice')}
-                  className="mt-4 px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold rounded-lg hover:from-amber-400 hover:to-amber-500 transition-all text-sm"
-                >
-                  Play Practice Mode
-                </button>
+                {/* Account Creation Reminder */}
+                {!user && (
+                  <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
+                      <UserPlus className="w-5 h-5" />
+                      <span className="font-semibold">Save your progress!</span>
+                    </div>
+                    <p className="text-gray-400 text-sm text-center mb-3">
+                      Create an account to save your stats and streaks
+                    </p>
+                    <a
+                      href="/auth"
+                      className="block w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-400 transition-colors text-center text-sm"
+                    >
+                      Create Account
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           )}
