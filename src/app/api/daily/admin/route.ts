@@ -7,17 +7,22 @@ type GameType = typeof VALID_GAME_TYPES[number];
 
 // Check if user is admin
 async function isAdmin(): Promise<boolean> {
-  const cookieStore = cookies();
-  const sid = cookieStore.get('sid')?.value;
-  
-  if (!sid) return false;
+  try {
+    const cookieStore = await cookies();
+    const sid = cookieStore.get('sid')?.value;
+    
+    if (!sid) return false;
 
-  const session = await prisma.session.findUnique({
-    where: { id: sid },
-    include: { user: true },
-  });
+    const session = await prisma.session.findUnique({
+      where: { id: sid },
+      include: { user: true },
+    });
 
-  return session?.user?.role === 'admin' && session.expiresAt > new Date();
+    return session?.user?.role === 'admin' && session.expiresAt > new Date();
+  } catch (error) {
+    console.error('[ADMIN_API] isAdmin error:', error);
+    return false;
+  }
 }
 
 // GET: Fetch all challenges for a date range (admin only)

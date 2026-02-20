@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/server/prisma';
+import { prisma } from '@/server/prisma';
 
 // Supported unlock conditions
 // - level: { minLevel: number }
