@@ -120,12 +120,38 @@ export default function SoundQuizPage() {
   const [won, setWon] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingSound, setIsLoadingSound] = useState(false);
+  const [isLoadingHints, setIsLoadingHints] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const cardsWithSounds = useMemo(() => getCardsWithSounds(), []);
 
-  // Generar pistas de sonido para la carta actual
+  // Obtener sonidos reales de una carta desde la API
+  const fetchCardSounds = useCallback(async (card: ClashCard): Promise<SoundHint[]> => {
+    const folderName = CARD_FOLDER_MAP[card.name];
+    if (!folderName) return [];
+
+    try {
+      const response = await fetch(`/api/sounds?cardFolder=${encodeURIComponent(folderName)}`);
+      const data = await response.json();
+      
+      if (!data.available || !data.sounds || data.sounds.length === 0) {
+        console.warn(`No sounds found for ${card.name} (${folderName})`);
+        return [];
+      }
+      
+      // Barajar los sonidos y tomar hasta 8
+      const shuffled = [...data.sounds].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, 8);
+      
+      return selected.map((sound: { url: string }) => ({ url: sound.url }));
+    } catch (error) {
+      console.error(`Failed to fetch sounds for ${card.name}:`, error);
+      return [];
+    }
+  }, []);
+
+  // Generar pistas de sonido para la carta actual (DEPRECATED - ahora usamos fetchCardSounds)
   const generateSoundHints = useCallback((card: ClashCard): SoundHint[] => {
     const folderName = CARD_FOLDER_MAP[card.name];
     if (!folderName) return [];
@@ -181,14 +207,28 @@ export default function SoundQuizPage() {
     setIsPlaying(false);
   }, []);
 
-  const initGame = useCallback(() => {
+  const initGame = useCallback(async () => {
     stopSound();
+    setIsLoadingHints(true);
+    
     if (cardsWithSounds.length === 0) {
       console.warn('No cards with sounds available');
+      setIsLoadingHints(false);
       return;
     }
+    
     const randomCard = cardsWithSounds[Math.floor(Math.random() * cardsWithSounds.length)];
-    const hints = generateSoundHints(randomCard);
+    
+    // Obtener sonidos reales desde la API
+    const hints = await fetchCardSounds(randomCard);
+    
+    if (hints.length === 0) {
+      console.warn(`No sounds available for ${randomCard.name}, trying another card...`);
+      // Intentar con otra carta
+      setIsLoadingHints(false);
+      setTimeout(() => initGame(), 100);
+      return;
+    }
     
     setTargetCard(randomCard);
     setSoundHints(hints);
@@ -198,6 +238,7 @@ export default function SoundQuizPage() {
     setGameOver(false);
     setWon(false);
     setIsLoadingSound(false);
+    setIsLoadingHints(false);
     
     // Reproducir automáticamente el primer sonido después de un pequeño delay
     setTimeout(() => {
@@ -223,7 +264,7 @@ export default function SoundQuizPage() {
         firstAudio.play().catch(err => console.error('Failed to play first sound:', err));
       }
     }, 500);
-  }, [cardsWithSounds, stopSound, generateSoundHints]);
+  }, [cardsWithSounds, stopSound, fetchCardSounds]);
 
   useEffect(() => {
     initGame();
@@ -340,6 +381,24 @@ export default function SoundQuizPage() {
           <Link href="/" className="mt-4 inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold transition-all">
             Back to Home
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar indicador de carga mientras se obtienen los sonidos
+  if (isLoadingHints) {
+    return (
+      <div className="min-h-screen relative text-white flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 pointer-events-none z-0" />
+        <div 
+          className="text-center p-8 rounded-2xl border-2 border-cyan-500/30"
+          style={{
+            background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+          }}
+        >
+          <Loader2 className="w-12 h-12 text-cyan-400 animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-cyan-400">Loading sounds...</h2>
         </div>
       </div>
     );

@@ -4,9 +4,50 @@ import fs from 'fs'
 
 // GET /api/sounds — List all available card sounds
 // GET /api/sounds?cardId=5 — Check if a specific card has sounds
+// GET /api/sounds?cardFolder=Knight — Get all sounds for a specific card folder
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const cardId = searchParams.get('cardId')
+  const cardFolder = searchParams.get('cardFolder')
+  
+  // If requesting sounds for a specific card folder
+  if (cardFolder) {
+    const cardsDir = path.join(process.cwd(), 'public', 'sounds', 'cards', 'Cards')
+    const cardDir = path.join(cardsDir, cardFolder)
+    
+    if (!fs.existsSync(cardDir)) {
+      return NextResponse.json({
+        cardFolder,
+        available: false,
+        sounds: [],
+        error: 'Card folder not found'
+      })
+    }
+    
+    try {
+      const files = fs.readdirSync(cardDir)
+        .filter(f => f.endsWith('.ogg') || f.endsWith('.mp3') || f.endsWith('.wav'))
+        .map(f => ({
+          filename: f,
+          url: `/sounds/cards/Cards/${encodeURIComponent(cardFolder)}/${f}`
+        }))
+      
+      return NextResponse.json({
+        cardFolder,
+        available: files.length > 0,
+        sounds: files,
+        total: files.length
+      })
+    } catch (error) {
+      return NextResponse.json({
+        cardFolder,
+        available: false,
+        sounds: [],
+        error: 'Failed to read card folder'
+      })
+    }
+  }
+  
   const soundsDir = path.join(process.cwd(), 'public', 'sounds', 'cards')
 
   // Ensure directory exists
