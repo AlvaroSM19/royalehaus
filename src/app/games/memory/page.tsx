@@ -387,24 +387,16 @@ export default function RoyaleMemoryGame() {
                   ${card.isMatched ? 'opacity-75 scale-95' : ''}
                 `}
               >
-                {/* Card Back - CSS styled (no image dependency) */}
+                {/* Card Back */}
                 {!faceUp && (
-                  <div className="absolute inset-0 rounded-xl border-2 border-amber-500/60 shadow-lg overflow-hidden"
-                    style={{ background: 'linear-gradient(135deg, #b45309 0%, #92400e 30%, #78350f 50%, #92400e 70%, #b45309 100%)' }}
-                  >
-                    {/* Decorative pattern */}
-                    <div className="absolute inset-1 rounded-lg border border-amber-400/30" />
-                    <div className="absolute inset-2 rounded-md border border-amber-300/15" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-amber-400/40 flex items-center justify-center bg-amber-900/50">
-                        <span className="text-xl sm:text-2xl select-none">👑</span>
-                      </div>
-                    </div>
-                    {/* Corner diamonds */}
-                    <div className="absolute top-1.5 left-1.5 w-2 h-2 rotate-45 bg-amber-400/30 rounded-sm" />
-                    <div className="absolute top-1.5 right-1.5 w-2 h-2 rotate-45 bg-amber-400/30 rounded-sm" />
-                    <div className="absolute bottom-1.5 left-1.5 w-2 h-2 rotate-45 bg-amber-400/30 rounded-sm" />
-                    <div className="absolute bottom-1.5 right-1.5 w-2 h-2 rotate-45 bg-amber-400/30 rounded-sm" />
+                  <div className="absolute inset-0 rounded-xl border-2 border-amber-500/60 shadow-lg overflow-hidden bg-black">
+                    <div className="absolute inset-[3px] rounded-lg border border-amber-500/50" />
+                    <img
+                      src="/images/games/memory/card-back.png"
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover rounded-xl"
+                      draggable={false}
+                    />
                   </div>
                 )}
 

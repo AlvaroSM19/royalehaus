@@ -214,7 +214,7 @@ export default function TapOneGame() {
             : clickable ? '0 4px 20px rgba(0, 200, 255, 0.3)' : '0 6px 16px rgba(0,0,0,0.35)',
         }}
       >
-        <div className={`rounded-[10px] sm:rounded-[14px] overflow-hidden flex flex-col items-center justify-between ${isLocked ? 'bg-slate-900/80' : 'bg-slate-900/70'} backdrop-blur-md h-[130px] sm:h-[160px] lg:h-[170px]`}>
+        <div className={`rounded-[10px] sm:rounded-[14px] overflow-hidden flex flex-col items-center justify-between ${isLocked ? 'bg-slate-900/80' : 'bg-slate-900/70'} backdrop-blur-md h-[140px] sm:h-[170px] lg:h-[180px]`}>
           <div className="w-full flex-1 flex items-center justify-center relative">
             {phase === 'spinning' && !isLocked ? (
               <div className="relative w-full h-full flex items-center justify-center">
@@ -229,8 +229,8 @@ export default function TapOneGame() {
               <img src={`/images/cards/${element.id}.webp`} alt={getCardNameTranslated(element.id)} className="w-full h-full object-contain p-1 sm:p-2 animate-fadeIn" loading="eager" />
             )}
           </div>
-          <div className={`w-full py-1 sm:py-1.5 text-center border-t ${isLocked ? 'bg-gradient-to-r from-amber-600/30 via-yellow-600/25 to-amber-600/30 border-amber-500/40' : 'bg-gradient-to-r from-slate-700/40 to-slate-800/40 border-slate-600/50'}`}>
-            <span className={`block text-[8px] sm:text-[9px] md:text-[10px] font-extrabold uppercase tracking-[0.1em] sm:tracking-[0.15em] ${isLocked ? 'text-amber-400' : clickable ? 'text-cyan-300' : 'text-slate-400'}`}>
+          <div className={`w-full py-1.5 sm:py-2 text-center border-t ${isLocked ? 'bg-gradient-to-r from-amber-600/30 via-yellow-600/25 to-amber-600/30 border-amber-500/40' : 'bg-gradient-to-r from-slate-700/40 to-slate-800/40 border-slate-600/50'}`}>
+            <span className={`block text-[9px] sm:text-[11px] md:text-sm font-extrabold uppercase tracking-wide ${isLocked ? 'text-amber-300' : clickable ? 'text-cyan-200' : 'text-slate-200/90'}`}>
               {cat.label}
             </span>
           </div>
