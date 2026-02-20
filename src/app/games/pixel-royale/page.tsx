@@ -717,118 +717,85 @@ export default function PixelRoyalePage() {
             </div>
           )}
 
-          {/* Game Over Modal */}
+          {/* Game Over State */}
           {gameOver && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 xs:p-4 sm:p-6 bg-black/90 backdrop-blur-md animate-fadeIn">
-              <div 
-                className="rounded-xl xs:rounded-2xl sm:rounded-3xl max-w-sm xs:max-w-md w-full overflow-hidden relative mx-2"
-                style={{
-                  background: 'linear-gradient(180deg, rgba(20, 15, 8, 0.98) 0%, rgba(35, 25, 12, 0.99) 50%, rgba(20, 15, 8, 0.98) 100%)',
-                  border: '2px solid rgba(245, 180, 50, 0.7)',
-                  boxShadow: '0 0 40px rgba(245, 180, 50, 0.3), 0 0 80px rgba(245, 158, 11, 0.15)'
-                }}
-              >
-                {/* Decorative inner border */}
-                <div className="absolute inset-1 rounded-lg xs:rounded-xl border border-amber-500/30 pointer-events-none" />
-                
-                {/* Corner decorations - tablet and desktop only */}
-                <div className="hidden sm:block absolute top-2 sm:top-3 left-2 sm:left-3 w-8 sm:w-12 h-8 sm:h-12 border-l-2 sm:border-l-4 border-t-2 sm:border-t-4 border-amber-400/60 rounded-tl-lg" />
-                <div className="hidden sm:block absolute top-2 sm:top-3 right-2 sm:right-3 w-8 sm:w-12 h-8 sm:h-12 border-r-2 sm:border-r-4 border-t-2 sm:border-t-4 border-amber-400/60 rounded-tr-lg" />
-                <div className="hidden sm:block absolute bottom-2 sm:bottom-3 left-2 sm:left-3 w-8 sm:w-12 h-8 sm:h-12 border-l-2 sm:border-l-4 border-b-2 sm:border-b-4 border-amber-400/60 rounded-bl-lg" />
-                <div className="hidden sm:block absolute bottom-2 sm:bottom-3 right-2 sm:right-3 w-8 sm:w-12 h-8 sm:h-12 border-r-2 sm:border-r-4 border-b-2 sm:border-b-4 border-amber-400/60 rounded-br-lg" />
+            <div 
+              className={`text-center mb-4 xs:mb-5 sm:mb-6 md:mb-8 p-3 xs:p-4 sm:p-5 md:p-6 rounded-xl xs:rounded-2xl border-2 w-full max-w-[280px] xs:max-w-xs sm:max-w-sm md:max-w-md mx-auto relative overflow-hidden ${
+                won 
+                  ? 'border-green-500/50' 
+                  : 'border-red-500/50'
+              }`}
+              style={{
+                background: won 
+                  ? 'linear-gradient(145deg, rgba(22, 101, 52, 0.3) 0%, rgba(15, 28, 50, 0.95) 100%)'
+                  : 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(15, 28, 50, 0.95) 100%)',
+                animation: 'fadeIn 0.4s ease-out',
+              }}
+            >
+              {/* Decorative corners */}
+              <div className={`absolute top-1.5 xs:top-2 left-1.5 xs:left-2 w-3 h-3 xs:w-4 xs:h-4 border-l-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+              <div className={`absolute top-1.5 xs:top-2 right-1.5 xs:right-2 w-3 h-3 xs:w-4 xs:h-4 border-r-2 border-t-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+              <div className={`absolute bottom-1.5 xs:bottom-2 left-1.5 xs:left-2 w-3 h-3 xs:w-4 xs:h-4 border-l-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
+              <div className={`absolute bottom-1.5 xs:bottom-2 right-1.5 xs:right-2 w-3 h-3 xs:w-4 xs:h-4 border-r-2 border-b-2 ${won ? 'border-green-400/60' : 'border-red-400/60'}`}></div>
 
-                <div className="relative z-10 p-4 xs:p-5 sm:p-6 md:p-8 text-center">
-                  {/* Result Icon */}
-                  <div className={`mb-3 sm:mb-4 ${won ? 'text-green-400' : 'text-red-400'}`}>
-                    {won ? <Trophy className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 mx-auto" /> : <XCircle className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 mx-auto" />}
-                  </div>
-
-                  {/* Title */}
-                  <div className="text-amber-400/80 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-1.5 sm:mb-2">
-                    {won ? 'Congratulations!' : 'Game Over'}
-                  </div>
-
-                  {/* Card Name */}
-                  <div 
-                    className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-black mb-3 sm:mb-4 px-2"
-                    style={{
-                      background: 'linear-gradient(180deg, #fcd34d 0%, #f59e0b 50%, #d97706 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    {targetCard && getCardNameTranslated(targetCard.id)}
-                  </div>
-
-                  {/* Card Image */}
-                  <div className="flex justify-center mb-3 sm:mb-4">
-                    <div 
-                      className="w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 rounded-lg sm:rounded-xl overflow-hidden p-1"
-                      style={{
-                        background: won 
-                          ? 'linear-gradient(180deg, rgba(74, 222, 128, 0.3) 0%, rgba(34, 197, 94, 0.2) 100%)'
-                          : 'linear-gradient(180deg, rgba(248, 113, 113, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%)',
-                        border: won ? '2px solid rgba(74, 222, 128, 0.5)' : '2px solid rgba(248, 113, 113, 0.5)',
-                      }}
-                    >
-                      {targetCard && (
-                        <img
-                          src={getCardImageUrl(targetCard)}
-                          alt={targetCard.name}
-                          className="w-full h-full object-contain"
-                        />
-                      )}
+              <div className={`mb-1.5 xs:mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>
+                {won 
+                  ? <><CheckCircle className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 mx-auto mb-1" /><span className="text-xl xs:text-2xl sm:text-3xl font-bold">Correct!</span></>
+                  : <><XCircle className="w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 mx-auto mb-1" /><span className="text-xl xs:text-2xl sm:text-3xl font-bold">Game Over</span></>
+                }
+              </div>
+              <div className="flex items-center justify-center gap-2 xs:gap-3 sm:gap-4 mb-2 xs:mb-3 sm:mb-4">
+                {targetCard && (
+                  <>
+                    <img
+                      src={getCardImageUrl(targetCard)}
+                      alt={targetCard.name}
+                      className="w-12 h-12 xs:w-14 xs:h-14 sm:w-16 sm:h-16 object-contain rounded-md xs:rounded-lg bg-slate-800/50 p-0.5 xs:p-1 border border-slate-600/50"
+                    />
+                    <div className="text-base xs:text-lg sm:text-xl font-bold text-white">
+                      {getCardNameTranslated(targetCard.id)}
                     </div>
-                  </div>
+                  </>
+                )}
+              </div>
 
-                  {/* Separator */}
-                  <div className="flex items-center gap-2 xs:gap-3 my-3 sm:my-4 md:my-6">
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/40 to-amber-500/60" />
-                    <span className="text-amber-500/60 text-[9px] xs:text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest whitespace-nowrap">
-                      {dailyCompleted ? 'Daily Complete!' : 'Daily Challenge'}
-                    </span>
-                    <div className="flex-1 h-px bg-gradient-to-l from-transparent via-amber-500/40 to-amber-500/60" />
-                  </div>
-
-                  {/* Daily Streak Display */}
-                  {dailyStreak && dailyStreak.currentStreak > 0 && (
-                    <div className="mb-4 flex items-center justify-center gap-2 text-amber-400">
-                      <Flame className="w-5 h-5" />
-                      <span className="font-bold">{dailyStreak.currentStreak} day streak</span>
-                      {dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && (
-                        <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Next daily countdown */}
-                  {dailyCompleted && (
-                    <div className="mb-4 flex items-center justify-center gap-2 text-gray-400 text-sm">
-                      <Clock className="w-4 h-4" />
-                      <span>Next daily in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
-                    </div>
-                  )}
-
-                  {/* Account Creation Reminder */}
-                  {!user && (
-                    <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                      <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
-                        <UserPlus className="w-5 h-5" />
-                        <span className="font-semibold">Save your progress!</span>
-                      </div>
-                      <p className="text-gray-400 text-sm text-center mb-3">
-                        Create an account to save your stats and streaks
-                      </p>
-                      <a
-                        href="/auth"
-                        className="block w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-400 transition-colors text-center text-sm"
-                      >
-                        Create Account
-                      </a>
-                    </div>
+              {/* Daily Streak Display */}
+              {dailyStreak && dailyStreak.currentStreak > 0 && (
+                <div className="mt-3 flex items-center justify-center gap-2 text-amber-400">
+                  <Flame className="w-5 h-5" />
+                  <span className="font-bold">{dailyStreak.currentStreak} day streak</span>
+                  {dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && (
+                    <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>
                   )}
                 </div>
-              </div>
+              )}
+
+              {/* Next daily countdown */}
+              {dailyCompleted && (
+                <div className="mt-2 flex items-center justify-center gap-2 text-gray-400 text-sm">
+                  <Clock className="w-4 h-4" />
+                  <span>Next daily in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
+                </div>
+              )}
+
+              {/* Account Creation Reminder */}
+              {!user && (
+                <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
+                    <UserPlus className="w-5 h-5" />
+                    <span className="font-semibold">Save your progress!</span>
+                  </div>
+                  <p className="text-gray-400 text-sm text-center mb-3">
+                    Create an account to save your stats and streaks
+                  </p>
+                  <a
+                    href="/auth"
+                    className="block w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-400 transition-colors text-center text-sm"
+                  >
+                    Create Account
+                  </a>
+                </div>
+              )}
             </div>
           )}
 

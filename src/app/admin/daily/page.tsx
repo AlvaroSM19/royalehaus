@@ -35,18 +35,27 @@ export default function DailyAdminPage() {
 
   const fetchChallenges = useCallback(async () => {
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + 35);
+      // Últimos 10 días + hoy + próximos 10 días = 21 días total
+      const today = new Date();
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() - 10);
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 10);
+      
+      const start = startDate.toISOString().slice(0, 10);
       const end = endDate.toISOString().slice(0, 10);
       
-      const res = await fetch(`/api/daily/admin?start=${today}&end=${end}`);
+      const res = await fetch(`/api/daily/admin?start=${start}&end=${end}`);
       if (res.ok) {
         const data = await res.json();
         setChallenges(data.challenges || []);
+      } else {
+        console.error('Failed to fetch challenges:', res.status, res.statusText);
+        showMessage('Error loading challenges', 'error');
       }
     } catch (error) {
       console.error('Error fetching challenges:', error);
+      showMessage('Error connecting to server', 'error');
     } finally {
       setLoading(false);
     }

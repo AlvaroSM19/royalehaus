@@ -81,6 +81,7 @@ export default function LogbookPage() {
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [avatarSearch, setAvatarSearch] = useState('');
   const [authUser, setAuthUser] = useState<any>(null);
+  const [xpData, setXpData] = useState<{ level: number; xpTotal: number } | null>(null);
   const [dailyStreaks, setDailyStreaks] = useState<{ 
     royaledle: DailyStreakData | null;
     'pixel-royale': DailyStreakData | null;
@@ -92,11 +93,26 @@ export default function LogbookPage() {
   });
 
   useEffect(() => {
-    const loadData = () => {
+    const loadData = async () => {
       setProgress(getProgress());
       try {
         const u = localStorage.getItem('authUser');
-        if (u) setAuthUser(JSON.parse(u));
+        if (u) {
+          const user = JSON.parse(u);
+          setAuthUser(user);
+          // Fetch XP from API if authenticated
+          try {
+            const res = await fetch('/api/xp', { credentials: 'include' });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.ok && data.data) {
+                setXpData({ level: data.data.level, xpTotal: data.data.xpTotal });
+              }
+            }
+          } catch (error) {
+            console.error('Failed to fetch XP:', error);
+          }
+        }
       } catch {}
       // Load daily streaks
       setDailyStreaks({
@@ -113,12 +129,17 @@ export default function LogbookPage() {
     const handleStorage = () => loadData();
     window.addEventListener('storage', handleStorage);
     
+    // Listen for XP updates
+    const handleXpUpdate = () => loadData();
+    window.addEventListener('xp:updated', handleXpUpdate);
+    
     // Also refresh on focus (when returning from a game)
     const handleFocus = () => loadData();
     window.addEventListener('focus', handleFocus);
     
     return () => {
       window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('xp:updated', handleXpUpdate);
       window.removeEventListener('focus', handleFocus);
     };
   }, []);
@@ -288,14 +309,14 @@ export default function LogbookPage() {
               {/* Level */}
               <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-600/20 to-yellow-600/10 border border-amber-500/40 rounded-xl">
                 <div className="text-amber-400 text-xs font-semibold tracking-wider uppercase mb-2">Level</div>
-                <div className="text-3xl sm:text-4xl font-bold text-amber-400">{progress?.xp?.level || 1}</div>
+                <div className="text-3xl sm:text-4xl font-bold text-amber-400">{xpData?.level || 1}</div>
                 <div className="text-gray-500 text-xs mt-1">current level</div>
               </div>
 
               {/* XP */}
               <div className="p-4 sm:p-5 bg-gradient-to-br from-cyan-600/20 to-blue-600/10 border border-cyan-500/40 rounded-xl">
                 <div className="text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-2">Experience</div>
-                <div className="text-3xl sm:text-4xl font-bold text-cyan-400">{progress?.xp?.totalXP || 0}</div>
+                <div className="text-3xl sm:text-4xl font-bold text-cyan-400">{xpData?.xpTotal || 0}</div>
                 <div className="text-gray-500 text-xs mt-1">total XP</div>
               </div>
 
