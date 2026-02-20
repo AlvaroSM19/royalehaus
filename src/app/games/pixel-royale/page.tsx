@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, Search, HelpCircle, Trophy, Check, X, XCircle, Clock, UserPlus, Flame } from 'lucide-react';
+import { Home, Search, HelpCircle, Trophy, Check, X, XCircle, CheckCircle, Clock, UserPlus, Flame } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 import { useAuth } from '@/lib/useAuth';
 import { recordPixelRoyaleSession } from '@/lib/progress';
@@ -89,7 +89,7 @@ function updateDailyStreak(): DailyStreakData {
   return data;
 }
 
-function getTimeUntilReset(): string {
+function getTimeUntilReset(): { hours: number; minutes: number; seconds: number } {
   const now = new Date();
   const tomorrow = new Date(Date.UTC(
     now.getUTCFullYear(),
@@ -101,7 +101,7 @@ function getTimeUntilReset(): string {
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return { hours, minutes, seconds };
 }
 
 // Seeded random for daily challenge
@@ -217,7 +217,7 @@ export default function PixelRoyalePage() {
   const [dailyCompleted, setDailyCompleted] = useState(false);
   const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
   const [dailyStreak, setDailyStreak] = useState<DailyStreakData | null>(null);
-  const [countdown, setCountdown] = useState('');
+  const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   // Load best score from localStorage
   useEffect(() => {
@@ -390,7 +390,7 @@ export default function PixelRoyalePage() {
               {dailyCompleted && (
                 <div className="flex items-center gap-1.5 text-gray-400 text-xs">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>{countdown}</span>
+                  <span>Next in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
                 </div>
               )}
             </div>
@@ -398,6 +398,100 @@ export default function PixelRoyalePage() {
         </header>
 
         <main className="container mx-auto w-full px-2 xs:px-3 sm:px-4 py-6 xs:py-8 sm:py-10 md:py-14 flex-1">
+          {/* Daily Completed Banner */}
+          {dailyCompleted && dailyResult && (
+            <div className="mb-8 max-w-2xl mx-auto">
+              <div 
+                className="relative rounded-2xl p-6 text-center overflow-hidden"
+                style={{
+                  background: 'linear-gradient(180deg, rgba(20, 50, 40, 0.95) 0%, rgba(15, 40, 30, 0.98) 100%)',
+                  border: '2px solid rgba(34, 197, 94, 0.5)',
+                }}
+              >
+                {/* Corner decorations */}
+                <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-green-400/60" />
+                <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-green-400/60" />
+                <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-green-400/60" />
+                <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-green-400/60" />
+                
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <CheckCircle className="w-8 h-8 text-green-400" />
+                  <h3 className="text-xl font-black text-green-400 uppercase tracking-wider">
+                    Daily Completed!
+                  </h3>
+                </div>
+                
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  {targetCard && (
+                    <>
+                      <img
+                        src={`/images/cards/${targetCard.id}.webp`}
+                        alt={getCardNameTranslated(targetCard.id)}
+                        className="w-16 h-20 object-contain rounded-lg border-2 border-green-500/50"
+                      />
+                      <div className="text-left">
+                        <div className="text-white font-bold text-lg">{getCardNameTranslated(targetCard.id)}</div>
+                        <div className="text-green-300/80 text-sm">
+                          {dailyResult.won ? (
+                            <span className="flex items-center gap-1">
+                              <Trophy className="w-4 h-4" />
+                              Correct!
+                            </span>
+                          ) : (
+                            <span>Better luck tomorrow!</span>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Countdown to next daily */}
+                <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                  <div className="flex items-center justify-center gap-2 text-slate-400 text-sm mb-2">
+                    <Clock className="w-4 h-4" />
+                    <span>Next daily available in:</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-amber-400">{countdown.hours.toString().padStart(2, '0')}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">Hours</div>
+                    </div>
+                    <span className="text-2xl font-bold text-slate-600">:</span>
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-amber-400">{countdown.minutes.toString().padStart(2, '0')}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">Minutes</div>
+                    </div>
+                    <span className="text-2xl font-bold text-slate-600">:</span>
+                    <div className="text-center">
+                      <div className="text-2xl font-black text-amber-400">{countdown.seconds.toString().padStart(2, '0')}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">Seconds</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Account Creation Reminder */}
+                {!user && (
+                  <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 text-blue-400 mb-2">
+                      <UserPlus className="w-5 h-5" />
+                      <span className="font-semibold">Save your progress!</span>
+                    </div>
+                    <p className="text-gray-400 text-sm text-center mb-3">
+                      Create an account to save your stats and streaks
+                    </p>
+                    <a
+                      href="/auth"
+                      className="block w-full px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-400 transition-colors text-center text-sm"
+                    >
+                      Create Account
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Stats Panel */}
           <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
             <div 
@@ -711,7 +805,7 @@ export default function PixelRoyalePage() {
                   {dailyCompleted && (
                     <div className="mb-4 flex items-center justify-center gap-2 text-gray-400 text-sm">
                       <Clock className="w-4 h-4" />
-                      <span>Next daily in {countdown}</span>
+                      <span>Next daily in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>
                     </div>
                   )}
 
