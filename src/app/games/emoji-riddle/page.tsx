@@ -312,6 +312,20 @@ export default function EmojiRiddlePage() {
       const newStreak = updateDailyStreak();
       setDailyStreak(newStreak);
       
+      // Save to database if user is logged in
+      if (user) {
+        fetch('/api/daily', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            gameType: 'emoji-riddle',
+            guessedCardId: card.id,
+            won: isWin,
+          }),
+        }).catch(err => console.error('Failed to save daily completion:', err));
+      }
+      
       // Record session for XP
       recordEmojiRiddleSession(newGuesses.length, isWin);
     }

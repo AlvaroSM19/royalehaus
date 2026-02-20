@@ -302,6 +302,21 @@ export default function RoyaledlePage() {
         guesses: newGuesses.length,
         cardId: targetCard?.id
       }));
+      
+      // Save to database if user is logged in
+      if (user) {
+        fetch('/api/daily', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            gameType: 'royaledle',
+            guessedCardId: card.id,
+            won: isWin,
+          }),
+        }).catch(err => console.error('Failed to save daily completion:', err));
+      }
+      
       // Update daily streak
       const newStreak = updateDailyStreak();
       setDailyStreak(newStreak);
