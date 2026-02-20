@@ -170,7 +170,7 @@ const DAMAGE_DATA = {
   "Giant Snowball": 218,
   "Earthquake": 176,
   "Royal Delivery": 362,
-  "Goblin Barrel": 360,
+  "Goblin Barrel": 120,
   "Heal Spirit": null,
   "Electro Shot": 175,
   
