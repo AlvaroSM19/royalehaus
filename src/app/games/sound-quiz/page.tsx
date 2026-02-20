@@ -4,62 +4,177 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
-import { Home, RotateCcw, Search, Volume2, VolumeX, Play, Pause, SkipForward, Loader2, Trophy, HelpCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Home, RotateCcw, Search, Volume2, Play, Pause, Loader2, Trophy, HelpCircle, CheckCircle, XCircle, Unlock } from 'lucide-react';
 import { useLanguage } from '@/lib/useLanguage';
 import { includesNormalized } from '@/lib/text-utils';
 
 const MAX_GUESSES = 5;
 
-// Cards that have sound files available
-// Add card IDs here when sounds are uploaded to /public/sounds/cards/{id}.mp3
-const CARDS_WITH_SOUNDS: number[] = [
-  // Troops with distinctive sounds
-  1,   // Knight
-  2,   // Archers
-  4,   // Giant
-  5,   // P.E.K.K.A
-  8,   // Witch
-  9,   // Barbarians
-  10,  // Golem
-  17,  // Prince
-  18,  // Wizard
-  22,  // Hog Rider
-  24,  // Ice Wizard
-  25,  // Royal Giant
-  31,  // Lava Hound
-  33,  // Sparky
-  38,  // Inferno Dragon
-  41,  // Electro Wizard
-  50,  // Mega Knight
-  // Spells
-  84,  // Rocket
-  85,  // Lightning
-  86,  // Mirror
-  87,  // Rage
-];
+// Mapeo de nombres de cartas a nombres de carpetas en /sounds/cards/Cards/
+const CARD_FOLDER_MAP: Record<string, string> = {
+  'Knight': 'Knight',
+  'Archers': 'Archers',
+  'Goblins': 'Goblins',
+  'Giant': 'Giant',
+  'P.E.K.K.A': 'PEKKA',
+  'Minions': 'Minions',
+  'Balloon': 'Balloon',
+  'Witch': 'Witch',
+  'Barbarians': 'Barbarians',
+  'Golem': 'Golem',
+  'Skeletons': 'Skeletons',
+  'Valkyrie': 'Valkyrie',
+  'Bomber': 'Bomber',
+  'Musketeer': 'Musketeer',
+  'Baby Dragon': 'Baby Dragon',
+  'Prince': 'Prince',
+  'Wizard': 'Wizard',
+  'Mini P.E.K.K.A': 'Mini PEKKA',
+  'Miner': 'Miner',
+  'Giant Skeleton': 'Giant Skeleton',
+  'Hog Rider': 'Hog Rider',
+  'Ice Wizard': 'Ice Wizard',
+  'Royal Giant': 'Royal Giant',
+  'Guards': 'Guards',
+  'Princess': 'Princess',
+  'Dark Prince': 'Dark Prince',
+  'Lava Hound': 'Lava Hound',
+  'Ice Spirit': 'Ice Spirit',
+  'Sparky': 'Sparky',
+  'Bowler': 'Bowler',
+  'Lumberjack': 'Lumberjack',
+  'Battle Ram': 'Battle Ram',
+  'Inferno Dragon': 'Inferno Dragon',
+  'Mega Minion': 'Mega Minion',
+  'Spear Goblins': 'Spear Goblins',
+  'Electro Wizard': 'Electro Wizard',
+  'Elite Barbarians': 'Elite Barbarians',
+  'Fire Spirits': 'Fire Spirits',
+  'Hunter': 'Hunter',
+  'Executioner': 'Executioner',
+  'Bandit': 'Bandit',
+  'Night Witch': 'Night Witch',
+  'Bats': 'Bats',
+  'Mega Knight': 'Mega Knight',
+  'Flying Machine': 'Flying Machine',
+  'Rascals': 'Rascals',
+  'Ram Rider': 'Ram Rider',
+  'Magic Archer': 'Magic Archer',
+  'Arrows': 'Arrows',
+  'Fireball': 'Fireball',
+  'Lightning': 'Lightning',
+  'Rocket': 'Rocket',
+  'Freeze': 'Freeze',
+  'Rage': 'Rage Spell',
+  'Zap': 'Zap',
+  'Poison': 'Poison',
+  'Graveyard': 'Graveyard',
+  'The Log': 'The Log',
+  'Tornado': 'Tornado',
+  'Clone': 'Clone Spell',
+  'Heal': 'Heal',
+  'Snowball': 'Snowball',
+  'Barbarian Barrel': 'Barbarian Barrel',
+  'Goblin Barrel': 'Goblin Barrel',
+  'Royal Ghost': 'Royal Ghost',
+  'Cannon': 'Cannon',
+  'Cannon Cart': 'Cannon Cart',
+  'Bomb Tower': 'Bomb Tower',
+  'Tesla': 'Tesla',
+  'Inferno Tower': 'Inferno',
+  'X-Bow': 'XBow',
+  'Mortar': 'Mortar',
+  'Elixir Collector': 'Elixir Collector',
+  'Furnace': 'Furnace',
+  'Tombstone': 'Tombstone',
+  'Ice Golem': 'Ice Golem',
+  'Electro Dragon': 'Electro Dragon',
+  'Royal Hogs': 'Royal Hogs',
+  'Royal Recruits': 'Royal Recruits',
+  'Giant Goblin': 'Giant Goblin',
+  'Skeleton Barrel': 'Skeleton Barrel',
+  'Dart Goblin': 'Dart Goblin',
+};
+
+// Obtener cartas que tienen carpeta de sonidos
+const getCardsWithSounds = () => {
+  return baseCards.filter(card => CARD_FOLDER_MAP[card.name]);
+};
 
 const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.webp`;
+
+// Tipos de sonidos disponibles para las pistas
+type SoundHintType = 'deploy' | 'attack' | 'hit' | 'death' | 'other';
+
+interface SoundHint {
+  type: SoundHintType;
+  url: string;
+  label: string;
+}
 
 export default function SoundQuizPage() {
   const { getCardNameTranslated } = useLanguage();
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
+  const [soundHints, setSoundHints] = useState<SoundHint[]>([]);
+  const [currentHintIndex, setCurrentHintIndex] = useState(0);
   const [guesses, setGuesses] = useState<ClashCard[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playCount, setPlayCount] = useState(0);
   const [isLoadingSound, setIsLoadingSound] = useState(false);
-  const [audioMode, setAudioMode] = useState<'file' | 'fallback'>('file');
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const fallbackNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
-  const fallbackTimerRef = useRef<number | null>(null);
 
-  const cardsWithSounds = useMemo(() => {
-    return baseCards.filter(card => CARDS_WITH_SOUNDS.includes(card.id));
+  const cardsWithSounds = useMemo(() => getCardsWithSounds(), []);
+
+  // Generar pistas de sonido para la carta actual
+  const generateSoundHints = useCallback((card: ClashCard): SoundHint[] => {
+    const folderName = CARD_FOLDER_MAP[card.name];
+    if (!folderName) return [];
+
+    const hints: SoundHint[] = [];
+    const basePath = `/sounds/cards/Cards/${encodeURIComponent(folderName)}`;
+    const cardLower = folderName.toLowerCase().replace(/ /g, '_');
+
+    // Prioridad de pistas:
+    // 1. Deploy (despliegue)
+    hints.push({
+      type: 'deploy',
+      url: `${basePath}/${cardLower}_deploy_end_01.ogg`,
+      label: 'Deploy Sound'
+    });
+
+    // 2. Attack (ataque)
+    hints.push({
+      type: 'attack',
+      url: `${basePath}/${cardLower}_attack_start_01.ogg`,
+      label: 'Attack Sound'
+    });
+
+    // 3. Hit/Impact (golpe)
+    hints.push({
+      type: 'hit',
+      url: `${basePath}/${cardLower}_hit_01.ogg`,
+      label: 'Hit Sound'
+    });
+
+    // 4. Death (muerte)
+    hints.push({
+      type: 'death',
+      url: `${basePath}/${cardLower}_death_01.ogg`,
+      label: 'Death Sound'
+    });
+
+    // 5. Alternative sounds (otras variantes)
+    hints.push({
+      type: 'other',
+      url: `${basePath}/${cardLower}_attack_start_02.ogg`,
+      label: 'Alternative Sound'
+    });
+
+    return hints;
   }, []);
 
   const stopSound = useCallback(() => {
@@ -67,18 +182,6 @@ export default function SoundQuizPage() {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current = null;
-    }
-    if (fallbackNodesRef.current) {
-      try {
-        fallbackNodesRef.current.osc.stop();
-      } catch (error) {
-        // ignore oscillator stop errors
-      }
-      fallbackNodesRef.current = null;
-    }
-    if (fallbackTimerRef.current) {
-      window.clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = null;
     }
     setIsPlaying(false);
   }, []);
@@ -90,15 +193,17 @@ export default function SoundQuizPage() {
       return;
     }
     const randomCard = cardsWithSounds[Math.floor(Math.random() * cardsWithSounds.length)];
+    const hints = generateSoundHints(randomCard);
+    
     setTargetCard(randomCard);
+    setSoundHints(hints);
+    setCurrentHintIndex(0);
     setGuesses([]);
     setSearchTerm('');
     setGameOver(false);
     setWon(false);
-    setPlayCount(0);
     setIsLoadingSound(false);
-    setAudioMode('file');
-  }, [cardsWithSounds, stopSound]);
+  }, [cardsWithSounds, stopSound, generateSoundHints]);
 
   useEffect(() => {
     initGame();
@@ -107,9 +212,6 @@ export default function SoundQuizPage() {
   useEffect(() => {
     return () => {
       stopSound();
-      if (audioCtxRef.current && typeof audioCtxRef.current.close === 'function') {
-        audioCtxRef.current.close().catch(() => undefined);
-      }
     };
   }, [stopSound]);
 
@@ -128,102 +230,39 @@ export default function SoundQuizPage() {
       .slice(0, 8);
   }, [searchTerm, guessedCardIds, getCardNameTranslated]);
 
-  const getSoundUrl = (card: ClashCard) => {
-    return `/sounds/cards/${card.id}.mp3`;
-  };
+  const playSound = useCallback(async (hintIndex?: number) => {
+    if (!targetCard || gameOver || soundHints.length === 0) return;
 
-  const playFallbackTone = useCallback((cardId: number) => {
-    try {
-      if (typeof window === 'undefined') {
-        throw new Error('No window context');
-      }
-      const anyWindow = window as typeof window & { webkitAudioContext?: typeof AudioContext };
-      const AudioCtor = anyWindow.AudioContext || anyWindow.webkitAudioContext;
-      if (!AudioCtor) {
-        throw new Error('AudioContext unsupported');
-      }
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioCtor();
-      }
-      const ctx = audioCtxRef.current;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const baseFreq = 180 + ((cardId % 12) * 25);
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.1);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 1.2);
-      fallbackNodesRef.current = { osc, gain };
-      if (fallbackTimerRef.current) {
-        window.clearTimeout(fallbackTimerRef.current);
-      }
-      setAudioMode('fallback');
-      setIsPlaying(true);
-      fallbackTimerRef.current = window.setTimeout(() => {
-        fallbackNodesRef.current = null;
-        setIsPlaying(false);
-      }, 1200);
-    } catch (error) {
-      console.warn('Fallback tone failed', error);
-      setAudioMode('unavailable');
-    }
-  }, []);
-
-  const playSound = useCallback(async () => {
-    if (!targetCard || gameOver) return;
+    const indexToPlay = hintIndex !== undefined ? hintIndex : currentHintIndex;
+    if (indexToPlay >= soundHints.length) return;
 
     stopSound();
     setIsLoadingSound(true);
 
-    const soundUrl = getSoundUrl(targetCard);
-    const cardId = targetCard.id;
-    let fallbackHandled = false;
-
-    const handleFallback = () => {
-      if (fallbackHandled) return;
-      fallbackHandled = true;
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      }
-      playFallbackTone(cardId);
-    };
+    const hint = soundHints[indexToPlay];
 
     try {
-      const response = await fetch(soundUrl, { method: 'HEAD' });
-      if (!response.ok) {
-        throw new Error('Missing sound file');
-      }
-
-      const audio = new Audio(soundUrl);
+      const audio = new Audio(hint.url);
       audioRef.current = audio;
 
       audio.onplay = () => {
         setIsPlaying(true);
-        setAudioMode('file');
       };
       audio.onended = () => {
         setIsPlaying(false);
       };
       audio.onerror = () => {
         setIsPlaying(false);
-        handleFallback();
+        console.error(`Failed to load sound: ${hint.url}`);
       };
 
       await audio.play();
     } catch (error) {
-      handleFallback();
+      console.error('Error playing sound:', error);
     } finally {
       setIsLoadingSound(false);
-      setPlayCount(prev => prev + 1);
     }
-  }, [gameOver, playFallbackTone, stopSound, targetCard]);
+  }, [gameOver, soundHints, currentHintIndex, stopSound, targetCard]);
 
   const handleGuess = (card: ClashCard) => {
     if (gameOver || !targetCard) return;
@@ -237,9 +276,16 @@ export default function SoundQuizPage() {
       setWon(true);
       setGameOver(true);
       stopSound();
-    } else if (newGuesses.length >= MAX_GUESSES) {
-      setGameOver(true);
-      stopSound();
+    } else {
+      // Desbloquear próxima pista después de un intento fallido
+      if (currentHintIndex < soundHints.length - 1) {
+        setCurrentHintIndex(prev => prev + 1);
+      }
+      
+      if (newGuesses.length >= MAX_GUESSES) {
+        setGameOver(true);
+        stopSound();
+      }
     }
   };
 
@@ -249,11 +295,7 @@ export default function SoundQuizPage() {
     }
   };
 
-  const getCardImageUrl = (card: ClashCard) => {
-    return `/images/cards/${card.id}.webp`;
-  };
-
-  // Show message if no sounds available
+  // Mostrar mensaje si no hay sonidos disponibles
   if (cardsWithSounds.length === 0) {
     return (
       <div className="min-h-screen relative text-white flex items-center justify-center">
@@ -283,135 +325,97 @@ export default function SoundQuizPage() {
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header */}
         <header className="bg-gray-900/90 border-b border-gray-700/50 sticky top-0 z-20 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center justify-between">
-          <Link 
-            href="/" 
-            className="flex items-center gap-1.5 xs:gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
-          >
-            <Home className="w-4 h-4 xs:w-5 xs:h-5 group-hover:scale-110 transition-transform" />
-            <span className="font-medium hidden sm:inline">Home</span>
-          </Link>
-          <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-amber-400 flex items-center gap-1.5 xs:gap-2">
-            <Volume2 className="w-4 h-4 xs:w-5 xs:h-5 text-cyan-400" />
-            <span>Sound Quiz</span>
-          </h1>
-          <button
-            onClick={initGame}
-            className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md xs:rounded-lg transition-all hover:scale-105 font-bold text-xs xs:text-sm border border-amber-400/50"
-          >
-            <RotateCcw className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden xs:inline">New</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Stats Panel */}
-      <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex flex-wrap items-center justify-center gap-2 xs:gap-3 sm:gap-4 md:gap-8">
-          <div className="flex items-center gap-1.5 xs:gap-2 text-amber-400 bg-slate-800/60 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg border border-amber-500/20">
-            <span className="text-[10px] xs:text-xs text-amber-400/70 uppercase tracking-wide">Guesses</span>
-            <span className="font-bold text-sm xs:text-base sm:text-lg">{guesses.length}/{MAX_GUESSES}</span>
+          <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex items-center justify-between">
+            <Link 
+              href="/" 
+              className="flex items-center gap-1.5 xs:gap-2 text-amber-400 hover:text-amber-300 transition-colors group"
+            >
+              <Home className="w-4 h-4 xs:w-5 xs:h-5 group-hover:scale-110 transition-transform" />
+              <span className="font-medium hidden sm:inline">Home</span>
+            </Link>
+            <h1 className="text-sm xs:text-base sm:text-lg md:text-xl font-bold text-amber-400 flex items-center gap-1.5 xs:gap-2">
+              <Volume2 className="w-4 h-4 xs:w-5 xs:h-5 text-cyan-400" />
+              <span>Sound Quiz</span>
+            </h1>
+            <button
+              onClick={initGame}
+              className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-md xs:rounded-lg transition-all hover:scale-105 font-bold text-xs xs:text-sm border border-amber-400/50"
+            >
+              <RotateCcw className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">New</span>
+            </button>
           </div>
-          <div className="flex items-center gap-1.5 xs:gap-2 text-cyan-400 bg-slate-800/60 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg border border-cyan-500/20">
-            <Volume2 className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
-            <span className="text-[10px] xs:text-xs text-cyan-400/70 uppercase tracking-wide">Plays</span>
-            <span className="font-bold text-sm xs:text-base sm:text-lg">{playCount}</span>
-          </div>
-        </div>
-      </div>
+        </header>
 
-      <main className="flex-1 container mx-auto px-2 xs:px-3 sm:px-4 py-4 xs:py-5 sm:py-6 md:py-8">
-        {/* Sound Player */}
-        <div className="flex justify-center mb-4 xs:mb-5 sm:mb-6 md:mb-8">
-          <div 
-            className="flex flex-col items-center gap-2 xs:gap-3 sm:gap-4 p-4 xs:p-5 sm:p-6 md:p-8 rounded-xl xs:rounded-2xl border-2 border-cyan-500/30 shadow-2xl w-full max-w-[280px] xs:max-w-[320px] sm:max-w-sm md:max-w-md"
-            style={{
-              background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
-            }}
-          >
-            {/* Sound Wave Animation */}
-            <div className={`flex items-center justify-center gap-0.5 xs:gap-1 h-16 xs:h-20 sm:h-24 ${isPlaying ? '' : 'opacity-40'}`}>
-              {[...Array(7)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-2 xs:w-2.5 sm:w-3 bg-gradient-to-t from-cyan-500 to-amber-400 rounded-full transition-all ${
-                    isPlaying ? 'animate-soundwave' : ''
-                  }`}
-                  style={{
-                    height: isPlaying ? `${20 + Math.random() * 60}px` : '20px',
-                    animationDelay: `${i * 0.1}s`,
-                    animationDuration: '0.5s',
-                  }}
-                />
-              ))}
+        {/* Stats Panel */}
+        <div className="bg-slate-900/80 border-b border-slate-700/50 backdrop-blur-sm">
+          <div className="max-w-4xl mx-auto px-2 xs:px-3 sm:px-4 py-2 xs:py-2.5 sm:py-3 flex flex-wrap items-center justify-center gap-2 xs:gap-3 sm:gap-4 md:gap-8">
+            <div className="flex items-center gap-1.5 xs:gap-2 text-amber-400 bg-slate-800/60 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg border border-amber-500/20">
+              <span className="text-[10px] xs:text-xs text-amber-400/70 uppercase tracking-wide">Guesses</span>
+              <span className="font-bold text-sm xs:text-base sm:text-lg">{guesses.length}/{MAX_GUESSES}</span>
             </div>
-
-            {/* Play Button */}
-            {!gameOver && (
-              <button
-                onClick={isPlaying ? stopSound : playSound}
-                disabled={audioMode === 'unavailable' || isLoadingSound}
-                className={`
-                  flex items-center gap-2 xs:gap-2.5 sm:gap-3 px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-xl xs:rounded-2xl font-bold text-sm xs:text-base sm:text-lg
-                  transition-all shadow-lg hover:scale-105
-                  ${audioMode === 'unavailable'
-                    ? 'bg-red-600/50 text-red-200 cursor-not-allowed'
-                    : isPlaying
-                      ? 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/50 border border-red-400/50'
-                      : audioMode === 'fallback'
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 shadow-amber-900/40 border border-amber-400/50'
-                        : 'bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-cyan-900/50 border border-cyan-400/50'
-                  }
-                  ${isLoadingSound ? 'opacity-80 cursor-wait' : ''}
-                `}
-              >
-                {audioMode === 'unavailable' ? (
-                  <>
-                    <VolumeX className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
-                    <span>Audio Not Available</span>
-                  </>
-                ) : isLoadingSound ? (
-                  <>
-                    <Loader2 className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 animate-spin" />
-                    <span>Loading...</span>
-                  </>
-                ) : isPlaying ? (
-                  <>
-                    <Pause className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
-                    <span>Stop</span>
-                  </>
-                ) : audioMode === 'fallback' ? (
-                  <>
-                    <Volume2 className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
-                    <span className="hidden xs:inline">Play Placeholder Tone</span>
-                    <span className="xs:hidden">Play Tone</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
-                    <span>Play Sound</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            {audioMode === 'fallback' && !gameOver && targetCard && (
-              <p className="text-[10px] xs:text-xs text-amber-300/70 text-center max-w-[200px] xs:max-w-xs">
-                Placeholder tone in use because /sounds/cards/{targetCard.id}.mp3 was not found.
-              </p>
-            )}
-
-            {(audioMode === 'unavailable' || audioMode === 'fallback') && !gameOver && (
-              <button
-                onClick={initGame}
-                className="flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-xs xs:text-sm font-medium transition-all hover:scale-105"
-              >
-                <SkipForward className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
-                Skip to Next Card
-              </button>
-            )}
+            <div className="flex items-center gap-1.5 xs:gap-2 text-cyan-400 bg-slate-800/60 px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-md xs:rounded-lg border border-cyan-500/20">
+              <Unlock className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
+              <span className="text-[10px] xs:text-xs text-cyan-400/70 uppercase tracking-wide">Hints</span>
+              <span className="font-bold text-sm xs:text-base sm:text-lg">{currentHintIndex + 1}/{soundHints.length}</span>
+            </div>
           </div>
         </div>
+
+        <main className="flex-1 container mx-auto px-2 xs:px-3 sm:px-4 py-4 xs:py-5 sm:py-6 md:py-8">
+          {/* Sound Hints */}
+          <div className="flex justify-center mb-4 xs:mb-5 sm:mb-6 md:mb-8">
+            <div 
+              className="flex flex-col gap-2 xs:gap-3 p-4 xs:p-5 sm:p-6 md:p-8 rounded-xl xs:rounded-2xl border-2 border-cyan-500/30 shadow-2xl w-full max-w-[280px] xs:max-w-[320px] sm:max-w-sm md:max-w-md"
+              style={{
+                background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
+              }}
+            >
+              <h3 className="text-center text-cyan-400 font-bold text-xs xs:text-sm mb-1">Sound Hints</h3>
+              
+              <div className="space-y-2">
+                {soundHints.slice(0, currentHintIndex + 1).map((hint, index) => (
+                  <button
+                    key={index}
+                    onClick={() => playSound(index)}
+                    disabled={isLoadingSound || gameOver}
+                    className={`w-full flex items-center justify-between gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg transition-all ${
+                      isPlaying && (isLoadingSound ? false : audioRef.current?.src.includes(hint.url))
+                        ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 shadow-lg border-2 border-cyan-400'
+                        : 'bg-slate-700/60 hover:bg-slate-600/60 border-2 border-slate-600/50'
+                    } ${isLoadingSound || gameOver ? 'opacity-50 cursor-not-allowed' : 'hover:scale-102'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Play className="w-4 h-4" />
+                      <span className="text-xs xs:text-sm font-medium">{hint.label}</span>
+                    </div>
+                    <span className="text-[10px] xs:text-xs text-slate-400">#{index + 1}</span>
+                  </button>
+                ))}
+                
+                {soundHints.slice(currentHintIndex + 1).map((hint, index) => (
+                  <div
+                    key={currentHintIndex + 1 + index}
+                    className="w-full flex items-center justify-between gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-lg bg-slate-800/40 border-2 border-slate-700/30 opacity-50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Unlock className="w-4 h-4 text-slate-500" />
+                      <span className="text-xs xs:text-sm font-medium text-slate-500">Locked</span>
+                    </div>
+                    <span className="text-[10px] xs:text-xs text-slate-600">#{currentHintIndex + 2 + index}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {!gameOver && (
+                <p className="text-center text-[10px] xs:text-xs text-slate-400 mt-2">
+                  {currentHintIndex < soundHints.length - 1 
+                    ? 'Make a wrong guess to unlock more hints!' 
+                    : 'All hints unlocked!'}
+                </p>
+              )}
+            </div>
+          </div>
 
         {/* Game Over State */}
         {gameOver && (
@@ -576,10 +580,10 @@ export default function SoundQuizPage() {
               background: 'linear-gradient(145deg, rgba(25, 40, 65, 0.6) 0%, rgba(15, 28, 50, 0.7) 100%)',
             }}
           >
-            <p><span className="text-cyan-400 font-bold">1.</span> Listen to the sound of a Clash Royale card</p>
-            <p><span className="text-cyan-400 font-bold">2.</span> Try to guess which card makes that sound</p>
-            <p><span className="text-cyan-400 font-bold">3.</span> You can replay the sound as many times as needed</p>
-            <p><span className="text-cyan-400 font-bold">4.</span> You have {MAX_GUESSES} attempts to guess correctly!</p>
+            <p><span className="text-cyan-400 font-bold">1.</span> Listen to different sound hints from a Clash Royale card</p>
+            <p><span className="text-cyan-400 font-bold">2.</span> Try to guess which card it is</p>
+            <p><span className="text-cyan-400 font-bold">3.</span> Each wrong guess unlocks a new sound hint!</p>
+            <p><span className="text-cyan-400 font-bold">4.</span> You have {MAX_GUESSES} attempts to guess correctly</p>
           </div>
         </div>
 
