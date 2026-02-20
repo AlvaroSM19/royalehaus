@@ -1,5 +1,33 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { DailyGamesGrid } from '@/components/DailyGameCard'
+
+const dailyGames = [
+  { 
+    id: 'royaledle', 
+    title: 'ROYALEDLE', 
+    description: 'Guess the card from clues',
+    image: '/images/games/3.webp',
+    href: '/games/royaledle', 
+    color: '#f59e0b',
+  },
+  { 
+    id: 'emoji-riddle', 
+    title: 'EMOJI RIDDLE', 
+    description: 'Decode the emoji combo',
+    image: '/images/games/8.webp',
+    href: '/games/emoji-riddle', 
+    color: '#ec4899',
+  },
+  { 
+    id: 'pixel-royale', 
+    title: 'PIXEL ROYALE', 
+    description: 'Identify the pixelated card',
+    image: '/images/games/6.webp',
+    href: '/games/pixel-royale', 
+    color: '#8b5cf6',
+  },
+]
 
 const games = [
   { 
@@ -21,22 +49,10 @@ const games = [
     href: '/games/higher-lower', 
   },
   { 
-    id: 'royaledle', 
-    title: 'ROYALEDLE', 
-    image: '/images/games/3.webp',
-    href: '/games/royaledle', 
-  },
-  { 
     id: 'wordle', 
     title: 'WORDLE', 
     image: '/images/games/4.webp',
     href: '/games/wordle', 
-  },
-  { 
-    id: 'pixel-royale', 
-    title: 'PIXEL ROYALE', 
-    image: '/images/games/6.webp',
-    href: '/games/pixel-royale', 
   },
   { 
     id: 'memory', 
@@ -45,24 +61,78 @@ const games = [
     href: '/games/memory', 
   },
   { 
-    id: 'emoji-riddle', 
-    title: 'EMOJI RIDDLE', 
-    image: '/images/games/8.webp',
-    href: '/games/emoji-riddle', 
-  },
-  { 
     id: 'sound-quiz', 
     title: 'SOUND QUIZ', 
     image: '/images/games/9.webp',
     href: '/games/sound-quiz', 
+  },
+  { 
+    id: 'royale-guesser', 
+    title: 'ROYALE GUESSER', 
+    image: '/images/games/10.webp',
+    href: '/games/royale-guesser', 
   },
 ]
 
 export default function HomePage() {
   return (
     <div className="min-h-screen">
+      {/* Daily Games Section */}
+      <section className="px-6 sm:px-10 pt-10 pb-8">
+        <div 
+          className="max-w-[1100px] mx-auto rounded-2xl p-6 sm:p-8"
+          style={{
+            background: 'linear-gradient(180deg, rgba(15, 12, 8, 0.85) 0%, rgba(20, 16, 10, 0.9) 50%, rgba(15, 12, 8, 0.85) 100%)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(180, 140, 60, 0.2)',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 215, 100, 0.05)',
+          }}
+        >
+          {/* Section Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-3 mb-3">
+              <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200, 165, 70, 0.6))' }} />
+              <span className="text-[11px] font-bold uppercase tracking-[0.4em] text-amber-400/70 flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                </svg>
+                Resets Daily
+              </span>
+              <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.6), transparent)' }} />
+            </div>
+            <h2 
+              className="text-2xl sm:text-3xl font-black uppercase tracking-[0.2em]"
+              style={{
+                background: 'linear-gradient(180deg, #ffe6a0 0%, #d4a843 40%, #a07830 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
+              }}
+            >
+              Daily Challenges
+            </h2>
+            <p 
+              className="mt-3 text-sm font-semibold px-5 py-2 rounded-full inline-block bg-black/50 border border-amber-500/30 text-amber-100"
+              style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
+            >
+              One attempt per day • Build your streak!
+            </p>
+          </div>
+
+          {/* Daily Games Grid - Client Component */}
+          <DailyGamesGrid games={dailyGames} />
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="px-6 sm:px-10">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(180, 140, 60, 0.3), transparent)' }} />
+        </div>
+      </div>
+
       {/* Games Grid */}
-      <section className="px-6 sm:px-10 pt-10 pb-20">
+      <section className="px-6 sm:px-10 pt-8 pb-20">
         <div className="max-w-[1100px] mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {games.map((game) => (

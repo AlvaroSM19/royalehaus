@@ -114,7 +114,7 @@ export default function FlashcardsPage() {
     shuffleCards();
   };
 
-  const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.png`;
+  const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.webp`;
 
   const formatAttackSpeed = (speed: string | null) => {
     if (!speed) return 'N/A';

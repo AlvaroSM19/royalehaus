@@ -2,13 +2,47 @@ import fs from 'fs';
 import path from 'path';
 import { prisma } from './prisma';
 import { getSession } from './auth-store';
+import { xpForLevel, levelFromXp } from './xp-service';
 
 const dataDir = process.env.DATA_DIR || path.join(process.cwd(), '.data');
 const progressFile = path.join(dataDir, 'royale-progress.json');
 const useDb = !!process.env.DATABASE_URL;
 
 // Known game IDs for RoyaleHaus (RoyaleHaus-specific, not shared with OnePieceHaus)
-const KNOWN_GAME_IDS = ['royaledle', 'higherlower', 'impostor', 'wordle', 'tapone', 'pixel-royale', 'emoji-riddle', 'sound-quiz'];
+const KNOWN_GAME_IDS = ['royaledle', 'higherlower', 'impostor', 'wordle', 'tapone', 'pixel-royale', 'emoji-riddle', 'sound-quiz', 'memory'];
+
+// ===== APP NAMESPACE =====
+// The Progress table is shared with OnePieceHaus. We namespace our data under 'royale' key.
+// DB structure: { "royale": { ...RoyaleHaus progress... }, "onepiece": { ...OnePieceHaus progress... } }
+const APP_NAMESPACE = 'royale';
+
+// Extract RoyaleHaus progress from combined DB record
+function extractAppProgress(dbData: any): any {
+  if (!dbData || typeof dbData !== 'object') return null;
+  // If data is already namespaced, extract our app's data
+  if (dbData[APP_NAMESPACE]) {
+    return dbData[APP_NAMESPACE];
+  }
+  // Legacy data: check if it looks like RoyaleHaus data
+  // ONLY accept data with RoyaleHaus-UNIQUE game IDs to avoid confusion with OnePieceHaus
+  // royaledle, higherlower, pixel-royale, emoji-riddle are unique to RoyaleHaus
+  const UNIQUE_ROYALE_GAMES = ['royaledle', 'higherlower', 'pixel-royale', 'emoji-riddle'];
+  const gamesById = dbData?.stats?.gamesPlayedById || {};
+  const hasUniqueRoyaleGames = UNIQUE_ROYALE_GAMES.some(id => typeof gamesById[id] === 'number' && gamesById[id] > 0);
+  if (hasUniqueRoyaleGames) {
+    // Return as-is for backward compatibility (will be migrated on next save)
+    return dbData;
+  }
+  // No RoyaleHaus data found
+  return null;
+}
+
+// Wrap RoyaleHaus progress into namespaced structure for DB save
+function wrapForDb(existingDbData: any, appProgress: any): string {
+  const combined = existingDbData && typeof existingDbData === 'object' ? { ...existingDbData } : {};
+  combined[APP_NAMESPACE] = appProgress;
+  return JSON.stringify(combined);
+}
 
 interface ProgressRecord {
   userId: string;
@@ -123,9 +157,14 @@ export async function getUserProgress(userId: string) {
     const rec = await (prisma as any).progress.findUnique({ where: { userId } });
     if (!rec) return null;
     
-    let prog: any = {};
-    try { prog = JSON.parse(rec.data); } catch { prog = {}; }
-    if (!prog || typeof prog !== 'object') prog = blankProgress();
+    let dbData: any = {};
+    try { dbData = JSON.parse(rec.data); } catch { dbData = {}; }
+    
+    // Extract only RoyaleHaus progress from namespaced structure
+    let prog = extractAppProgress(dbData);
+    if (!prog || typeof prog !== 'object') return null;
+    
+    // Ensure required fields
     if (!prog.meta) prog.meta = {};
     if (!prog.cards) prog.cards = [];
     
@@ -139,10 +178,21 @@ export async function getUserProgress(userId: string) {
 export async function saveUserProgress(userId: string, progress: any) {
   if (useDb) {
     try { applyAwarding(progress); } catch {}
+    
+    // Read existing DB record to preserve other app's data
+    const existing = await (prisma as any).progress.findUnique({ where: { userId } });
+    let existingDbData: any = {};
+    if (existing) {
+      try { existingDbData = JSON.parse(existing.data); } catch { existingDbData = {}; }
+    }
+    
+    // Wrap progress in namespaced structure
+    const wrappedData = wrapForDb(existingDbData, progress);
+    
     await (prisma as any).progress.upsert({ 
       where: { userId }, 
-      update: { data: JSON.stringify(progress) }, 
-      create: { userId, data: JSON.stringify(progress) } 
+      update: { data: wrappedData }, 
+      create: { userId, data: wrappedData } 
     });
     return;
   }
@@ -169,10 +219,18 @@ export async function listTopProgress(limit = 50): Promise<LeaderboardEntry[]> {
     });
     
     const mapped: LeaderboardEntry[] = rows.map((r: any) => {
-      let parsed: any = {};
-      try { parsed = JSON.parse(r.data); } catch {}
+      let dbData: any = {};
+      try { dbData = JSON.parse(r.data); } catch {}
+      
+      // Extract only RoyaleHaus progress from namespaced structure
+      const parsed = extractAppProgress(dbData);
+      if (!parsed) return null; // Skip users with no RoyaleHaus progress
+      
       const byId: Record<string, number> = parsed?.stats?.gamesPlayedById || {};
       const total: number = KNOWN_GAME_IDS.reduce((acc, id) => acc + (typeof byId[id] === 'number' ? byId[id] : 0), 0);
+      
+      // Skip users with 0 games played on RoyaleHaus
+      if (total === 0) return null;
       
       return {
         userId: r.userId,
@@ -181,7 +239,7 @@ export async function listTopProgress(limit = 50): Promise<LeaderboardEntry[]> {
         totalGames: total,
         gamesPlayedById: byId as Record<string, number>
       };
-    });
+    }).filter(Boolean) as LeaderboardEntry[];
     
     return mapped.sort((a, b) => b.totalGames - a.totalGames).slice(0, limit);
   }
@@ -219,13 +277,7 @@ export async function listTopXp(limit = 10): Promise<XpEntry[]> {
         ORDER BY xp DESC
         LIMIT ${limit}
       `;
-      // Calculate level from XP (same formula as xp-service)
-      const xpForLevel = (lv: number) => 100 + (lv - 1) * 50;
-      const levelFromXp = (totalXp: number): number => {
-        let lvl = 1, acc = 0;
-        while (acc + xpForLevel(lvl) <= totalXp) { acc += xpForLevel(lvl); lvl++; }
-        return lvl;
-      };
+      // Use imported levelFromXp from xp-service for consistent level calculation
       return rows.map((r: RawRow) => {
         const xpNum = Number(r.xp);
         return { userId: r.userId, username: r.username, avatarId: r.royaleAvatarId, level: levelFromXp(xpNum), xpTotal: xpNum };
@@ -260,8 +312,10 @@ export async function listTopHigherLower(limit = 10): Promise<HigherLowerHighSco
         include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
       });
       return rows.map((r: any) => {
-        let parsed: any = {}; 
-        try { parsed = JSON.parse(r.data); } catch {}
+        let dbData: any = {}; 
+        try { dbData = JSON.parse(r.data); } catch {}
+        const parsed = extractAppProgress(dbData);
+        if (!parsed) return null;
         const hs = parsed?.highScores?.higherlower;
         return hs && typeof hs.bestStreak === 'number' ? {
           userId: r.userId,
@@ -297,8 +351,10 @@ export async function listTopImpostor(limit = 10): Promise<ImpostorHighScoreEntr
         include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
       });
       return rows.map((r: any) => {
-        let parsed: any = {}; 
-        try { parsed = JSON.parse(r.data); } catch {}
+        let dbData: any = {}; 
+        try { dbData = JSON.parse(r.data); } catch {}
+        const parsed = extractAppProgress(dbData);
+        if (!parsed) return null;
         const hs = parsed?.highScores?.impostor;
         return hs && typeof hs.bestStreak === 'number' ? {
           userId: r.userId,
@@ -339,8 +395,10 @@ export async function listTopRoyaledle(limit = 10): Promise<RoyaledleHighScoreEn
         include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
       });
       return rows.map((r: any) => {
-        let parsed: any = {}; 
-        try { parsed = JSON.parse(r.data); } catch {}
+        let dbData: any = {}; 
+        try { dbData = JSON.parse(r.data); } catch {}
+        const parsed = extractAppProgress(dbData);
+        if (!parsed) return null;
         const hs = parsed?.highScores?.royaledle;
         return hs && typeof hs.bestWinAttempts === 'number' ? {
           userId: r.userId,
@@ -376,8 +434,10 @@ export async function listTopWordle(limit = 10): Promise<WordleHighScoreEntry[]>
         include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
       });
       return rows.map((r: any) => {
-        let parsed: any = {}; 
-        try { parsed = JSON.parse(r.data); } catch {}
+        let dbData: any = {}; 
+        try { dbData = JSON.parse(r.data); } catch {}
+        const parsed = extractAppProgress(dbData);
+        if (!parsed) return null;
         const hs = parsed?.highScores?.wordle;
         return hs && typeof hs.bestAttempts === 'number' ? {
           userId: r.userId,
@@ -418,8 +478,10 @@ export async function listTopTapOne(limit = 10): Promise<TapOneHighScoreEntry[]>
         include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
       });
       return rows.map((r: any) => {
-        let parsed: any = {}; 
-        try { parsed = JSON.parse(r.data); } catch {}
+        let dbData: any = {}; 
+        try { dbData = JSON.parse(r.data); } catch {}
+        const parsed = extractAppProgress(dbData);
+        if (!parsed) return null;
         const hs = parsed?.highScores?.tapone;
         return hs && typeof hs.bestRank === 'number' ? {
           userId: r.userId,
@@ -461,16 +523,19 @@ export async function listTopStreaks(limit = 10): Promise<StreakEntry[]> {
         include: { user: { select: { id: true, username: true, royaleAvatarId: true } } } 
       });
       return rows.map((r: any) => {
-        let parsed: any = {}; 
-        try { parsed = JSON.parse(r.data); } catch {}
+        let dbData: any = {}; 
+        try { dbData = JSON.parse(r.data); } catch {}
+        const parsed = extractAppProgress(dbData);
+        if (!parsed) return null;
         const streak = computeCurrentStreak(parsed);
+        if (streak === 0) return null;
         return {
           userId: r.userId,
           username: (r as any).user?.username || parsed?.user?.username || 'player',
           avatarId: (r as any).user?.royaleAvatarId || parsed?.user?.avatarId || null,
           streak
         };
-      });
+      }).filter(Boolean) as StreakEntry[];
     }
     
     return readAll().map(rec => {

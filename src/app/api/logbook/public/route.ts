@@ -45,11 +45,12 @@ export async function GET(req: NextRequest) {
     const progress = await getUserProgress(user.id);
     const streak = computeCurrentStreak(progress || {});
     
+    // Note: findUserByEmailOrUsername already maps royaleAvatarId to avatarId
     return ok({
       user: { 
         id: user.id, 
         username: user.username, 
-        avatarId: (user as any).avatarId || null 
+        avatarId: user.avatarId || null 
       },
       streak,
       progress: progress || null,

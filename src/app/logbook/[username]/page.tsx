@@ -29,13 +29,13 @@ function buildCalendar(progress: UserProgress | null) {
 
 // RoyaleHaus uses numeric card IDs (1-171). If avatarId is not numeric, it's from OnePieceHaus - use default
 function getCardImage(cardId: string | null): string {
-  if (!cardId) return '/images/cards/1.png';
+  if (!cardId) return '/images/cards/1.webp';
   // Check if it's a valid numeric ID for RoyaleHaus
   const numId = parseInt(cardId, 10);
   if (isNaN(numId) || numId < 1 || numId > 171) {
-    return '/images/cards/1.png'; // Default avatar for non-RoyaleHaus IDs
+    return '/images/cards/1.webp'; // Default avatar for non-RoyaleHaus IDs
   }
-  return `/images/cards/${numId}.png`;
+  return `/images/cards/${numId}.webp`;
 }
 
 export default function PublicLogbookPage({ params }: { params: { username: string } }) {
@@ -82,7 +82,7 @@ export default function PublicLogbookPage({ params }: { params: { username: stri
                   alt={profile?.username || 'avatar'}
                   className="object-cover w-full h-full"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/cards/1.png';
+                    (e.target as HTMLImageElement).src = '/images/cards/1.webp';
                   }}
                 />
               </div>

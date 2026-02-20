@@ -6,6 +6,7 @@ import { cardsData } from '@/data'
 import type { ClashCard, CardType, CardRarity } from '@/types/card'
 import { RARITY_COLORS, TYPE_ICONS } from '@/types/card'
 import { useLanguage } from '@/lib/useLanguage'
+import { includesNormalized } from '@/lib/text-utils'
 
 const cardTypes: CardType[] = ['Troop', 'Spell', 'Building', 'Champion', 'Tower Troop', 'Evolution', 'Hero']
 const cardRarities: CardRarity[] = ['Common', 'Rare', 'Epic', 'Legendary', 'Champion', 'Heroic']
@@ -22,10 +23,10 @@ export default function CardsPage() {
   const filteredCards = useMemo(() => {
     let filtered = cardsData
 
-    // Search filter
+    // Search filter (accent-insensitive)
     if (searchQuery) {
       filtered = filtered.filter(card => 
-        getCardNameTranslated(card.id).toLowerCase().includes(searchQuery.toLowerCase())
+        includesNormalized(getCardNameTranslated(card.id), searchQuery)
       )
     }
 
@@ -198,7 +199,7 @@ export default function CardsPage() {
                 {/* Card Image */}
                 <div className="aspect-[5/6] relative overflow-hidden bg-gradient-to-br from-blue-900/50 to-blue-950/80">
                   <img 
-                    src={`/images/cards/${card.id}.png`}
+                    src={`/images/cards/${card.id}.webp`}
                     alt={getCardNameTranslated(card.id)}
                     className="w-full h-full object-cover"
                   />
