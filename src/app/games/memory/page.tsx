@@ -21,12 +21,63 @@ interface MemoryCard {
   id: number
   card: ClashCard
   relationship: Relationship
-  pairIndex: number
+  pairId: number
+  matchDescription: string
   isFlipped: boolean
   isMatched: boolean
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
+
+// Helper to generate evolution pairs
+function generateEvolutionPool(): PairDef[] {
+  const pairs: PairDef[] = []
+  const evolutions = baseCards.filter(c => c.type === 'Evolution')
+  
+  evolutions.forEach(evo => {
+    const baseName = evo.name.replace(' Evolution', '')
+    const baseCard = baseCards.find(c => c.name === baseName && c.type !== 'Evolution')
+    if (baseCard) {
+      pairs.push({
+        card1Name: baseCard.name,
+        card2Name: evo.name,
+        relationship: 'evolution',
+        description: `${evo.name} is the evolution of ${baseCard.name}`
+      })
+    }
+  })
+  
+  return pairs
+}
+
+// Hero pairs pool
+const HERO_POOL: PairDef[] = [
+  { card1Name: 'Archer Queen', card2Name: 'Golden Knight', relationship: 'hero', description: 'Both are Champion Heroes' },
+  { card1Name: 'Skeleton King', card2Name: 'Monk', relationship: 'hero', description: 'Both are Champion Heroes' },
+]
+
+// Counter pairs pool
+const COUNTER_POOL: PairDef[] = [
+  { card1Name: 'Arrows', card2Name: 'Minion Horde', relationship: 'counter', description: 'Arrows counter Minion Horde' },
+  { card1Name: 'Fireball', card2Name: 'Three Musketeers', relationship: 'counter', description: 'Fireball counters Three Musketeers' },
+  { card1Name: 'Log', card2Name: 'Goblin Gang', relationship: 'counter', description: 'Log counters Goblin Gang' },
+  { card1Name: 'Lightning', card2Name: 'Sparky', relationship: 'counter', description: 'Lightning counters Sparky' },
+  { card1Name: 'Tornado', card2Name: 'Hog Rider', relationship: 'counter', description: 'Tornado counters Hog Rider' },
+]
+
+// Ranged pairs pool
+const RANGED_POOL: PairDef[] = [
+  { card1Name: 'Musketeer', card2Name: 'Wizard', relationship: 'ranged', description: 'Both are ranged troops' },
+  { card1Name: 'Archers', card2Name: 'Magic Archer', relationship: 'ranged', description: 'Both are ranged troops' },
+  { card1Name: 'Electro Wizard', card2Name: 'Ice Wizard', relationship: 'ranged', description: 'Both are ranged wizards' },
+  { card1Name: 'Princess', card2Name: 'Dart Goblin', relationship: 'ranged', description: 'Both have long range attacks' },
+]
+
+// Spell evolution pairs
+const SPELL_EVOLUTION_POOL: PairDef[] = [
+  { card1Name: 'Rage', card2Name: 'Rage Evolution', relationship: 'evolution', description: 'Rage Evolution enhances the Rage spell' },
+  { card1Name: 'Freeze', card2Name: 'Freeze Evolution', relationship: 'evolution', description: 'Freeze Evolution enhances the Freeze spell' },
+]
 
 // Generate "same year" pairs from baseCards released between 2017 and 2025.
 // Only pairs where both cards share the EXACT same release year and neither card
