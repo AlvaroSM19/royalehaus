@@ -15,34 +15,30 @@ const MAX_GUESSES = 5;
 const CARDS_WITH_SOUNDS: number[] = [
   // Troops with distinctive sounds
   1,   // Knight
+  2,   // Archers
+  4,   // Giant
   5,   // P.E.K.K.A
-  7,   // Balloon
   8,   // Witch
+  9,   // Barbarians
   10,  // Golem
-  16,  // Baby Dragon
   17,  // Prince
   18,  // Wizard
   22,  // Hog Rider
   24,  // Ice Wizard
+  25,  // Royal Giant
   31,  // Lava Hound
   33,  // Sparky
   38,  // Inferno Dragon
   41,  // Electro Wizard
-  46,  // Bandit
   50,  // Mega Knight
-  73,  // Phoenix
   // Spells
-  81,  // Zap
-  82,  // Fireball
   84,  // Rocket
   85,  // Lightning
-  92,  // Tornado
-  // Champions
-  114, // Golden Knight
-  115, // Archer Queen
-  116, // Skeleton King
-  118, // Monk
+  86,  // Mirror
+  87,  // Rage
 ];
+
+const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.webp`;
 
 export default function SoundQuizPage() {
   const { getCardNameTranslated } = useLanguage();
@@ -55,7 +51,8 @@ export default function SoundQuizPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playCount, setPlayCount] = useState(0);
   const [isLoadingSound, setIsLoadingSound] = useState(false);
-  const [audioMode, setAudioMode] = useState<'file' | 'fallback' | 'unavailable'>('file');
+  const [audioMode, setAudioMode] = useState<'file' | 'fallback'>('file');
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const fallbackNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode } | null>(null);
@@ -521,7 +518,7 @@ export default function SoundQuizPage() {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold text-white text-sm xs:text-base truncate">{getCardNameTranslated(card.id)}</div>
-                        <div className="text-[10px] xs:text-xs text-slate-400">{card.type} ÔÇó {card.rarity}</div>
+                        <div className="text-[10px] xs:text-xs text-slate-400">{card.type} • {card.rarity}</div>
                       </div>
                     </button>
                   ))}

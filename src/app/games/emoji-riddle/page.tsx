@@ -200,8 +200,16 @@ export default function EmojiRiddlePage() {
   const [dailyStreak, setDailyStreak] = useState<DailyStreakData | null>(null);
   const [countdown, setCountdown] = useState('');
 
-  // Check daily completion status
+  // Countdown timer effect
   useEffect(() => {
+    const updateCountdown = () => setCountdown(getTimeUntilReset());
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const initGame = useCallback(() => {
+    // Check if already completed today
     const today = new Date().toISOString().slice(0, 10);
     const lastDaily = localStorage.getItem('emoji-riddle-last-daily');
     const lastDailyResultStr = localStorage.getItem('emoji-riddle-daily-result');
@@ -218,24 +226,17 @@ export default function EmojiRiddlePage() {
         const originalEmojis = emojiRiddles[dailyCard.id] || [];
         setTargetCard(dailyCard);
         setEmojis(originalEmojis);
+        setRevealedCount(emojis.length);
         setGameOver(true);
         setWon(result.won);
-      } catch {}
+        return; // Don't reset the game state
+      } catch (e) {
+        // Invalid stored data, continue with new game
+      }
     } else {
       setDailyCompleted(false);
       setDailyResult(null);
     }
-    
-    // Countdown timer
-    const updateCountdown = () => setCountdown(getTimeUntilReset());
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const initGame = useCallback(() => {
-    // For daily mode, only allow one attempt per day
-    if (dailyCompleted) return;
     
     const cardToUse = getDailyCard();
     
@@ -252,7 +253,7 @@ export default function EmojiRiddlePage() {
     setWon(false);
     setShowAnswer(false);
     setShowBonusHint(false);
-  }, [dailyCompleted]);
+  }, []);
 
   useEffect(() => {
     initGame();

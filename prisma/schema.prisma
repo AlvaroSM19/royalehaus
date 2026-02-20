@@ -20,6 +20,7 @@ model User {
   password        String
   avatarId        String?       // OnePieceHaus avatar (character ID like 'op-luffy')
   royaleAvatarId  String?       // RoyaleHaus avatar (card ID like '1', '25', etc.)
+  jjkAvatarId     String?       // JujutsuKaisenHaus avatar (character ID)
   role            String        @default("user")
   xpTotal         Int           @default(0)
   level           Int           @default(1)
