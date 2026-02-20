@@ -9,10 +9,12 @@ import { useLanguage } from '@/lib/useLanguage';
 
 const MAX_GUESSES = 6;
 
-// Blur (px) and scale for each attempt step (index 0 = initial state before any guess)
-// Goes from very blurred+zoomed → clear at step 6 (or on win)
-const BLUR_STEPS  = [40, 32, 24, 16, 8, 3, 0]; // 7 values: initial + after each of 6 guesses
-const SCALE_STEPS = [3.5, 3.0, 2.5, 2.0, 1.5, 1.2, 1.0];
+// Blur and scale for each attempt step (index 0 = initial state before any guess)
+// Starts at 95% zoom (scale 1.95) and 90% blur (36px), decreasing 5% zoom and 10% blur per attempt
+// Zoom: 1.95 → 1.90 → 1.85 → 1.80 → 1.75 → 1.70 → 1.0 (clear on win/end)
+// Blur: 90% → 80% → 70% → 60% → 50% → 40% → 0% (max blur = 40px)
+const BLUR_STEPS  = [36, 32, 28, 24, 20, 16, 0]; // 7 values: initial + after each of 6 guesses
+const SCALE_STEPS = [1.95, 1.90, 1.85, 1.80, 1.75, 1.70, 1.0];
 
 export default function PixelRoyalePage() {
   const { getCardNameTranslated } = useLanguage();

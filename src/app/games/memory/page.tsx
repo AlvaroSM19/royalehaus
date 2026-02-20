@@ -412,7 +412,16 @@ export default function RoyaleMemoryGame() {
                 {/* Card Back */}
                 {!faceUp && (
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-600 to-amber-800 rounded-xl border-2 border-amber-500/50 flex items-center justify-center shadow-lg">
-                    <span className="text-3xl sm:text-4xl select-none">👑</span>
+                    <img
+                      src="/images/games/memory/card-back.png"
+                      alt="Card Back"
+                      className="w-full h-full object-cover rounded-xl"
+                      onError={(e) => {
+                        // Fallback to emoji if image not found
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement!.innerHTML = '<span class="text-3xl sm:text-4xl select-none">👑</span>';
+                      }}
+                    />
                   </div>
                 )}
 
