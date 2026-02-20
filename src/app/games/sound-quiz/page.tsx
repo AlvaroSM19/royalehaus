@@ -8,7 +8,7 @@ import { Home, RotateCcw, Search, Volume2, Play, Pause, Loader2, Trophy, HelpCir
 import { useLanguage } from '@/lib/useLanguage';
 import { includesNormalized } from '@/lib/text-utils';
 
-const MAX_GUESSES = 5;
+const MAX_GUESSES = 8;
 
 // Mapeo de nombres de cartas a nombres de carpetas en /sounds/cards/Cards/
 const CARD_FOLDER_MAP: Record<string, string> = {
@@ -103,13 +103,9 @@ const getCardsWithSounds = () => {
 
 const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.webp`;
 
-// Tipos de sonidos disponibles para las pistas
-type SoundHintType = 'deploy' | 'attack' | 'hit' | 'death' | 'other';
-
+// Interface para pistas de sonido
 interface SoundHint {
-  type: SoundHintType;
   url: string;
-  label: string;
 }
 
 export default function SoundQuizPage() {
@@ -134,47 +130,46 @@ export default function SoundQuizPage() {
     const folderName = CARD_FOLDER_MAP[card.name];
     if (!folderName) return [];
 
-    const hints: SoundHint[] = [];
+    const hints: string[] = [];
     const basePath = `/sounds/cards/Cards/${encodeURIComponent(folderName)}`;
     const cardLower = folderName.toLowerCase().replace(/ /g, '_');
-
-    // Prioridad de pistas:
-    // 1. Deploy (despliegue)
-    hints.push({
-      type: 'deploy',
-      url: `${basePath}/${cardLower}_deploy_end_01.ogg`,
-      label: 'Deploy Sound'
-    });
-
-    // 2. Attack (ataque)
-    hints.push({
-      type: 'attack',
-      url: `${basePath}/${cardLower}_attack_start_01.ogg`,
-      label: 'Attack Sound'
-    });
-
-    // 3. Hit/Impact (golpe)
-    hints.push({
-      type: 'hit',
-      url: `${basePath}/${cardLower}_hit_01.ogg`,
-      label: 'Hit Sound'
-    });
-
-    // 4. Death (muerte)
-    hints.push({
-      type: 'death',
-      url: `${basePath}/${cardLower}_death_01.ogg`,
-      label: 'Death Sound'
-    });
-
-    // 5. Alternative sounds (otras variantes)
-    hints.push({
-      type: 'other',
-      url: `${basePath}/${cardLower}_attack_start_02.ogg`,
-      label: 'Alternative Sound'
-    });
-
-    return hints;
+    const cardLowerNoSpace = folderName.toLowerCase().replace(/ /g, '');
+    
+    // Generar múltiples variantes de nombres de archivo para probar
+    // Deploy sounds
+    hints.push(`${basePath}/${cardLower}_deploy_end_01.ogg`);
+    hints.push(`${basePath}/${cardLower}_deploy_01.ogg`);
+    hints.push(`${basePath}/clash_${cardLower}_deploy_01.ogg`);
+    hints.push(`${basePath}/${cardLowerNoSpace}_deploy_01.ogg`);
+    
+    // Attack sounds
+    for (let i = 1; i <= 5; i++) {
+      hints.push(`${basePath}/${cardLower}_attack_start_0${i}.ogg`);
+      hints.push(`${basePath}/${cardLower}_attack_0${i}.ogg`);
+      hints.push(`${basePath}/${cardLowerNoSpace}_attack_0${i}.ogg`);
+    }
+    hints.push(`${basePath}/${cardLower}_attack_hack_01.ogg`);
+    
+    // Hit sounds
+    hints.push(`${basePath}/${cardLower}_hit_01.ogg`);
+    hints.push(`${basePath}/${cardLowerNoSpace}_hit_01.ogg`);
+    
+    // Death sounds
+    hints.push(`${basePath}/${cardLower}_death_01.ogg`);
+    hints.push(`${basePath}/${cardLowerNoSpace}_death_01.ogg`);
+    
+    // Footstep sounds
+    for (let i = 1; i <= 4; i++) {
+      hints.push(`${basePath}/${cardLower}_footstep_0${i}.ogg`);
+      hints.push(`${basePath}/${cardLower}_step_0${i}.ogg`);
+      hints.push(`${basePath}/${cardLowerNoSpace}_step_0${i}.ogg`);
+    }
+    
+    // Shuffle the hints array to randomize
+    const shuffled = hints.sort(() => Math.random() - 0.5);
+    
+    // Return first 8 unique URLs (we'll validate which ones actually exist when playing)
+    return shuffled.slice(0, 8).map(url => ({ url }));
   }, []);
 
   const stopSound = useCallback(() => {
@@ -203,6 +198,31 @@ export default function SoundQuizPage() {
     setGameOver(false);
     setWon(false);
     setIsLoadingSound(false);
+    
+    // Reproducir automáticamente el primer sonido después de un pequeño delay
+    setTimeout(() => {
+      if (hints.length > 0) {
+        const firstAudio = new Audio(hints[0].url);
+        audioRef.current = firstAudio;
+        firstAudio.onplay = () => setIsPlaying(true);
+        firstAudio.onended = () => setIsPlaying(false);
+        firstAudio.onerror = (e) => {
+          console.error('Failed to load first sound:', hints[0].url);
+          setIsPlaying(false);
+          // Intentar con el siguiente si el primero falla
+          if (hints.length > 1) {
+            setTimeout(() => {
+              const secondAudio = new Audio(hints[1].url);
+              audioRef.current = secondAudio;
+              secondAudio.onplay = () => setIsPlaying(true);
+              secondAudio.onended = () => setIsPlaying(false);
+              secondAudio.play().catch(err => console.error('Failed to play sound:', err));
+            }, 100);
+          }
+        };
+        firstAudio.play().catch(err => console.error('Failed to play first sound:', err));
+      }
+    }, 500);
   }, [cardsWithSounds, stopSound, generateSoundHints]);
 
   useEffect(() => {
@@ -247,20 +267,29 @@ export default function SoundQuizPage() {
 
       audio.onplay = () => {
         setIsPlaying(true);
+        setIsLoadingSound(false);
       };
       audio.onended = () => {
         setIsPlaying(false);
       };
       audio.onerror = () => {
         setIsPlaying(false);
+        setIsLoadingSound(false);
         console.error(`Failed to load sound: ${hint.url}`);
+        // Intentar con el siguiente sonido si el actual falla
+        if (indexToPlay < soundHints.length - 1) {
+          setTimeout(() => playSound(indexToPlay + 1), 100);
+        }
       };
 
       await audio.play();
     } catch (error) {
       console.error('Error playing sound:', error);
-    } finally {
       setIsLoadingSound(false);
+      // Intentar con el siguiente sonido si el actual falla
+      if (indexToPlay < soundHints.length - 1) {
+        setTimeout(() => playSound(indexToPlay + 1), 100);
+      }
     }
   }, [gameOver, soundHints, currentHintIndex, stopSound, targetCard]);
 
@@ -373,6 +402,33 @@ export default function SoundQuizPage() {
             >
               <h3 className="text-center text-cyan-400 font-bold text-xs xs:text-sm mb-1">Sound Hints</h3>
               
+              {/* Main Play Button */}
+              {!gameOver && (
+                <button
+                  onClick={() => playSound()}
+                  disabled={isLoadingSound}
+                  className={`w-full flex items-center justify-center gap-3 px-4 py-4 rounded-xl transition-all mb-3 ${
+                    isPlaying 
+                      ? 'bg-gradient-to-r from-green-600 to-green-500 shadow-lg border-2 border-green-400' 
+                      : 'bg-gradient-to-r from-cyan-600 to-cyan-500 shadow-lg border-2 border-cyan-400 hover:from-cyan-500 hover:to-cyan-400 hover:scale-105'
+                  } ${isLoadingSound ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isLoadingSound ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : isPlaying ? (
+                    <>
+                      <Pause className="w-6 h-6" />
+                      <span className="text-base font-bold">Playing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-6 h-6" />
+                      <span className="text-base font-bold">Play Sound</span>
+                    </>
+                  )}
+                </button>
+              )}
+              
               <div className="space-y-2">
                 {soundHints.slice(0, currentHintIndex + 1).map((hint, index) => (
                   <button
@@ -387,9 +443,9 @@ export default function SoundQuizPage() {
                   >
                     <div className="flex items-center gap-2">
                       <Play className="w-4 h-4" />
-                      <span className="text-xs xs:text-sm font-medium">{hint.label}</span>
+                      <span className="text-xs xs:text-sm font-medium">Hint {index + 1}</span>
                     </div>
-                    <span className="text-[10px] xs:text-xs text-slate-400">#{index + 1}</span>
+                    <Volume2 className="w-4 h-4 text-cyan-400" />
                   </button>
                 ))}
                 
@@ -400,9 +456,9 @@ export default function SoundQuizPage() {
                   >
                     <div className="flex items-center gap-2">
                       <Unlock className="w-4 h-4 text-slate-500" />
-                      <span className="text-xs xs:text-sm font-medium text-slate-500">Locked</span>
+                      <span className="text-xs xs:text-sm font-medium text-slate-500">Hint {currentHintIndex + 2 + index}</span>
                     </div>
-                    <span className="text-[10px] xs:text-xs text-slate-600">#{currentHintIndex + 2 + index}</span>
+                    <span className="text-[10px] xs:text-xs text-slate-600">Locked</span>
                   </div>
                 ))}
               </div>
