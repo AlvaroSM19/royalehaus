@@ -323,7 +323,7 @@ export default function RoyaledlePage() {
   };
 
   const handleGuess = (card: ClashCard) => {
-    if (gameOver || !targetCard) return;
+    if (gameOver || !targetCard || dailyCompleted) return;
     if (guesses.some(g => g.card.id === card.id)) return;
 
     const result = compareCards(card, targetCard);

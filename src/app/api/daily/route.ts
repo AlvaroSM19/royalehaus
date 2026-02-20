@@ -58,8 +58,7 @@ export async function GET(req: NextRequest) {
         id: challenge.id,
         date: challenge.date,
         gameType: challenge.gameType,
-        // Only send cardId if the user has already completed it
-        cardId: participation?.completed ? challenge.cardId : undefined,
+        cardId: challenge.cardId, // Always send cardId (needed for authenticated users)
       },
       participation: participation ? {
         completed: participation.completed,
