@@ -1,0 +1,82 @@
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.rotate-y-0 {
+  transform: rotateY(0deg);
+}
+
+/* Memory card back design (fallback if image fails) */
+.card-back-royal {
+  position: relative;
+  background: radial-gradient(circle at 30% 30%, #1a2a4a, #0a1525 65%), linear-gradient(135deg,#0f1a33,#1d2b52);
+  border: 2px solid rgba(255,215,128,0.55);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 4px 10px -2px rgba(0,0,0,0.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+.card-back-royal:before {
+  content: "";
+  position:absolute;inset:0;
+  background: repeating-linear-gradient(45deg,rgba(255,255,255,0.05) 0 6px,transparent 6px 12px);
+  opacity:.3;
+  pointer-events:none;
+}
+.card-back-royal .shield-ring {
+  position:absolute;
+  width:72%;height:72%;
+  border:2px solid rgba(255,215,128,0.55);
+  border-radius:50%;
+  box-shadow:0 0 8px -2px rgba(255,215,128,0.5), inset 0 0 12px -2px rgba(255,215,128,0.3);
+}
+.card-back-royal .shield-cross {
+  position:absolute;
+  width:8%;height:60%;
+  background:linear-gradient(to bottom,rgba(255,215,128,0.9),rgba(180,130,40,0.4));
+  transform:rotate(12deg);
+  top:20%;left:50%;margin-left:-4%;border-radius:2px;
+  box-shadow:0 0 4px rgba(255,215,128,0.6);
+}
+.card-back-royal .game-title {
+  position:absolute;bottom:10%;
+  font-size:0.55rem;letter-spacing:3px;font-weight:800;
+  color:#f8e4b0;
+  text-shadow:0 1px 2px #000,0 0 6px rgba(255,215,128,0.45);
+}
+
+/* Front frame */
+.card-front-frame {
+  position:relative;
+  background: #021b27;
+  border:2px solid rgba(255,215,128,0.35);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 2px 6px -2px rgba(0,0,0,0.6);
+  box-sizing: border-box;
+}
+.card-front-frame:before {content:"";position:absolute;inset:2px;border:1px solid rgba(255,215,128,0.25);border-radius:0.65rem;pointer-events:none;}
+
+/* Flip helpers */
+.card-3d-wrapper {position:relative;width:100%;height:100%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
+.card-face {position:absolute;inset:0;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.card-face.back {transform:rotateY(0deg);}
+.card-face.front {transform:rotateY(180deg);}
+
+/* Matched card visual treatment */
+.matched-card { position: relative; }
+.matched-card:after { display: none; }
+.matched-card .card-3d-wrapper { filter: none; }
+.matched-card .card-face.front { z-index: 2; position: relative; }
+.matched-card .card-face.back { display: none; }
+.matched-card:hover { transform: none; }
