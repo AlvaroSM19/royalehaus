@@ -72,8 +72,14 @@ export default function HigherLowerGame() {
   const [compareMode, setCompareMode] = useState<CompareMode>('damage')
   const [revealNext, setRevealNext] = useState(false)
   const [revealFail, setRevealFail] = useState(false)
+  const [isBlindRound, setIsBlindRound] = useState(false)
+  const [totalPoints, setTotalPoints] = useState(0)
   const sessionBestRef = useRef(0)
   const recordedRef = useRef(false)
+
+  // Blind rounds happen every 5 streak - current card value is hidden!
+  const getStreakMultiplier = (s: number) => s >= 15 ? 4 : s >= 10 ? 3 : s >= 5 ? 2 : 1
+  const getStreakLabel = (s: number) => s >= 15 ? '🔥🔥🔥 4×' : s >= 10 ? '🔥🔥 3×' : s >= 5 ? '🔥 2×' : ''
 
   useEffect(() => {
     const saved = localStorage.getItem('royalehaus-higherlower-highscore')
@@ -112,11 +118,13 @@ export default function HigherLowerGame() {
     setNextCard(card2)
     setScore(0)
     setStreak(0)
+    setTotalPoints(0)
     setGamePhase('playing')
     setShowResult(false)
     setIsAnimating(false)
     setRevealNext(false)
     setRevealFail(false)
+    setIsBlindRound(false)
     recordedRef.current = false
     sessionBestRef.current = 0
   }, [compareMode])
@@ -154,8 +162,12 @@ export default function HigherLowerGame() {
       setRevealFail(false)
       const newScore = score + 1
       const newStreak = streak + 1
+      const mult = getStreakMultiplier(streak)
+      const blindBonus = isBlindRound ? 2 : 1
+      const roundPoints = mult * blindBonus
       setScore(newScore)
       setStreak(newStreak)
+      setTotalPoints(prev => prev + roundPoints)
       sessionBestRef.current = Math.max(sessionBestRef.current, newScore)
       
       if (newScore > highScore) {
@@ -172,6 +184,8 @@ export default function HigherLowerGame() {
         setShowResult(false)
         setRevealNext(false)
         setIsAnimating(false)
+        // Blind round every 5 streak
+        setIsBlindRound((newStreak) % 5 === 0 && newStreak > 0)
       }, 600)
     } else {
       setRevealFail(true)
@@ -308,6 +322,7 @@ export default function HigherLowerGame() {
                 <div className="text-center md:text-right md:flex-shrink-0">
                   <div className="text-[10px] sm:text-xs md:text-sm font-black tracking-[0.3em] text-amber-400/80">SCORE</div>
                   <div className="text-4xl sm:text-5xl md:text-6xl font-black text-emerald-400 drop-shadow">{score}</div>
+                  <div className="text-sm sm:text-base text-amber-300/60 font-bold mt-1">{totalPoints} pts</div>
                   {score === highScore && score > 0 && (
                     <div className="text-green-400 font-bold text-sm mt-1">New High Score!</div>
                   )}
@@ -396,7 +411,13 @@ export default function HigherLowerGame() {
                 <div className="flex items-center gap-1 bg-black/30 px-1.5 sm:px-2 py-1 rounded">
                   <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-orange-400" />
                   <span className="text-white font-bold">{streak}</span>
+                  {getStreakLabel(streak) && <span className="text-xs">{getStreakLabel(streak)}</span>}
                 </div>
+                {isBlindRound && !showResult && (
+                  <div className="flex items-center gap-1 bg-fuchsia-900/50 px-1.5 sm:px-2 py-1 rounded border border-fuchsia-500/40 animate-pulse">
+                    <span className="text-xs sm:text-sm text-fuchsia-300 font-bold">🔒 BLIND</span>
+                  </div>
+                )}
                 <div className="hidden sm:flex items-center gap-1 bg-black/30 px-2 py-1 rounded">
                   <Award className="w-4 h-4 text-amber-400" />
                   <span>Best: {highScore}</span>
@@ -424,7 +445,7 @@ export default function HigherLowerGame() {
                   <div className={`bg-[#101b24]/70 border border-amber-700/40 rounded-xl backdrop-blur-sm p-2 sm:p-4 w-full md:w-[18rem] lg:w-[20rem] xl:w-[22rem] flex flex-col shadow-md shadow-black/50 transition-opacity duration-300 ${isAnimating ? 'opacity-60' : 'opacity-100'}`}>
                     <div className="aspect-[3/4] w-full rounded-lg overflow-hidden bg-black/40 border border-amber-700/30 flex items-center justify-center flex-1">
                       <img
-                        src={`/images/cards/${currentCard.id}.png`}
+                        src={`/images/cards/${currentCard.id}.webp`}
                         alt={getCardNameTranslated(currentCard.id)}
                         className="w-full h-full object-contain"
                       />
@@ -433,12 +454,21 @@ export default function HigherLowerGame() {
                       <h3 className="text-sm sm:text-xl md:text-2xl font-extrabold text-amber-300 tracking-wide truncate">{getCardNameTranslated(currentCard.id)}</h3>
                       <p className="text-[10px] sm:text-sm uppercase tracking-wider text-amber-500/70 truncate">{currentCard.type} • {currentCard.rarity}</p>
                       <div className="pt-1 sm:pt-2">
-                        <div className={`font-extrabold text-emerald-400 drop-shadow ${compareMode === 'attack_speed' ? 'text-base sm:text-2xl' : 'text-xl sm:text-4xl'}`}>
-                          {getDisplayValue(currentCard)}
-                        </div>
-                        <p className="text-[9px] sm:text-[11px] mt-0.5 sm:mt-1 text-amber-200/60 tracking-wide">
-                          {compareMode === 'elixir' ? 'Elixir Cost' : compareMode === 'attack_speed' ? 'Attack Speed' : compareMode === 'damage' ? 'Damage (Lvl 11)' : 'Release Year'}
-                        </p>
+                        {isBlindRound && !showResult ? (
+                          <>
+                            <div className="text-xl sm:text-3xl font-extrabold text-fuchsia-400/60 tracking-widest">🔒 BLIND</div>
+                            <p className="text-[9px] sm:text-[11px] mt-0.5 sm:mt-1 text-fuchsia-300/60 tracking-wide">Trust your knowledge!</p>
+                          </>
+                        ) : (
+                          <>
+                            <div className={`font-extrabold text-emerald-400 drop-shadow ${compareMode === 'attack_speed' ? 'text-base sm:text-2xl' : 'text-xl sm:text-4xl'}`}>
+                              {getDisplayValue(currentCard)}
+                            </div>
+                            <p className="text-[9px] sm:text-[11px] mt-0.5 sm:mt-1 text-amber-200/60 tracking-wide">
+                              {compareMode === 'elixir' ? 'Elixir Cost' : compareMode === 'attack_speed' ? 'Attack Speed' : compareMode === 'damage' ? 'Damage (Lvl 11)' : 'Release Year'}
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -478,8 +508,17 @@ export default function HigherLowerGame() {
 
                     {/* Result Feedback (Desktop) */}
                     {showResult && (
-                      <div className={`text-3xl font-black ${lastGuessCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                        {lastGuessCorrect ? 'CORRECT!' : 'WRONG!'}
+                      <div className="text-center">
+                        <div className={`text-3xl font-black ${lastGuessCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                          {lastGuessCorrect ? 'CORRECT!' : 'WRONG!'}
+                        </div>
+                        {lastGuessCorrect && (
+                          <div className="text-sm text-amber-300/80 mt-1 font-bold">
+                            +{getStreakMultiplier(streak - 1) * (isBlindRound ? 2 : 1)} pts
+                            {isBlindRound && ' (blind bonus!)'}
+                            {getStreakMultiplier(streak - 1) > 1 && !isBlindRound && ` (${getStreakMultiplier(streak - 1)}\u00d7 streak)`}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -490,7 +529,7 @@ export default function HigherLowerGame() {
                   }`}>
                     <div className="aspect-[3/4] w-full rounded-lg overflow-hidden bg-black/40 border border-amber-700/30 flex items-center justify-center flex-1">
                       <img
-                        src={`/images/cards/${nextCard.id}.png`}
+                        src={`/images/cards/${nextCard.id}.webp`}
                         alt={getCardNameTranslated(nextCard.id)}
                         className="w-full h-full object-contain"
                       />

@@ -50,7 +50,7 @@ export default function PixelRoyalePage() {
   useEffect(() => {
     if (!targetCard) return;
     const img = new Image();
-    img.src = `/images/cards/${targetCard.id}.png`;
+    img.src = `/images/cards/${targetCard.id}.webp`;
     img.onload = () => {
       // Image is loaded in browser cache → safe to show with blur
       setImageReady(true);
@@ -108,11 +108,32 @@ export default function PixelRoyalePage() {
     }
   };
 
-  const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.png`;
+  const getCardImageUrl = (card: ClashCard) => `/images/cards/${card.id}.webp`;
 
-  const getHint = () => {
-    if (!targetCard) return '';
-    return [`${targetCard.elixir} elixir`, targetCard.type, targetCard.rarity].join(' • ');
+  // Progressive hints: reveal more info as guesses increase
+  const getHints = (): string[] => {
+    if (!targetCard) return [];
+    const hints: string[] = [];
+    const g = guesses.length;
+    // After 2 guesses: type + rarity
+    if (g >= 2) hints.push(`${targetCard.type} • ${targetCard.rarity}`);
+    // After 3 guesses: elixir cost
+    if (g >= 3) hints.push(`${targetCard.elixir} Elixir`);
+    // After 4 guesses: attack type + targets air
+    if (g >= 4) {
+      const parts: string[] = [];
+      if (targetCard.attackType) parts.push(targetCard.attackType === 'melee' ? 'Melee' : 'Ranged');
+      if (targetCard.targetAir !== null) parts.push(targetCard.targetAir ? 'Targets Air' : 'Ground Only');
+      if (parts.length) hints.push(parts.join(' • '));
+    }
+    // After 5 guesses: attack speed + release year
+    if (g >= 5) {
+      const parts: string[] = [];
+      if (targetCard.attackSpeed) parts.push(`${targetCard.attackSpeed.replace('-', ' ')} speed`);
+      if (targetCard.release_date) parts.push(`Released ${targetCard.release_date.slice(0, 4)}`);
+      if (parts.length) hints.push(parts.join(' • '));
+    }
+    return hints;
   };
 
   // Current blur and scale based on step
@@ -228,8 +249,16 @@ export default function PixelRoyalePage() {
           )}
 
           {showHint && !gameOver && (
-            <div className="text-center mb-6 text-amber-300 text-sm font-medium bg-amber-900/30 border border-amber-500/30 rounded-lg py-3 px-4 max-w-md mx-auto">
-              💡 {getHint()}
+            <div className="text-center mb-6 max-w-md mx-auto space-y-2">
+              {getHints().length > 0 ? getHints().map((hint, i) => (
+                <div key={i} className="text-amber-300 text-sm font-medium bg-amber-900/30 border border-amber-500/30 rounded-lg py-2 px-4 animate-fadeIn">
+                  💡 {hint}
+                </div>
+              )) : (
+                <div className="text-amber-300/60 text-sm italic bg-amber-900/20 border border-amber-500/20 rounded-lg py-2 px-4">
+                  💡 Make more guesses to unlock hints...
+                </div>
+              )}
             </div>
           )}
 
@@ -311,31 +340,54 @@ export default function PixelRoyalePage() {
               <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wide mb-3 text-center">
                 Previous Guesses
               </h3>
-              <div className="flex flex-wrap justify-center gap-2">
-                {guesses.map((card, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                      card.id === targetCard?.id
-                        ? 'bg-green-900/40 border-green-500/50'
-                        : 'bg-gray-900/60 border-red-500/30'
-                    }`}
-                  >
-                    <img
-                      src={getCardImageUrl(card)}
-                      alt={card.name}
-                      className="w-8 h-8 object-contain rounded"
-                    />
-                    <span className={`text-sm font-medium ${
-                      card.id === targetCard?.id ? 'text-green-300' : 'text-red-300'
-                    }`}>
-                      {getCardNameTranslated(card.id)}
-                    </span>
-                    <span className="text-xs">
-                      {card.id === targetCard?.id ? '✅' : '❌'}
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-2">
+                {guesses.map((card, index) => {
+                  const isCorrect = card.id === targetCard?.id;
+                  const matches: string[] = [];
+                  const misses: string[] = [];
+                  if (targetCard && !isCorrect) {
+                    if (card.type === targetCard.type) matches.push('Type'); else misses.push('Type');
+                    if (card.rarity === targetCard.rarity) matches.push('Rarity'); else misses.push('Rarity');
+                    if (card.elixir === targetCard.elixir) matches.push('Elixir'); else misses.push('Elixir');
+                    if (card.attackType === targetCard.attackType && card.attackType) matches.push('Attack');
+                  }
+                  return (
+                    <div
+                      key={index}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${
+                        isCorrect
+                          ? 'bg-green-900/40 border-green-500/50'
+                          : 'bg-gray-900/60 border-red-500/30'
+                      }`}
+                    >
+                      <img
+                        src={getCardImageUrl(card)}
+                        alt={card.name}
+                        className="w-10 h-10 object-contain rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm font-medium ${
+                          isCorrect ? 'text-green-300' : 'text-red-300'
+                        }`}>
+                          {getCardNameTranslated(card.id)}
+                        </span>
+                        {!isCorrect && (matches.length > 0 || misses.length > 0) && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {matches.map(m => (
+                              <span key={m} className="text-[10px] px-1.5 py-0.5 rounded bg-green-800/60 text-green-300 border border-green-600/30">✓ {m}</span>
+                            ))}
+                            {misses.map(m => (
+                              <span key={m} className="text-[10px] px-1.5 py-0.5 rounded bg-red-800/40 text-red-400 border border-red-600/20">✗ {m}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-xs shrink-0">
+                        {isCorrect ? '✅' : '❌'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

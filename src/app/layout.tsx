@@ -198,6 +198,18 @@ export default function RootLayout({
                   <img src="/favicon-cr.png" alt="" className="w-5 h-5" />
                   <span className="text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">ROYALEHAUS</span>
                 </a>
+
+                <span className="text-amber-700/50">•</span>
+
+                {/* JJKHaus */}
+                <a 
+                  href="https://jujutsukaisenhaus-jujutsu-f3r2po-cddd1f-72-62-237-156.traefik.me/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-purple-500/15 transition group"
+                >
+                  <span className="text-xs font-bold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-200 to-purple-400 bg-clip-text text-transparent group-hover:from-purple-200 group-hover:to-fuchsia-100">JJKHAUS</span>
+                </a>
               </div>
             </div>
           </div>
