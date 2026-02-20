@@ -208,8 +208,63 @@ export default function EmojiRiddlePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const initGame = useCallback(() => {
-    // Check if already completed today
+  const initGame = useCallback(async () => {
+    // Check if user is authenticated and fetch challenge from API
+    if (user) {
+      try {
+        const response = await fetch('/api/daily?game=emoji-riddle', { credentials: 'include' });
+        const data = await response.json();
+        
+        if (data.participation?.completed) {
+          // Already completed
+          setDailyCompleted(true);
+          setDailyResult({
+            won: data.participation.won,
+            guesses: data.participation.attempts,
+            cardId: data.challenge.cardId
+          });
+          setDailyStreak(getDailyStreakData());
+          
+          // Show the completed card
+          const card = baseCards.find(c => c.id === data.challenge.cardId);
+          if (card) {
+            const originalEmojis = emojiRiddles[card.id] || [];
+            setTargetCard(card);
+            setEmojis(originalEmojis);
+            setRevealedCount(originalEmojis.length);
+            setGameOver(true);
+            setWon(data.participation.won);
+          }
+          return;
+        }
+        
+        // Not completed yet - load the challenge card
+        if (data.challenge?.cardId) {
+          const card = baseCards.find(c => c.id === data.challenge.cardId);
+          if (card && emojiRiddles[card.id]) {
+            const originalEmojis = emojiRiddles[card.id];
+            const reorderedEmojis = reorderEmojisForDifficulty(originalEmojis);
+            
+            setTargetCard(card);
+            setEmojis(reorderedEmojis);
+            setRevealedCount(1);
+            setGuesses([]);
+            setSearchTerm('');
+            setGameOver(false);
+            setWon(false);
+            setShowAnswer(false);
+            setShowBonusHint(false);
+            setDailyCompleted(false);
+            setDailyResult(null);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch daily challenge:', error);
+      }
+    }
+    
+    // Fallback to localStorage check for non-authenticated users
     const today = new Date().toISOString().slice(0, 10);
     const lastDaily = localStorage.getItem('emoji-riddle-last-daily');
     const lastDailyResultStr = localStorage.getItem('emoji-riddle-daily-result');
@@ -253,7 +308,7 @@ export default function EmojiRiddlePage() {
     setWon(false);
     setShowAnswer(false);
     setShowBonusHint(false);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     initGame();
@@ -320,10 +375,18 @@ export default function EmojiRiddlePage() {
           credentials: 'include',
           body: JSON.stringify({
             gameType: 'emoji-riddle',
-            guessedCardId: card.id,
+            guessedCardId: targetCard.id,
             won: isWin,
           }),
-        }).catch(err => console.error('Failed to save daily completion:', err));
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Daily challenge saved:', data);
+          if (data.error) {
+            console.error('Error saving daily:', data.error);
+          }
+        })
+        .catch(err => console.error('Failed to save daily completion:', err));
       }
       
       // Record session for XP

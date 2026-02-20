@@ -235,8 +235,58 @@ export default function PixelRoyalePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const initGame = useCallback(() => {
-    // Check if already completed today
+  const initGame = useCallback(async () => {
+    // Check if user is authenticated and fetch challenge from API
+    if (user) {
+      try {
+        const response = await fetch('/api/daily?game=pixel-royale', { credentials: 'include' });
+        const data = await response.json();
+        
+        if (data.participation?.completed) {
+          // Already completed
+          setDailyCompleted(true);
+          setDailyResult({
+            won: data.participation.won,
+            guesses: data.participation.attempts,
+            cardId: data.challenge.cardId
+          });
+          setDailyStreak(getDailyStreakData());
+          
+          // Show the completed card
+          const card = baseCards.find(c => c.id === data.challenge.cardId);
+          if (card) {
+            setTargetCard(card);
+            setGameOver(true);
+            setWon(data.participation.won);
+            setStep(MAX_GUESSES);
+            setImageReady(true);
+          }
+          return;
+        }
+        
+        // Not completed yet - load the challenge card
+        if (data.challenge?.cardId) {
+          const card = baseCards.find(c => c.id === data.challenge.cardId);
+          if (card) {
+            setImageReady(false);
+            setStep(0);
+            setGuesses([]);
+            setSearchTerm('');
+            setGameOver(false);
+            setWon(false);
+            setShowHint(false);
+            setDailyCompleted(false);
+            setDailyResult(null);
+            setTargetCard(card);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch daily challenge:', error);
+      }
+    }
+    
+    // Fallback to localStorage check for non-authenticated users
     const today = new Date().toISOString().slice(0, 10);
     const lastDaily = localStorage.getItem('pixel-royale-last-daily');
     const lastDailyResultStr = localStorage.getItem('pixel-royale-daily-result');
@@ -273,7 +323,7 @@ export default function PixelRoyalePage() {
     setShowHint(false);
     
     setTargetCard(getDailyCard());
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     initGame();
@@ -345,10 +395,18 @@ export default function PixelRoyalePage() {
           credentials: 'include',
           body: JSON.stringify({
             gameType: 'pixel-royale',
-            guessedCardId: card.id,
+            guessedCardId: targetCard.id,
             won: isWin,
           }),
-        }).catch(err => console.error('Failed to save daily completion:', err));
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Daily challenge saved:', data);
+          if (data.error) {
+            console.error('Error saving daily:', data.error);
+          }
+        })
+        .catch(err => console.error('Failed to save daily completion:', err));
       }
       
       // Record session for XP
