@@ -84,12 +84,12 @@ export default function LogbookPage() {
   const [xpData, setXpData] = useState<{ level: number; xpTotal: number } | null>(null);
   const [dailyStreaks, setDailyStreaks] = useState<{ 
     royaledle: DailyStreakData | null;
-    'pixel-royale': DailyStreakData | null;
     'emoji-riddle': DailyStreakData | null;
+    'sound-quiz': DailyStreakData | null;
   }>({
     royaledle: null,
-    'pixel-royale': null,
-    'emoji-riddle': null
+    'emoji-riddle': null,
+    'sound-quiz': null
   });
 
   useEffect(() => {
@@ -117,8 +117,8 @@ export default function LogbookPage() {
       // Load daily streaks
       setDailyStreaks({
         royaledle: getDailyStreakData('royaledle'),
-        'pixel-royale': getDailyStreakData('pixel-royale'),
-        'emoji-riddle': getDailyStreakData('emoji-riddle')
+        'emoji-riddle': getDailyStreakData('emoji-riddle'),
+        'sound-quiz': getDailyStreakData('sound-quiz')
       });
     };
     
@@ -389,41 +389,41 @@ export default function LogbookPage() {
                 )}
               </div>
 
-              {/* Pixel Royale Daily */}
-              <div className="p-5 bg-gradient-to-br from-purple-500/10 to-violet-500/5 border border-purple-500/30 rounded-xl">
+              {/* Sound Quiz Daily */}
+              <div className="p-5 bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border border-cyan-500/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">🎨</span>
-                  <div className="text-purple-400 text-sm font-bold uppercase tracking-wider">Pixel Royale</div>
+                  <span className="text-lg">🎵</span>
+                  <div className="text-cyan-400 text-sm font-bold uppercase tracking-wider">Sound Quiz</div>
                 </div>
                 
-                {dailyStreaks['pixel-royale'] ? (
+                {dailyStreaks['sound-quiz'] ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Flame className="w-5 h-5 text-purple-400" />
-                          <span className="text-3xl font-bold text-purple-400">{dailyStreaks['pixel-royale'].currentStreak}</span>
+                          <Flame className="w-5 h-5 text-cyan-400" />
+                          <span className="text-3xl font-bold text-cyan-400">{dailyStreaks['sound-quiz'].currentStreak}</span>
                         </div>
                         <div className="text-gray-500 text-xs mt-1">current streak</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xl font-bold text-purple-300">{dailyStreaks['pixel-royale'].bestStreak}</div>
+                        <div className="text-xl font-bold text-cyan-300">{dailyStreaks['sound-quiz'].bestStreak}</div>
                         <div className="text-gray-500 text-xs mt-1">best</div>
                       </div>
                     </div>
                     
                     {/* Recent History */}
-                    {dailyStreaks['pixel-royale'].history && dailyStreaks['pixel-royale'].history.length > 0 && (
+                    {dailyStreaks['sound-quiz'].history && dailyStreaks['sound-quiz'].history.length > 0 && (
                       <div className="pt-3 border-t border-white/10">
-                        <div className="text-gray-500 text-xs mb-2">Last {Math.min(7, dailyStreaks['pixel-royale'].history.length)} days</div>
+                        <div className="text-gray-500 text-xs mb-2">Last {Math.min(7, dailyStreaks['sound-quiz'].history.length)} days</div>
                         <div className="flex gap-1">
-                          {dailyStreaks['pixel-royale'].history.slice(-7).map((date, i) => (
+                          {dailyStreaks['sound-quiz'].history.slice(-7).map((date, i) => (
                             <div
                               key={i}
-                              className="w-5 h-5 rounded bg-purple-500/50 flex items-center justify-center"
+                              className="w-5 h-5 rounded bg-cyan-500/50 flex items-center justify-center"
                               title={date}
                             >
-                              <Flame className="w-2.5 h-2.5 text-purple-300" />
+                              <Flame className="w-2.5 h-2.5 text-cyan-300" />
                             </div>
                           ))}
                         </div>
@@ -432,7 +432,7 @@ export default function LogbookPage() {
                   </div>
                 ) : (
                   <div className="text-gray-500 text-sm">
-                    Play Pixel Royale daily to start your streak!
+                    Play Sound Quiz daily to start your streak!
                   </div>
                 )}
               </div>

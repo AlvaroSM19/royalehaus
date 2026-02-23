@@ -3,7 +3,7 @@ import { prisma } from '@/server/prisma';
 import { cookies } from 'next/headers';
 
 // Valid game types for daily challenges
-const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale', 'sound-quiz'] as const;
+const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 type GameType = typeof VALID_GAME_TYPES[number];
 
 // Get today's date in YYYY-MM-DD format

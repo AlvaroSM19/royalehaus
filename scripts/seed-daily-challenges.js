@@ -6,7 +6,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale'];
+const GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'];
 const TOTAL_CARDS = 168;
 
 async function main() {

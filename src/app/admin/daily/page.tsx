@@ -14,11 +14,10 @@ interface DailyChallenge {
   cardId: number;
 }
 
-const GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale', 'sound-quiz'] as const;
+const GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 const GAME_LABELS: Record<string, string> = {
   'royaledle': 'Royaledle',
   'emoji-riddle': 'Emoji Riddle',
-  'pixel-royale': 'Pixel Royale',
   'sound-quiz': 'Sound Quiz',
 };
 
