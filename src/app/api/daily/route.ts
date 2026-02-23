@@ -18,24 +18,33 @@ export async function GET(req: NextRequest) {
     const gameType = searchParams.get('game') as GameType;
     const dateParam = searchParams.get('date'); // Optional: for admin preview
     
+    console.log('[DAILY_API] GET request:', { gameType, dateParam });
+    
     if (!gameType || !VALID_GAME_TYPES.includes(gameType)) {
+      console.log('[DAILY_API] Invalid game type:', gameType);
       return NextResponse.json({ error: 'Invalid game type' }, { status: 400 });
     }
 
     const date = dateParam || getTodayDate();
+    console.log('[DAILY_API] Looking for challenge on date:', date);
 
     // Get the challenge for this date
     const challenge = await prisma.dailyChallenge.findUnique({
       where: { date_gameType: { date, gameType } },
     });
 
+    console.log('[DAILY_API] Challenge found:', challenge ? { id: challenge.id, cardId: challenge.cardId } : 'null');
+
     if (!challenge) {
+      console.log('[DAILY_API] No challenge found for date:', date, 'gameType:', gameType);
       return NextResponse.json({ error: 'No challenge for this date', date }, { status: 404 });
     }
 
     // Check if user is logged in
     const cookieStore = await cookies();
     const sid = cookieStore.get('sid')?.value;
+    console.log('[DAILY_API] Session ID:', sid ? 'exists' : 'null');
+    
     let participation = null;
     let userId: string | null = null;
 
@@ -45,15 +54,18 @@ export async function GET(req: NextRequest) {
         include: { user: true },
       });
       
+      console.log('[DAILY_API] Session found:', session ? { userId: session.userId, expired: session.expiresAt < new Date() } : 'null');
+      
       if (session && session.expiresAt > new Date()) {
         userId = session.userId;
         participation = await prisma.dailyParticipation.findUnique({
           where: { challengeId_userId: { challengeId: challenge.id, userId } },
         });
+        console.log('[DAILY_API] Participation:', participation ? { completed: participation.completed, won: participation.won } : 'null');
       }
     }
 
-    return NextResponse.json({
+    const response = {
       challenge: {
         id: challenge.id,
         date: challenge.date,
@@ -67,9 +79,12 @@ export async function GET(req: NextRequest) {
         completedAt: participation.completedAt,
       } : null,
       isLoggedIn: !!userId,
-    });
+    };
+    
+    console.log('[DAILY_API] Response:', JSON.stringify(response));
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('GET /api/daily error:', error);
+    console.error('[DAILY_API] GET error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
@@ -79,8 +94,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { gameType, guessedCardId, won } = body;
+    
+    console.log('[DAILY_API] POST request:', { gameType, guessedCardId, won });
 
     if (!gameType || !VALID_GAME_TYPES.includes(gameType)) {
+      console.log('[DAILY_API] POST: Invalid game type:', gameType);
       return NextResponse.json({ error: 'Invalid game type' }, { status: 400 });
     }
 

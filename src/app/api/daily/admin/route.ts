@@ -28,7 +28,10 @@ async function isAdmin(): Promise<boolean> {
 // GET: Fetch all challenges for a date range (admin only)
 export async function GET(req: NextRequest) {
   try {
+    console.log('[ADMIN_API] GET: Starting admin check');
     const adminCheck = await isAdmin();
+    console.log('[ADMIN_API] GET: Admin check result:', adminCheck);
+    
     if (!adminCheck) {
       console.log('[ADMIN_API] GET: Not admin - denied');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });

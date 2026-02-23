@@ -28,12 +28,23 @@ function isDailyCompletedLocal(gameId: string): boolean {
 // Check if a daily game has been completed today (API - authoritative for logged-in users)
 async function isDailyCompletedAPI(gameId: string): Promise<boolean> {
   try {
+    console.log('[DailyGameCard] Checking completion for:', gameId);
     const res = await fetch(`/api/daily?game=${gameId}`, { credentials: 'include' });
-    if (!res.ok) return false;
+    console.log('[DailyGameCard] API response status:', res.status);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.log('[DailyGameCard] API error response:', errorText);
+      return false;
+    }
     
     const data = await res.json();
-    return data.participation?.completed === true;
-  } catch {
+    console.log('[DailyGameCard] API data:', data);
+    const completed = data.participation?.completed === true;
+    console.log('[DailyGameCard] Is completed:', completed);
+    return completed;
+  } catch (error) {
+    console.error('[DailyGameCard] Error checking completion:', error);
     return false;
   }
 }
@@ -75,9 +86,12 @@ export function DailyGameCard({ game }: DailyGameCardProps) {
 
   // Check completion status - use API for authenticated users, localStorage for guests
   const checkCompletion = useCallback(async () => {
+    console.log('[DailyGameCard] checkCompletion called for:', game.id, 'user:', user ? user.id : 'not logged in');
+    
     if (user) {
       // User is logged in - check API (authoritative)
       const apiCompleted = await isDailyCompletedAPI(game.id);
+      console.log('[DailyGameCard] Setting completed to:', apiCompleted);
       setCompleted(apiCompleted);
       
       // Sync localStorage with API result
@@ -94,6 +108,7 @@ export function DailyGameCard({ game }: DailyGameCardProps) {
     } else {
       // Not logged in - use localStorage
       const localCompleted = isDailyCompletedLocal(game.id);
+      console.log('[DailyGameCard] Not logged in, local completed:', localCompleted);
       setCompleted(localCompleted);
     }
   }, [game.id, user]);

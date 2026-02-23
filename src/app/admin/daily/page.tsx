@@ -36,6 +36,7 @@ export default function DailyAdminPage() {
 
   const fetchChallenges = useCallback(async () => {
     try {
+      console.log('[AdminDaily] Fetching challenges...');
       // Últimos 10 días + hoy + próximos 10 días = 21 días total
       const today = new Date();
       const startDate = new Date(today);
@@ -46,16 +47,21 @@ export default function DailyAdminPage() {
       const start = startDate.toISOString().slice(0, 10);
       const end = endDate.toISOString().slice(0, 10);
       
+      console.log('[AdminDaily] Fetching from:', start, 'to:', end);
       const res = await fetch(`/api/daily/admin?start=${start}&end=${end}`);
+      console.log('[AdminDaily] Response status:', res.status);
+      
       if (res.ok) {
         const data = await res.json();
+        console.log('[AdminDaily] Received challenges:', data.challenges?.length || 0);
         setChallenges(data.challenges || []);
       } else {
-        console.error('Failed to fetch challenges:', res.status, res.statusText);
+        const errorText = await res.text();
+        console.error('[AdminDaily] Failed to fetch challenges:', res.status, res.statusText, errorText);
         showMessage('Error loading challenges', 'error');
       }
     } catch (error) {
-      console.error('Error fetching challenges:', error);
+      console.error('[AdminDaily] Error fetching challenges:', error);
       showMessage('Error connecting to server', 'error');
     } finally {
       setLoading(false);
@@ -63,11 +69,15 @@ export default function DailyAdminPage() {
   }, []);
 
   useEffect(() => {
+    console.log('[AdminDaily] useEffect - authLoading:', authLoading, 'user:', user ? { id: user.id, role: user.role } : 'null');
+    
     if (!authLoading) {
       if (!user || user.role !== 'admin') {
+        console.log('[AdminDaily] Not admin, redirecting to home');
         router.push('/');
         return;
       }
+      console.log('[AdminDaily] Is admin, fetching challenges');
       fetchChallenges();
     }
   }, [user, authLoading, router, fetchChallenges]);

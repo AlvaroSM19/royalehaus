@@ -143,13 +143,20 @@ export default function RoyaledlePage() {
   }, []);
 
   const initGame = useCallback(async () => {
+    console.log('[Royaledle] initGame called, user:', user ? user.id : 'not logged in');
+    
     // Check if user is authenticated and fetch challenge from API
     if (user) {
       try {
+        console.log('[Royaledle] Fetching daily challenge from API...');
         const response = await fetch('/api/daily?game=royaledle', { credentials: 'include' });
+        console.log('[Royaledle] API response status:', response.status);
+        
         const data = await response.json();
+        console.log('[Royaledle] API data:', data);
         
         if (data.participation?.completed) {
+          console.log('[Royaledle] Already completed, showing result');
           // Already completed
           setDailyCompleted(true);
           setDailyResult({
@@ -171,6 +178,7 @@ export default function RoyaledlePage() {
         
         // Not completed yet - load the challenge card
         if (data.challenge?.cardId) {
+          console.log('[Royaledle] Loading challenge card:', data.challenge.cardId);
           const card = baseCards.find(c => c.id === data.challenge.cardId);
           if (card) {
             setTargetCard(card);
@@ -181,10 +189,14 @@ export default function RoyaledlePage() {
             setDailyCompleted(false);
             setDailyResult(null);
             return;
+          } else {
+            console.error('[Royaledle] Card not found:', data.challenge.cardId);
           }
+        } else {
+          console.error('[Royaledle] No cardId in response:', data);
         }
       } catch (error) {
-        console.error('Failed to fetch daily challenge:', error);
+        console.error('[Royaledle] Failed to fetch daily challenge:', error);
       }
     }
     
