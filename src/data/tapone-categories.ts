@@ -1,5 +1,6 @@
 // TAP ONE Categories for Clash Royale
 // Each category has 9 cards ranked from best (index 0) to worst (index 8)
+// IMPORTANT: Every card appears in EXACTLY ONE category (no duplicates)
 
 export interface TapOneElement {
   id: number;       // Card ID from cards.json
@@ -13,7 +14,7 @@ export interface TapOneCategory {
   elements: TapOneElement[];
 }
 
-// 10 categories × 9 cards each = 90 ranked cards
+// 10 categories × 9 cards each = 90 unique ranked cards
 export const categories: TapOneCategory[] = [
   {
     id: 'tanks',
@@ -24,11 +25,11 @@ export const categories: TapOneCategory[] = [
       { id: 71, name: 'Electro Giant' },
       { id: 50, name: 'Mega Knight' },
       { id: 5, name: 'P.E.K.K.A' },
-      { id: 31, name: 'Lava Hound' },
+      { id: 4, name: 'Giant' },
       { id: 21, name: 'Giant Skeleton' },
       { id: 25, name: 'Royal Giant' },
-      { id: 4, name: 'Giant' },
       { id: 39, name: 'Ice Golem' },
+      { id: 54, name: 'Cannon Cart' },
     ]
   },
   {
@@ -37,14 +38,14 @@ export const categories: TapOneCategory[] = [
     icon: '🏆',
     elements: [
       { id: 22, name: 'Hog Rider' },
-      { id: 25, name: 'Royal Giant' },
-      { id: 10, name: 'Golem' },
-      { id: 4, name: 'Giant' },
       { id: 7, name: 'Balloon' },
       { id: 62, name: 'Ram Rider' },
       { id: 58, name: 'Royal Hogs' },
-      { id: 83, name: 'Goblin Barrel' },
       { id: 52, name: 'Skeleton Barrel' },
+      { id: 47, name: 'Battle Ram' },
+      { id: 32, name: 'Miner' },
+      { id: 63, name: 'Wall Breakers' },
+      { id: 26, name: 'Three Musketeers' },
     ]
   },
   {
@@ -73,10 +74,10 @@ export const categories: TapOneCategory[] = [
       { id: 107, name: 'Tesla' },
       { id: 105, name: 'Bomb Tower' },
       { id: 101, name: 'Cannon' },
-      { id: 112, name: 'Goblin Cage' },
       { id: 103, name: 'Mortar' },
       { id: 111, name: 'Furnace' },
       { id: 109, name: 'Tombstone' },
+      { id: 110, name: 'Barbarian Hut' },
     ]
   },
   {
@@ -89,10 +90,10 @@ export const categories: TapOneCategory[] = [
       { id: 70, name: 'Electro Spirit' },
       { id: 29, name: 'Fire Spirit' },
       { id: 68, name: 'Heal Spirit' },
-      { id: 48, name: 'Bats' },
-      { id: 3, name: 'Goblins' },
-      { id: 20, name: 'Spear Goblins' },
-      { id: 63, name: 'Wall Breakers' },
+      { id: 2, name: 'Archers' },
+      { id: 1, name: 'Knight' },
+      { id: 15, name: 'Musketeer' },
+      { id: 30, name: 'Guards' },
     ]
   },
   {
@@ -100,7 +101,6 @@ export const categories: TapOneCategory[] = [
     label: 'SPLASH',
     icon: '💥',
     elements: [
-      { id: 50, name: 'Mega Knight' },
       { id: 12, name: 'Valkyrie' },
       { id: 35, name: 'Bowler' },
       { id: 18, name: 'Wizard' },
@@ -109,6 +109,7 @@ export const categories: TapOneCategory[] = [
       { id: 8, name: 'Witch' },
       { id: 14, name: 'Bomber' },
       { id: 67, name: 'Firecracker' },
+      { id: 33, name: 'Dark Prince' },
     ]
   },
   {
@@ -116,15 +117,15 @@ export const categories: TapOneCategory[] = [
     label: 'LEGENDARY',
     icon: '⭐',
     elements: [
-      { id: 50, name: 'Mega Knight' },
       { id: 72, name: 'Mother Witch' },
       { id: 56, name: 'Magic Archer' },
       { id: 41, name: 'Electro Wizard' },
       { id: 46, name: 'Bandit' },
       { id: 36, name: 'Lumberjack' },
       { id: 55, name: 'Royal Ghost' },
-      { id: 32, name: 'Miner' },
       { id: 28, name: 'Princess' },
+      { id: 44, name: 'Night Witch' },
+      { id: 64, name: 'Fisherman' },
     ]
   },
   {
@@ -150,29 +151,29 @@ export const categories: TapOneCategory[] = [
     elements: [
       { id: 31, name: 'Lava Hound' },
       { id: 37, name: 'Mega Minion' },
-      { id: 16, name: 'Baby Dragon' },
       { id: 38, name: 'Inferno Dragon' },
-      { id: 7, name: 'Balloon' },
       { id: 23, name: 'Minion Horde' },
       { id: 6, name: 'Minions' },
-      { id: 48, name: 'Bats' },
       { id: 69, name: 'Skeleton Dragons' },
+      { id: 51, name: 'Flying Machine' },
+      { id: 66, name: 'Electro Dragon' },
+      { id: 48, name: 'Bats' },
     ]
   },
   {
-    id: 'swarm',
-    label: 'SWARM',
+    id: 'fighters',
+    label: 'FIGHTERS',
     icon: '⚔️',
     elements: [
+      { id: 27, name: 'Sparky' },
+      { id: 17, name: 'Prince' },
+      { id: 19, name: 'Mini P.E.K.K.A' },
+      { id: 40, name: 'Elite Barbarians' },
       { id: 13, name: 'Skeleton Army' },
-      { id: 23, name: 'Minion Horde' },
-      { id: 45, name: 'Goblin Gang' },
       { id: 9, name: 'Barbarians' },
       { id: 59, name: 'Royal Recruits' },
-      { id: 26, name: 'Three Musketeers' },
+      { id: 53, name: 'Hunter' },
       { id: 57, name: 'Rascals' },
-      { id: 30, name: 'Guards' },
-      { id: 40, name: 'Elite Barbarians' },
     ]
   },
 ];

@@ -1,6 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
-import { cookies } from 'next/headers';
 
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 
@@ -9,10 +8,9 @@ function getTodayDate(): string {
 }
 
 // GET: Returns completion status for all daily games for the logged-in user
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sid = cookieStore.get('sid')?.value;
+    const sid = req.cookies.get('sid')?.value;
 
     if (!sid) {
       return NextResponse.json({ completions: {} });

@@ -142,7 +142,7 @@ function generatePuzzle(): { conditions: Condition[]; matchingCards: ClashCard[]
     
     if (selectedConditions.length === 3) {
       const matchingCards = findMatchingCards(selectedConditions);
-      if (matchingCards.length >= 1 && matchingCards.length <= 10) {
+      if (matchingCards.length >= 2 && matchingCards.length <= 10) {
         return { conditions: selectedConditions, matchingCards };
       }
     }

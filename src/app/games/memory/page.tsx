@@ -10,7 +10,7 @@ import { recordMemorySession } from '@/lib/progress'
 import { useLanguage } from '@/lib/useLanguage'
 
 // ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-type Relationship = 'counter' | 'ranged' | 'hero' | 'evolution' | 'same_year' | 'same_elixir' | 'same_speed' | 'melee_duo'
+type Relationship = 'counter' | 'ranged' | 'hero' | 'barbarian_family' | 'wizard_family' | 'swarm' | 'huts' | 'same_year' | 'same_speed' | 'melee_duo'
 
 interface PairDef {
   card1Name: string
@@ -71,19 +71,32 @@ const HERO_POOL: PairDef[] = [
   { card1Name: 'Hero Musketeer', card2Name: 'Hero Giant', relationship: 'hero', description: 'Both are Hero cards' },
 ]
 
-const SPELL_EVOLUTION_POOL: PairDef[] = [
-  { card1Name: 'Zap', card2Name: 'Zap Evolution', relationship: 'evolution', description: 'Zap & its Evolution form' },
-  { card1Name: 'Giant Snowball', card2Name: 'Giant Snowball Evolution', relationship: 'evolution', description: 'Giant Snowball & its Evolution' },
-  { card1Name: 'Goblin Drill', card2Name: 'Goblin Drill Evolution', relationship: 'evolution', description: 'Goblin Drill & its Evolution' },
+const BARBARIAN_FAMILY_POOL: PairDef[] = [
+  { card1Name: 'Barbarians', card2Name: 'Elite Barbarians', relationship: 'barbarian_family', description: 'Both are Barbarian troops' },
+  { card1Name: 'Battle Ram', card2Name: 'Barbarian Barrel', relationship: 'barbarian_family', description: 'Both deploy Barbarians' },
+  { card1Name: 'Barbarian Hut', card2Name: 'Barbarians', relationship: 'barbarian_family', description: 'Both are Barbarian cards' },
 ]
 
-const SAME_ELIXIR_POOL: PairDef[] = [
-  { card1Name: 'Hog Rider', card2Name: 'Valkyrie', relationship: 'same_elixir', description: 'Both cost 4 elixir' },
-  { card1Name: 'Musketeer', card2Name: 'Mini P.E.K.K.A', relationship: 'same_elixir', description: 'Both cost 4 elixir' },
-  { card1Name: 'Golem', card2Name: 'Three Musketeers', relationship: 'same_elixir', description: 'Both cost 8+ elixir' },
-  { card1Name: 'Ice Spirit', card2Name: 'Skeletons', relationship: 'same_elixir', description: 'Both cost 1 elixir' },
-  { card1Name: 'Fireball', card2Name: 'Poison', relationship: 'same_elixir', description: 'Both cost 4 elixir spells' },
-  { card1Name: 'P.E.K.K.A', card2Name: 'Lava Hound', relationship: 'same_elixir', description: 'Both cost 7 elixir' },
+const WIZARD_FAMILY_POOL: PairDef[] = [
+  { card1Name: 'Wizard', card2Name: 'Ice Wizard', relationship: 'wizard_family', description: 'Both are Wizards' },
+  { card1Name: 'Electro Wizard', card2Name: 'Mother Witch', relationship: 'wizard_family', description: 'Both are magic casters' },
+  { card1Name: 'Wizard', card2Name: 'Electro Wizard', relationship: 'wizard_family', description: 'Both are Wizards' },
+  { card1Name: 'Ice Wizard', card2Name: 'Mother Witch', relationship: 'wizard_family', description: 'Both are magic casters' },
+]
+
+const SWARM_POOL: PairDef[] = [
+  { card1Name: 'Skeleton Army', card2Name: 'Minion Horde', relationship: 'swarm', description: 'Both are swarm cards' },
+  { card1Name: 'Goblin Gang', card2Name: 'Barbarians', relationship: 'swarm', description: 'Both deploy multiple units' },
+  { card1Name: 'Bats', card2Name: 'Skeletons', relationship: 'swarm', description: 'Both are cheap swarm cards' },
+  { card1Name: 'Royal Recruits', card2Name: 'Three Musketeers', relationship: 'swarm', description: 'Both deploy many units' },
+  { card1Name: 'Rascals', card2Name: 'Guards', relationship: 'swarm', description: 'Both deploy multiple units' },
+]
+
+const HUTS_POOL: PairDef[] = [
+  { card1Name: 'Barbarian Hut', card2Name: 'Goblin Hut', relationship: 'huts', description: 'Both are spawner buildings' },
+  { card1Name: 'Tombstone', card2Name: 'Furnace', relationship: 'huts', description: 'Both are spawner buildings' },
+  { card1Name: 'Goblin Hut', card2Name: 'Furnace', relationship: 'huts', description: 'Both are spawner buildings' },
+  { card1Name: 'Tombstone', card2Name: 'Barbarian Hut', relationship: 'huts', description: 'Both are spawner buildings' },
 ]
 
 const SAME_SPEED_POOL: PairDef[] = [
@@ -100,21 +113,6 @@ const MELEE_DUO_POOL: PairDef[] = [
   { card1Name: 'Dark Prince', card2Name: 'Prince', relationship: 'melee_duo', description: 'Both are melee with charge' },
   { card1Name: 'Barbarians', card2Name: 'Elite Barbarians', relationship: 'melee_duo', description: 'Both are Barbarian melee cards' },
 ]
-
-function generateEvolutionPool(): PairDef[] {
-  const pairs: PairDef[] = []
-  const spellEvoNames = new Set(SPELL_EVOLUTION_POOL.flatMap(p => [p.card1Name, p.card2Name]))
-  const evolutionCards = cardsData.filter(c => c.type === 'Evolution')
-  evolutionCards.forEach(evoCard => {
-    if (spellEvoNames.has(evoCard.name)) return
-    const baseName = evoCard.name.replace(' Evolution', '')
-    const baseCard = baseCards.find(c => c.name === baseName)
-    if (baseCard) {
-      pairs.push({ card1Name: baseName, card2Name: evoCard.name, relationship: 'evolution', description: `${evoCard.name} is the evolution of ${baseName}` })
-    }
-  })
-  return pairs
-}
 
 function generateSameYearPool(): PairDef[] {
   const pairs: PairDef[] = []
@@ -139,12 +137,14 @@ function generateSameYearPool(): PairDef[] {
 
 // ÔöÇÔöÇÔöÇ Relationship config ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 const REL_EMOJI: Record<Relationship, string> = {
-  counter: '\u2694\uFE0F', ranged: '\uD83C\uDFF9', hero: '\uD83E\uDDB8', evolution: '\u2728',
-  same_year: '\uD83D\uDCC5', same_elixir: '\uD83D\uDCA7', same_speed: '\u26A1', melee_duo: '\uD83D\uDDE1\uFE0F',
+  counter: '\u2694\uFE0F', ranged: '\uD83C\uDFF9', hero: '\uD83E\uDDB8', barbarian_family: '\uD83E\uDEAA',
+  wizard_family: '\uD83E\uDE84', swarm: '\uD83D\uDC1D', huts: '\uD83C\uDFE0',
+  same_year: '\uD83D\uDCC5', same_speed: '\u26A1', melee_duo: '\uD83D\uDDE1\uFE0F',
 }
 const REL_LABEL: Record<Relationship, string> = {
-  counter: 'Counter', ranged: 'Ranged', hero: 'Hero', evolution: 'Evolution',
-  same_year: 'Same Year', same_elixir: 'Same Elixir', same_speed: 'Same Speed', melee_duo: 'Melee Duo',
+  counter: 'Counter', ranged: 'Ranged', hero: 'Hero', barbarian_family: 'Barbarian Family',
+  wizard_family: 'Wizard Family', swarm: 'Swarm', huts: 'Huts',
+  same_year: 'Same Year', same_speed: 'Same Speed', melee_duo: 'Melee Duo',
 }
 
 // ÔöÇÔöÇÔöÇ Pair selection (8 pairs = 16 cards for 4x4 grid) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -171,16 +171,24 @@ function selectGamePairs(): PairDef[] {
     return added
   }
 
+  // 8 pairs total: counter(2), barbarian(1), wizard(1), swarm(1), huts(1), melee(1), ranged/hero/speed/year(1)
   addPairs(COUNTER_POOL, 2)
-  addPairs(generateEvolutionPool(), 1)
-  addPairs(SAME_ELIXIR_POOL, 1)
+  addPairs(BARBARIAN_FAMILY_POOL, 1)
+  addPairs(WIZARD_FAMILY_POOL, 1)
+  addPairs(SWARM_POOL, 1)
+  addPairs(HUTS_POOL, 1)
   addPairs(MELEE_DUO_POOL, 1)
-  addPairs(SAME_SPEED_POOL, 1)
-  addPairs(RANGED_POOL, 1)
-  addPairs(HERO_POOL, 1)
+  
+  // Fill remaining with ranged, hero, speed, or year  
+  const fillerPools = [RANGED_POOL, HERO_POOL, SAME_SPEED_POOL, ...Array(2).fill(null).map(() => generateSameYearPool())]
+  const shuffledFillers = fillerPools.sort(() => Math.random() - 0.5)
+  for (const pool of shuffledFillers) {
+    if (selected.length >= TOTAL_PAIRS) break
+    addPairs(pool, 1)
+  }
 
   if (selected.length < TOTAL_PAIRS) {
-    addPairs([...COUNTER_POOL, ...RANGED_POOL, ...SPELL_EVOLUTION_POOL, ...SAME_ELIXIR_POOL, ...MELEE_DUO_POOL, ...generateSameYearPool()], TOTAL_PAIRS - selected.length)
+    addPairs([...COUNTER_POOL, ...RANGED_POOL, ...BARBARIAN_FAMILY_POOL, ...WIZARD_FAMILY_POOL, ...SWARM_POOL, ...HUTS_POOL, ...MELEE_DUO_POOL, ...generateSameYearPool()], TOTAL_PAIRS - selected.length)
   }
 
   return selected

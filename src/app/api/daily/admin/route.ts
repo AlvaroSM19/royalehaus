@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
-import { cookies } from 'next/headers';
 
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 type GameType = typeof VALID_GAME_TYPES[number];
 
-// Check if user is admin
-async function isAdmin(): Promise<boolean> {
+// Check if user is admin - uses req.cookies (works reliably on Vercel)
+async function isAdmin(req: NextRequest): Promise<boolean> {
   try {
-    const cookieStore = await cookies();
-    const sid = cookieStore.get('sid')?.value;
+    const sid = req.cookies.get('sid')?.value;
     
     if (!sid) return false;
 
@@ -29,7 +27,7 @@ async function isAdmin(): Promise<boolean> {
 export async function GET(req: NextRequest) {
   try {
     console.log('[ADMIN_API] GET: Starting admin check');
-    const adminCheck = await isAdmin();
+    const adminCheck = await isAdmin(req);
     console.log('[ADMIN_API] GET: Admin check result:', adminCheck);
     
     if (!adminCheck) {
@@ -65,7 +63,7 @@ export async function GET(req: NextRequest) {
 // POST: Create or update a daily challenge (admin only)
 export async function POST(req: NextRequest) {
   try {
-    const adminCheck = await isAdmin();
+    const adminCheck = await isAdmin(req);
     if (!adminCheck) {
       console.log('[ADMIN_API] POST: Not admin - denied');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -112,7 +110,7 @@ export async function POST(req: NextRequest) {
 // PUT: Bulk create/update challenges (for auto-generation)
 export async function PUT(req: NextRequest) {
   try {
-    const adminCheck = await isAdmin();
+    const adminCheck = await isAdmin(req);
     if (!adminCheck) {
       console.log('[ADMIN_API] PUT: Not admin - denied');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });

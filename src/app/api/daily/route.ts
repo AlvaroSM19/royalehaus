@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
-import { cookies } from 'next/headers';
 
 // Valid game types for daily challenges
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
@@ -37,8 +36,7 @@ export async function GET(req: NextRequest) {
     // Check if user is logged in and has participation
     let participation = null;
     try {
-      const cookieStore = await cookies();
-      const sid = cookieStore.get('sid')?.value;
+      const sid = req.cookies.get('sid')?.value;
       if (sid) {
         const session = await prisma.session.findUnique({ where: { id: sid } });
         if (session && session.expiresAt > new Date()) {
@@ -76,8 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Usuario debe estar logueado
-    const cookieStore = await cookies();
-    const sid = cookieStore.get('sid')?.value;
+    const sid = req.cookies.get('sid')?.value;
     
     if (!sid) {
       // No logueado - OK, se guarda en localStorage

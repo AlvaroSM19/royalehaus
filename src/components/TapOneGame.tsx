@@ -31,7 +31,7 @@ const TRANSITION_OVERLAYS: Record<string, string> = {
   legendary: '/images/games/7.webp',
   goblins: '/images/games/8.webp',
   air: '/images/games/9.webp',
-  swarm: '/images/games/1.webp',
+  fighters: '/images/games/1.webp',
 };
 
 const warmImages = async (urls: string[], priority: 'high' | 'low' = 'low') => {
@@ -74,6 +74,9 @@ export default function TapOneGame() {
   const [resultsSelected, setResultsSelected] = useState<(number | null)[] | null>(null);
   const [bestRank, setBestRank] = useState<RankInfo | null>(null);
   const [resultsShownOnce, setResultsShownOnce] = useState(false);
+  // Roulette: random card IDs shown during spinning (per category)
+  const [spinCardIds, setSpinCardIds] = useState<number[]>(categories.map(() => baseCards[0]));
+  const spinIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -96,6 +99,27 @@ export default function TapOneGame() {
       try { await warmImages(firstCards, 'low'); } catch {}
     });
   }, []);
+
+  // Roulette effect: alternate random card images every 200ms during spinning
+  useEffect(() => {
+    if (phase === 'spinning') {
+      // Start roulette interval
+      spinIntervalRef.current = window.setInterval(() => {
+        setSpinCardIds(categories.map(() => {
+          const randomIdx = Math.floor(Math.random() * baseCards.length);
+          return baseCards[randomIdx];
+        }));
+      }, 200) as unknown as number;
+      return () => {
+        if (spinIntervalRef.current) clearInterval(spinIntervalRef.current);
+      };
+    } else {
+      if (spinIntervalRef.current) {
+        clearInterval(spinIntervalRef.current);
+        spinIntervalRef.current = null;
+      }
+    }
+  }, [phase]);
 
   const generateRandomIndices = useCallback((prev: number[]): number[] => {
     return prev.map((oldIdx, i) => {
@@ -181,6 +205,7 @@ export default function TapOneGame() {
   const handleRestart = () => {
     if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    if (spinIntervalRef.current) clearInterval(spinIntervalRef.current);
     setIndices(categories.map(() => 0)); setLocked(categories.map(() => false));
     setSelected(categories.map(() => null)); setRound(0);
     setPhase('spinning'); setCanSelect(false);
@@ -230,11 +255,11 @@ export default function TapOneGame() {
             <div className="w-full flex-1 flex items-center justify-center">
               {phase === 'spinning' && !locked[catIndex] ? (
                 <img
-                  src={overlaySrc}
+                  src={`/images/cards/${spinCardIds[catIndex]}.webp`}
                   alt=""
                   decoding="async"
                   loading="eager"
-                  className="w-full max-w-[120px] sm:max-w-[180px] md:max-w-[200px] h-[70px] sm:h-[110px] md:h-[130px] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)]"
+                  className="w-full max-w-[120px] sm:max-w-[180px] md:max-w-[200px] h-[70px] sm:h-[110px] md:h-[130px] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] transition-opacity duration-100"
                 />
               ) : (
                 <img
@@ -420,13 +445,11 @@ export default function TapOneGame() {
                     {categories.map((cat, i) => {
                       const base = resultsSelected ?? selected;
                       const idx = base[i]!; const el = cat.elements[idx];
-                      const points = calculatePoints(idx);
                       return (
                         <div key={cat.id} className="relative rounded-md sm:rounded-lg border-2 border-amber-900/40 bg-amber-50/10 p-1 sm:p-1.5 lg:p-2 flex flex-col items-center shadow-inner">
                           <div className="text-[6px] sm:text-[8px] lg:text-[10px] font-black text-amber-500/80 uppercase tracking-wider mb-0.5">{cat.label}</div>
                           <img src={`/images/cards/${el.id}.webp`} alt={getCardNameTranslated(el.id)} className="w-full h-12 sm:h-16 lg:h-20 object-contain drop-shadow" />
                           <div className="mt-0.5 text-[8px] sm:text-[10px] lg:text-xs font-bold text-amber-200 text-center leading-tight line-clamp-2">{getCardNameTranslated(el.id)}</div>
-                          <div className={`mt-0.5 text-[8px] sm:text-[10px] font-black ${points >= 80 ? 'text-green-400' : points >= 50 ? 'text-amber-400' : 'text-red-400'}`}>+{points}pts</div>
                         </div>
                       );
                     })}

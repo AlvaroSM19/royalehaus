@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
-import { cookies } from 'next/headers';
 
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 
@@ -8,8 +7,7 @@ const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 export async function GET(req: NextRequest) {
   try {
     // User must be logged in
-    const cookieStore = await cookies();
-    const sid = cookieStore.get('sid')?.value;
+    const sid = req.cookies.get('sid')?.value;
     
     if (!sid) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

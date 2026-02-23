@@ -13,8 +13,57 @@ const gameCards = allBaseCards.filter(c =>
   c.type === 'Troop' || c.type === 'Spell' || c.type === 'Building' || c.type === 'Champion'
 );
 
-type GameMode = 'type' | 'rarity' | 'elixir' | 'releaseYear' | 'attackType' | 'targetAir' | 'attackSpeed' | 'evolution';
+type GameMode = 'type' | 'rarity' | 'elixir' | 'releaseYear' | 'attackType' | 'targetAir' | 'attackSpeed' | 'evolution' | 'family' | 'combo' | 'damage' | 'arena';
 type Difficulty = 'easy' | 'medium' | 'hard';
+
+// Card family definitions - thematic groupings following Memory Cards style
+const CARD_FAMILIES: { name: string; condition: string; members: string[] }[] = [
+  {
+    name: 'Skeleton',
+    condition: 'All others belong to the Skeleton family',
+    members: ['Skeletons', 'Skeleton Army', 'Guards', 'Witch', 'Giant Skeleton', 'Wall Breakers', 'Skeleton King', 'Skeleton Dragons', 'Graveyard']
+  },
+  {
+    name: 'Barbarian',
+    condition: 'All others belong to the Barbarian family',
+    members: ['Barbarians', 'Elite Barbarians', 'Battle Ram', 'Barbarian Barrel', 'Barbarian Hut', 'Barbarian Gang']
+  },
+  {
+    name: 'Goblin',
+    condition: 'All others belong to the Goblin family',
+    members: ['Goblins', 'Spear Goblins', 'Goblin Barrel', 'Goblin Gang', 'Goblin Hut', 'Goblin Cage', 'Goblin Drill', 'Dart Goblin', 'Goblin Giant']
+  },
+  {
+    name: 'Dragon',
+    condition: 'All others belong to the Dragon family',
+    members: ['Baby Dragon', 'Inferno Dragon', 'Electro Dragon', 'Skeleton Dragons']
+  },
+  {
+    name: 'Spirit',
+    condition: 'All others belong to the Spirit family',
+    members: ['Ice Spirit', 'Fire Spirit', 'Electro Spirit', 'Heal Spirit']
+  },
+  {
+    name: 'Prince',
+    condition: 'All others belong to the Prince family',
+    members: ['Prince', 'Dark Prince', 'Royal Ghost', 'Guards']
+  },
+  {
+    name: 'Wizard',
+    condition: 'All others belong to the Wizard family',
+    members: ['Wizard', 'Ice Wizard', 'Electro Wizard', 'Mother Witch']
+  },
+  {
+    name: 'Minion',
+    condition: 'All others belong to the Minion family',
+    members: ['Minions', 'Minion Horde', 'Mega Minion']
+  },
+  {
+    name: 'Hut',
+    condition: 'All others are spawner buildings',
+    members: ['Barbarian Hut', 'Goblin Hut', 'Furnace', 'Tombstone', 'Elixir Collector']
+  },
+];
 
 const DIFFICULTY_CONFIG = {
   easy: { cardCount: 4, timeLimit: 30 },
@@ -83,8 +132,8 @@ export default function ImpostorPage() {
     const lastWasCardAttribute = lastModeRef.current === 'type' || lastModeRef.current === 'rarity';
     
     // Build available modes with smart filtering
-    // Prioritize new interesting modes: attackType, evolution, attackSpeed
-    let allModes: GameMode[] = ['attackType', 'evolution', 'attackSpeed', 'type', 'rarity', 'elixir', 'releaseYear', 'targetAir'];
+    // Prioritize complex/difficult modes: family, combo, damage, arena
+    let allModes: GameMode[] = ['family', 'combo', 'damage', 'arena', 'attackType', 'evolution', 'attackSpeed', 'targetAir', 'elixir', 'releaseYear', 'type', 'rarity'];
     
     // If last was type or rarity, exclude BOTH type and rarity from next round
     // This prevents "Champions" followed by "Epic" or similar
@@ -99,7 +148,7 @@ export default function ImpostorPage() {
     const shuffledModes: GameMode[] = [...allModes].sort(() => Math.random() - 0.5);
     
     // Add fallback modes at the end (in case all preferred modes fail)
-    const allPossibleModes: GameMode[] = ['attackType', 'evolution', 'attackSpeed', 'type', 'rarity', 'elixir', 'releaseYear', 'targetAir'];
+    const allPossibleModes: GameMode[] = ['family', 'combo', 'damage', 'arena', 'attackType', 'evolution', 'attackSpeed', 'type', 'rarity', 'elixir', 'releaseYear', 'targetAir'];
     const fallbackModes = allPossibleModes
       .filter(m => !shuffledModes.includes(m))
       .sort(() => Math.random() - 0.5);
@@ -281,6 +330,144 @@ export default function ImpostorPage() {
           if (impPool.length === 0) continue;
           imp = impPool[Math.floor(Math.random() * impPool.length)];
           cond = hasEvolution ? 'All others have Evolution' : 'All others have no Evolution';
+        }
+        else if (mode === 'family') {
+          // FAMILY mode: thematic card families (Skeleton, Barbarian, Goblin, etc.)
+          const shuffledFamilies = [...CARD_FAMILIES].sort(() => Math.random() - 0.5);
+          let found = false;
+          
+          for (const family of shuffledFamilies) {
+            // Skip if same theme as last round
+            if (lastThemeRef.current === family.name) continue;
+            
+            const familyCards = gameCards.filter(c => family.members.includes(c.name));
+            if (familyCards.length < needed) continue;
+            
+            majCards = familyCards.sort(() => Math.random() - 0.5).slice(0, needed);
+            
+            // Impostor must NOT be in the family
+            const impPool = gameCards.filter(c => !family.members.includes(c.name));
+            if (impPool.length === 0) continue;
+            
+            imp = impPool[Math.floor(Math.random() * impPool.length)];
+            cond = family.condition;
+            lastThemeRef.current = family.name;
+            found = true;
+            break;
+          }
+          
+          if (!found) continue;
+        }
+        else if (mode === 'combo') {
+          // COMBO mode: combined conditions (e.g., "Rare Troops", "4-elixir Melee")
+          type ComboGen = { gen: () => { pool: ClashCard[]; impPool: ClashCard[]; cond: string } | null };
+          const combos: ComboGen[] = [
+            { gen: () => {
+              const rarities = ['Common', 'Rare', 'Epic', 'Legendary'] as const;
+              const types = ['Troop', 'Spell', 'Building'] as const;
+              const r = rarities[Math.floor(Math.random() * rarities.length)];
+              const t = types[Math.floor(Math.random() * types.length)];
+              const pool = gameCards.filter(c => c.rarity === r && c.type === t);
+              const impPool = gameCards.filter(c => !(c.rarity === r && c.type === t));
+              if (pool.length < needed) return null;
+              return { pool, impPool, cond: `All others are ${r} ${t}s` };
+            }},
+            { gen: () => {
+              const elixir = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)];
+              const atk = Math.random() > 0.5 ? 'melee' : 'ranged';
+              const pool = gameCards.filter(c => c.elixir === elixir && c.attackType === atk);
+              const impPool = gameCards.filter(c => !(c.elixir === elixir && c.attackType === atk));
+              if (pool.length < needed) return null;
+              return { pool, impPool, cond: `All others are ${elixir}-elixir ${atk === 'melee' ? 'Melee' : 'Ranged'}` };
+            }},
+            { gen: () => {
+              const rarities = ['Common', 'Rare', 'Epic'] as const;
+              const r = rarities[Math.floor(Math.random() * rarities.length)];
+              const hasEvo = Math.random() > 0.5;
+              const pool = gameCards.filter(c => c.rarity === r && c.evolution_available === hasEvo);
+              const impPool = gameCards.filter(c => !(c.rarity === r && c.evolution_available === hasEvo));
+              if (pool.length < needed) return null;
+              return { pool, impPool, cond: `All others are ${r} ${hasEvo ? 'with' : 'without'} Evolution` };
+            }},
+            { gen: () => {
+              const atk = Math.random() > 0.5 ? 'melee' : 'ranged';
+              const canAir = Math.random() > 0.5;
+              const pool = gameCards.filter(c => c.attackType === atk && c.targetAir === canAir);
+              const impPool = gameCards.filter(c => !(c.attackType === atk && c.targetAir === canAir));
+              if (pool.length < needed) return null;
+              return { pool, impPool, cond: `All others are ${atk === 'melee' ? 'Melee' : 'Ranged'} that ${canAir ? 'hit air' : "can't hit air"}` };
+            }},
+          ];
+          
+          const shuffledCombos = [...combos].sort(() => Math.random() - 0.5);
+          let found = false;
+          
+          for (const combo of shuffledCombos) {
+            const result = combo.gen();
+            if (!result || result.pool.length < needed || result.impPool.length === 0) continue;
+            
+            majCards = result.pool.sort(() => Math.random() - 0.5).slice(0, needed);
+            imp = result.impPool[Math.floor(Math.random() * result.impPool.length)];
+            cond = result.cond;
+            found = true;
+            break;
+          }
+          
+          if (!found) continue;
+        }
+        else if (mode === 'damage') {
+          // DAMAGE mode: group by damage tier
+          const damageTiers: { min: number; max: number; label: string }[] = [
+            { min: 0, max: 100, label: 'low damage (< 100)' },
+            { min: 100, max: 250, label: 'medium damage (100-250)' },
+            { min: 250, max: 500, label: 'high damage (250-500)' },
+            { min: 500, max: 99999, label: 'very high damage (500+)' },
+          ];
+          
+          const shuffledTiers = [...damageTiers].sort(() => Math.random() - 0.5);
+          let found = false;
+          
+          for (let ti = 0; ti < shuffledTiers.length; ti++) {
+            const tier = shuffledTiers[ti];
+            const pool = gameCards.filter(c => c.damage_lvl_11 != null && c.damage_lvl_11! >= tier.min && c.damage_lvl_11! < tier.max);
+            if (pool.length < needed) continue;
+            
+            // Find impostor from a different tier
+            const impPool = gameCards.filter(c => c.damage_lvl_11 != null && !(c.damage_lvl_11! >= tier.min && c.damage_lvl_11! < tier.max));
+            if (impPool.length === 0) continue;
+            
+            majCards = pool.sort(() => Math.random() - 0.5).slice(0, needed);
+            imp = impPool[Math.floor(Math.random() * impPool.length)];
+            cond = `All others have ${tier.label}`;
+            found = true;
+            break;
+          }
+          
+          if (!found) continue;
+        }
+        else if (mode === 'arena') {
+          // ARENA mode: cards from the same arena
+          const arenaGroups: Record<number, ClashCard[]> = {};
+          gameCards.forEach(c => {
+            if (c.arena != null && c.arena > 0) {
+              if (!arenaGroups[c.arena]) arenaGroups[c.arena] = [];
+              arenaGroups[c.arena].push(c);
+            }
+          });
+          
+          const validArenas = Object.entries(arenaGroups)
+            .filter(([_, cards]) => cards.length >= needed)
+            .map(([a]) => parseInt(a))
+            .sort(() => Math.random() - 0.5);
+          
+          if (validArenas.length < 2) continue;
+          
+          const majorityArena = validArenas[0];
+          const impostorArena = validArenas[1];
+          
+          majCards = arenaGroups[majorityArena].sort(() => Math.random() - 0.5).slice(0, needed);
+          imp = arenaGroups[impostorArena][Math.floor(Math.random() * arenaGroups[impostorArena].length)];
+          cond = `All others are from Arena ${majorityArena}`;
         }
 
         if (!imp || majCards.length < needed) continue;
