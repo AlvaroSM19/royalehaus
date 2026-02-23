@@ -15,9 +15,9 @@ const MAX_GUESSES = 6;
 // Pixelation levels for each step (lower = more pixelated)
 // Step 0: very pixelated (hard), Step 6: full resolution (revealed)
 // Using pixel sizes: larger number = bigger pixels = harder to see
-const PIXEL_SIZES = [64, 40, 24, 16, 10, 6, 2]; // Pixel block size - MÁS GRANDE = MÁS DIFÍCIL
-const BLUR_STEPS  = [20, 14, 10, 6, 4, 2, 0];   // Additional blur for smoothness - MÁS BLUR
-const SCALE_STEPS = [2.5, 2.2, 1.9, 1.6, 1.3, 1.15, 1.0]; // Zoom out - empieza más aumentado
+const PIXEL_SIZES = [64, 40, 24, 16, 10, 6, 2]; // Pixel block size
+const BLUR_STEPS  = [90, 85, 80, 75, 70, 65, 60];   // Empezar con 90% blur, quitar 5% cada fallo
+const SCALE_STEPS = [1.85, 1.80, 1.75, 1.70, 1.65, 1.60, 1.55]; // Empezar con 85% ampliado, quitar 5% cada fallo
 
 // Daily challenge helpers
 interface DailyResult {
