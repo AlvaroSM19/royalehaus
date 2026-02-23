@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { baseCards } from '@/data';
 import { ClashCard } from '@/types/card';
@@ -12,12 +12,9 @@ import { includesNormalized } from '@/lib/text-utils';
 
 const MAX_GUESSES = 6;
 
-// Pixelation levels for each step (lower = more pixelated)
-// Step 0: very pixelated (hard), Step 6: full resolution (revealed)
-// Using pixel sizes: larger number = bigger pixels = harder to see
-const PIXEL_SIZES = [64, 40, 24, 16, 10, 6, 2]; // Pixel block size
-const BLUR_STEPS  = [90, 78, 66, 54, 42, 30, 18];   // Empezar con 90% blur, quitar 12% cada fallo
-const SCALE_STEPS = [1.85, 1.73, 1.61, 1.49, 1.37, 1.25, 1.13]; // Empezar con 85% ampliado, quitar 12% cada fallo
+// CSS blur values in pixels — from heavily blurred to crystal clear
+// Smooth CSS transition between steps: transition: filter 0.5s ease-in-out
+const BLUR_STEPS = [50, 30, 15, 7, 3, 0]; // px
 
 // Daily challenge helpers
 interface DailyResult {
@@ -117,85 +114,7 @@ function getDailyCard(): ClashCard {
   return baseCards[index];
 }
 
-// Pixelated Image Component using Canvas
-interface PixelatedImageProps {
-  src: string;
-  pixelSize: number;
-  blur: number;
-  scale: number;
-  className?: string;
-  onLoad?: () => void;
-}
 
-function PixelatedImage({ src, pixelSize, blur, scale, className, onLoad }: PixelatedImageProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [loaded, setLoaded] = useState(false);
-  const imgRef = useRef<HTMLImageElement | null>(null);
-
-  useEffect(() => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      imgRef.current = img;
-      setLoaded(true);
-      onLoad?.();
-    };
-    img.src = src;
-  }, [src, onLoad]);
-
-  useEffect(() => {
-    if (!loaded || !imgRef.current || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const img = imgRef.current;
-    const size = 256; // Canvas size
-    canvas.width = size;
-    canvas.height = size;
-
-    // If pixelSize is 1, draw at full resolution
-    if (pixelSize <= 1) {
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(img, 0, 0, size, size);
-      return;
-    }
-
-    // Calculate the small size for pixelation
-    const smallSize = Math.max(4, Math.floor(size / pixelSize));
-
-    // Create an offscreen canvas for the small version
-    const offCanvas = document.createElement('canvas');
-    offCanvas.width = smallSize;
-    offCanvas.height = smallSize;
-    const offCtx = offCanvas.getContext('2d');
-    if (!offCtx) return;
-
-    // Draw the image small (this creates the pixelation)
-    offCtx.imageSmoothingEnabled = true;
-    offCtx.drawImage(img, 0, 0, smallSize, smallSize);
-
-    // Draw the small image back to the main canvas, scaled up with no smoothing
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(offCanvas, 0, 0, smallSize, smallSize, 0, 0, size, size);
-
-  }, [loaded, pixelSize]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className={className}
-      style={{
-        filter: blur > 0 ? `blur(${blur}px)` : undefined,
-        transform: `scale(${scale})`,
-        opacity: loaded ? 1 : 0,
-        transition: 'all 0.7s ease-out',
-        imageRendering: 'pixelated',
-      }}
-    />
-  );
-}
 
 export default function PixelRoyalePage() {
   // This is now a daily-only game
@@ -427,9 +346,7 @@ export default function PixelRoyalePage() {
     return [`${targetCard.elixir} elixir`, targetCard.type, targetCard.rarity].join(' • ');
   };
 
-  const currentPixelSize = PIXEL_SIZES[Math.min(step, PIXEL_SIZES.length - 1)];
   const currentBlur = BLUR_STEPS[Math.min(step, BLUR_STEPS.length - 1)];
-  const currentScale = SCALE_STEPS[Math.min(step, SCALE_STEPS.length - 1)];
 
   return (
     <div className="min-h-screen relative flex flex-col">
@@ -585,7 +502,7 @@ export default function PixelRoyalePage() {
                 boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
               }}
             >
-              <div className="text-lg xs:text-xl sm:text-2xl font-black text-cyan-400">{Math.round((step / MAX_GUESSES) * 100)}%</div>
+              <div className="text-lg xs:text-xl sm:text-2xl font-black text-cyan-400">{Math.round((1 - currentBlur / BLUR_STEPS[0]) * 100)}%</div>
               <div className="text-[7px] xs:text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.1em] text-slate-400">Clarity</div>
             </div>
             {bestScore !== null && (
@@ -637,13 +554,16 @@ export default function PixelRoyalePage() {
                   }}
                 >
                   {targetCard && (
-                    <PixelatedImage
+                    <img
                       src={getCardImageUrl(targetCard)}
-                      pixelSize={currentPixelSize}
-                      blur={currentBlur}
-                      scale={currentScale}
+                      alt="Mystery card"
                       className="w-full h-full object-contain p-2 sm:p-3"
+                      style={{
+                        filter: currentBlur > 0 ? `blur(${currentBlur}px)` : 'none',
+                        transition: 'filter 0.5s ease-in-out',
+                      }}
                       onLoad={() => setImageReady(true)}
+                      draggable={false}
                     />
                   )}
                 </div>
@@ -885,7 +805,7 @@ export default function PixelRoyalePage() {
                 border: '1px solid rgba(60, 90, 140, 0.3)',
               }}
             >
-              <p><span className="text-cyan-400 font-bold">1.</span> A card image is hidden behind blur and zoom</p>
+              <p><span className="text-cyan-400 font-bold">1.</span> A card image is hidden behind a blur effect</p>
               <p><span className="text-cyan-400 font-bold">2.</span> Try to guess which Clash Royale card it is</p>
               <p><span className="text-cyan-400 font-bold">3.</span> With each wrong guess, the image gets clearer</p>
               <p><span className="text-cyan-400 font-bold">4.</span> You have {MAX_GUESSES} attempts to guess correctly!</p>
