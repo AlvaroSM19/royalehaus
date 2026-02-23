@@ -11,118 +11,72 @@ function getTodayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// GET: Fetch today's daily challenge for a game type + user's participation
+// GET: Fetch today's daily challenge - PÚBLICO (no requiere autenticación)
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const gameType = searchParams.get('game') as GameType;
-    const dateParam = searchParams.get('date'); // Optional: for admin preview
-    
-    console.log('[DAILY_API] GET request:', { gameType, dateParam });
+    const dateParam = searchParams.get('date');
     
     if (!gameType || !VALID_GAME_TYPES.includes(gameType)) {
-      console.log('[DAILY_API] Invalid game type:', gameType);
       return NextResponse.json({ error: 'Invalid game type' }, { status: 400 });
     }
 
     const date = dateParam || getTodayDate();
-    console.log('[DAILY_API] Looking for challenge on date:', date);
 
-    // Get the challenge for this date
+    // Buscar el challenge del día
     const challenge = await prisma.dailyChallenge.findUnique({
       where: { date_gameType: { date, gameType } },
     });
 
-    console.log('[DAILY_API] Challenge found:', challenge ? { id: challenge.id, cardId: challenge.cardId } : 'null');
-
     if (!challenge) {
-      console.log('[DAILY_API] No challenge found for date:', date, 'gameType:', gameType);
       return NextResponse.json({ error: 'No challenge for this date', date }, { status: 404 });
     }
 
-    // Check if user is logged in
-    const cookieStore = await cookies();
-    const sid = cookieStore.get('sid')?.value;
-    console.log('[DAILY_API] Session ID:', sid ? 'exists' : 'null');
-    
-    let participation = null;
-    let userId: string | null = null;
-
-    if (sid) {
-      const session = await prisma.session.findUnique({
-        where: { id: sid },
-        include: { user: true },
-      });
-      
-      console.log('[DAILY_API] Session found:', session ? { userId: session.userId, expired: session.expiresAt < new Date() } : 'null');
-      
-      if (session && session.expiresAt > new Date()) {
-        userId = session.userId;
-        participation = await prisma.dailyParticipation.findUnique({
-          where: { challengeId_userId: { challengeId: challenge.id, userId } },
-        });
-        console.log('[DAILY_API] Participation:', participation ? { completed: participation.completed, won: participation.won } : 'null');
-      }
-    }
-
-    const response = {
-      challenge: {
-        id: challenge.id,
-        date: challenge.date,
-        gameType: challenge.gameType,
-        cardId: challenge.cardId, // Always send cardId (needed for authenticated users)
-      },
-      participation: participation ? {
-        completed: participation.completed,
-        won: participation.won,
-        attempts: participation.attempts,
-        completedAt: participation.completedAt,
-      } : null,
-      isLoggedIn: !!userId,
-    };
-    
-    console.log('[DAILY_API] Response:', JSON.stringify(response));
-    return NextResponse.json(response);
+    // Siempre devolver el cardId - es público
+    return NextResponse.json({
+      id: challenge.id,
+      date: challenge.date,
+      gameType: challenge.gameType,
+      cardId: challenge.cardId,
+    });
   } catch (error) {
     console.error('[DAILY_API] GET error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
-// POST: Record a guess/attempt for the daily challenge
+// POST: Guardar participación (solo usuarios autenticados)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { gameType, guessedCardId, won } = body;
-    
-    console.log('[DAILY_API] POST request:', { gameType, guessedCardId, won });
+    const { gameType, won, attempts } = body;
 
     if (!gameType || !VALID_GAME_TYPES.includes(gameType)) {
-      console.log('[DAILY_API] POST: Invalid game type:', gameType);
       return NextResponse.json({ error: 'Invalid game type' }, { status: 400 });
     }
 
-    // User must be logged in
+    // Usuario debe estar logueado
     const cookieStore = await cookies();
     const sid = cookieStore.get('sid')?.value;
     
     if (!sid) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      // No logueado - OK, se guarda en localStorage
+      return NextResponse.json({ ok: true, saved: false, message: 'Guest mode - saved locally' });
     }
 
     const session = await prisma.session.findUnique({
       where: { id: sid },
-      include: { user: true },
     });
 
     if (!session || session.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Session expired' }, { status: 401 });
+      return NextResponse.json({ ok: true, saved: false, message: 'Session expired' });
     }
 
     const userId = session.userId;
     const date = getTodayDate();
 
-    // Get today's challenge
+    // Obtener challenge de hoy
     const challenge = await prisma.dailyChallenge.findUnique({
       where: { date_gameType: { date, gameType } },
     });
@@ -131,59 +85,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No challenge for today' }, { status: 404 });
     }
 
-    // Check if already participated
-    let participation = await prisma.dailyParticipation.findUnique({
-      where: { challengeId_userId: { challengeId: challenge.id, userId } },
+    // Crear o actualizar participación
+    const participation = await prisma.dailyParticipation.upsert({
+      where: { 
+        challengeId_userId: { 
+          challengeId: challenge.id, 
+          userId 
+        } 
+      },
+      create: {
+        challengeId: challenge.id,
+        userId,
+        attempts: attempts || 1,
+        completed: true,
+        won,
+        completedAt: new Date(),
+      },
+      update: {
+        attempts: attempts || 1,
+        completed: true,
+        won,
+        completedAt: new Date(),
+      },
     });
 
-    if (participation?.completed) {
-      return NextResponse.json({ 
-        error: 'Already completed today\'s challenge',
-        participation: {
-          completed: true,
-          won: participation.won,
-          attempts: participation.attempts,
-        }
-      }, { status: 400 });
-    }
-
-    const isCorrect = guessedCardId === challenge.cardId;
-    const newAttempts = (participation?.attempts || 0) + 1;
-    const isCompleted = won || isCorrect;
-
-    if (participation) {
-      participation = await prisma.dailyParticipation.update({
-        where: { id: participation.id },
-        data: {
-          attempts: newAttempts,
-          completed: isCompleted,
-          won: isCorrect || won,
-          completedAt: isCompleted ? new Date() : null,
-        },
-      });
-    } else {
-      participation = await prisma.dailyParticipation.create({
-        data: {
-          challengeId: challenge.id,
-          userId,
-          attempts: 1,
-          completed: isCompleted,
-          won: isCorrect || won,
-          completedAt: isCompleted ? new Date() : null,
-        },
-      });
-    }
-
-    return NextResponse.json({
-      correct: isCorrect,
-      completed: participation.completed,
-      won: participation.won,
-      attempts: participation.attempts,
-      // Reveal the answer if completed
-      correctCardId: participation.completed ? challenge.cardId : undefined,
+    return NextResponse.json({ 
+      ok: true, 
+      saved: true,
+      participation: {
+        completed: participation.completed,
+        won: participation.won,
+        attempts: participation.attempts,
+      }
     });
   } catch (error) {
-    console.error('POST /api/daily error:', error);
+    console.error('[DAILY_API] POST error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

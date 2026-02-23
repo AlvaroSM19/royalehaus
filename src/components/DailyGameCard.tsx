@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, Check } from 'lucide-react';
-import { useAuth } from '@/lib/useAuth';
 
 interface DailyGame {
   id: string;
@@ -15,38 +14,14 @@ interface DailyGame {
   color: string;
 }
 
-// Check if a daily game has been completed today (localStorage only - fallback)
-function isDailyCompletedLocal(gameId: string): boolean {
+// Check if a daily game has been completed today (localStorage - fuente única)
+function isDailyCompleted(gameId: string): boolean {
   if (typeof window === 'undefined') return false;
   
   const today = new Date().toISOString().slice(0, 10);
   const lastDaily = localStorage.getItem(`${gameId}-last-daily`);
   
   return lastDaily === today;
-}
-
-// Check if a daily game has been completed today (API - authoritative for logged-in users)
-async function isDailyCompletedAPI(gameId: string): Promise<boolean> {
-  try {
-    console.log('[DailyGameCard] Checking completion for:', gameId);
-    const res = await fetch(`/api/daily?game=${gameId}`, { credentials: 'include' });
-    console.log('[DailyGameCard] API response status:', res.status);
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.log('[DailyGameCard] API error response:', errorText);
-      return false;
-    }
-    
-    const data = await res.json();
-    console.log('[DailyGameCard] API data:', data);
-    const completed = data.participation?.completed === true;
-    console.log('[DailyGameCard] Is completed:', completed);
-    return completed;
-  } catch (error) {
-    console.error('[DailyGameCard] Error checking completion:', error);
-    return false;
-  }
 }
 
 // Calculate time until midnight UTC
@@ -82,44 +57,16 @@ export function DailyGameCard({ game }: DailyGameCardProps) {
   const [completed, setCompleted] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [mounted, setMounted] = useState(false);
-  const { user, loading } = useAuth();
 
-  // Check completion status - use API for authenticated users, localStorage for guests
-  const checkCompletion = useCallback(async () => {
-    console.log('[DailyGameCard] checkCompletion called for:', game.id, 'user:', user ? user.id : 'not logged in');
-    
-    if (user) {
-      // User is logged in - check API (authoritative)
-      const apiCompleted = await isDailyCompletedAPI(game.id);
-      console.log('[DailyGameCard] Setting completed to:', apiCompleted);
-      setCompleted(apiCompleted);
-      
-      // Sync localStorage with API result
-      const today = new Date().toISOString().slice(0, 10);
-      if (apiCompleted) {
-        localStorage.setItem(`${game.id}-last-daily`, today);
-      } else {
-        const localDate = localStorage.getItem(`${game.id}-last-daily`);
-        if (localDate === today) {
-          // LocalStorage says completed but API doesn't - clear localStorage
-          localStorage.removeItem(`${game.id}-last-daily`);
-        }
-      }
-    } else {
-      // Not logged in - use localStorage
-      const localCompleted = isDailyCompletedLocal(game.id);
-      console.log('[DailyGameCard] Not logged in, local completed:', localCompleted);
-      setCompleted(localCompleted);
-    }
-  }, [game.id, user]);
+  // Check completion status - solo localStorage (fuente única)
+  const checkCompletion = useCallback(() => {
+    const isCompleted = isDailyCompleted(game.id);
+    setCompleted(isCompleted);
+  }, [game.id]);
 
   useEffect(() => {
     setMounted(true);
-    
-    // Initial check
-    if (!loading) {
-      checkCompletion();
-    }
+    checkCompletion();
     
     // Update countdown every second
     const updateCountdown = () => {
@@ -130,18 +77,14 @@ export function DailyGameCard({ game }: DailyGameCardProps) {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     
-    // Check completion status periodically (in case user returns from game)
-    const checkInterval = setInterval(() => {
-      if (!loading) {
-        checkCompletion();
-      }
-    }, 2000);
+    // Check completion status periodically
+    const checkInterval = setInterval(checkCompletion, 2000);
     
     return () => {
       clearInterval(interval);
       clearInterval(checkInterval);
     };
-  }, [game.id, loading, checkCompletion]);
+  }, [checkCompletion]);
 
   // Don't render until client-side to avoid hydration mismatch
   if (!mounted) {
