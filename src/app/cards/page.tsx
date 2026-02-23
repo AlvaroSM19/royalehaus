@@ -201,6 +201,7 @@ export default function CardsPage() {
                   <img 
                     src={`/images/cards/${card.id}.webp`}
                     alt={getCardNameTranslated(card.id)}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 </div>

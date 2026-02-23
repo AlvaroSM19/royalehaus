@@ -151,6 +151,7 @@ export default function HomePage() {
                     src={game.image}
                     alt={game.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   />
                   {/* Gradient overlay on image bottom */}

@@ -12,10 +12,10 @@ interface Wallpaper {
 
 // Clash Royale wallpapers
 const wallpapers: Wallpaper[] = [
-  { id: 'wallpaper1', name: 'Wallpaper 1', preview: '/images/wallpapers/wallpaper1-thumb.jpg', file: '/images/wallpapers/wallpaper1.webp' },
+  { id: 'wallpaper1', name: 'Wallpaper 1', preview: '/images/wallpapers/wallpaper1-thumb.webp', file: '/images/wallpapers/wallpaper1.webp' },
   { id: 'wallpaper2', name: 'Wallpaper 2', preview: '/images/wallpapers/wallpaper2-thumb.webp', file: '/images/wallpapers/wallpaper2.webp' },
-  { id: 'wallpaper3', name: 'Wallpaper 3', preview: '/images/wallpapers/wallpaper3-thumb.jpg', file: '/images/wallpapers/wallpaper3.webp' },
-  { id: 'wallpaper4', name: 'Wallpaper 4', preview: '/images/wallpapers/wallpaper4-thumb.jpg', file: '/images/wallpapers/wallpaper4.webp' },
+  { id: 'wallpaper3', name: 'Wallpaper 3', preview: '/images/wallpapers/wallpaper3-thumb.webp', file: '/images/wallpapers/wallpaper3.webp' },
+  { id: 'wallpaper4', name: 'Wallpaper 4', preview: '/images/wallpapers/wallpaper4-thumb.webp', file: '/images/wallpapers/wallpaper4.webp' },
 ]
 
 export default function WallpaperSelector() {

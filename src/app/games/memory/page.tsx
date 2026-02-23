@@ -475,7 +475,7 @@ export default function RoyaleMemoryGame() {
                     {/* Back */}
                     <div className="card-face back rounded-xl overflow-hidden" style={{ width: cardSize, height: cardSize }}>
                       <img
-                        src="/images/games/memory/card-back.png"
+                        src="/images/games/memory/card-back.webp"
                         alt="Card back"
                         className="w-full h-full object-cover"
                         onError={(e) => {
