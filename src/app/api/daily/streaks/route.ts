@@ -8,7 +8,7 @@ const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 export async function GET(req: NextRequest) {
   try {
     // User must be logged in
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sid = cookieStore.get('sid')?.value;
     
     if (!sid) {

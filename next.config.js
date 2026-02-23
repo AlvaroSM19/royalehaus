@@ -21,9 +21,9 @@ const nextConfig = {
   // experimental: {
   //   typedRoutes: true,
   // },
-  // Optimización para producción
+  // Keep console.error/warn in production, only remove console.log
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
 }
 

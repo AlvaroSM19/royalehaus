@@ -215,58 +215,56 @@ export default function EmojiRiddlePage() {
     const lastDailyResultStr = localStorage.getItem('emoji-riddle-daily-result');
     
     if (lastDaily === today && lastDailyResultStr) {
-      // Already completed today
       try {
         const result = JSON.parse(lastDailyResultStr) as DailyResult;
         setDailyCompleted(true);
         setDailyResult(result);
         setDailyStreak(getDailyStreakData());
-        
-        // Load the card to show result
         const card = baseCards.find(c => c.id === result.cardId);
         if (card && emojiRiddles[card.id]) {
-          const originalEmojis = emojiRiddles[card.id];
           setTargetCard(card);
-          setEmojis(originalEmojis);
-          setRevealedCount(originalEmojis.length);
+          setEmojis(emojiRiddles[card.id]);
+          setRevealedCount(emojiRiddles[card.id].length);
           setGameOver(true);
           setWon(result.won);
           return;
         }
-      } catch (e) {
-        console.error('[EmojiRiddle] Invalid stored result:', e);
-      }
+      } catch (e) { /* continue */ }
     }
     
-    // Not completed - fetch today's challenge
+    // Not completed - try API, fallback to local
+    let cardToUse: ClashCard | null = null;
+    
     try {
       const response = await fetch('/api/daily?game=emoji-riddle');
-      if (!response.ok) throw new Error('Failed to fetch challenge');
-      
-      const challenge = await response.json();
-      const card = baseCards.find(c => c.id === challenge.cardId);
-      
-      if (card && emojiRiddles[card.id]) {
-        const originalEmojis = emojiRiddles[card.id];
-        const reorderedEmojis = reorderEmojisForDifficulty(originalEmojis);
-        
-        setTargetCard(card);
-        setEmojis(reorderedEmojis);
-        setRevealedCount(1);
-        setGuesses([]);
-        setSearchTerm('');
-        setGameOver(false);
-        setWon(false);
-        setShowAnswer(false);
-        setShowBonusHint(false);
-        setDailyCompleted(false);
-        setDailyResult(null);
-      } else {
-        console.error('[EmojiRiddle] Card not found or no riddle:', challenge.cardId);
+      if (response.ok) {
+        const challenge = await response.json();
+        if (challenge?.cardId) {
+          const c = baseCards.find(card => card.id === challenge.cardId);
+          if (c && emojiRiddles[c.id]) cardToUse = c;
+        }
       }
-    } catch (error) {
-      console.error('[EmojiRiddle] Failed to fetch challenge:', error);
+    } catch (e) { /* API failed, use fallback */ }
+    
+    // Fallback: deterministic local card
+    if (!cardToUse) {
+      cardToUse = getDailyCard();
     }
+    
+    const originalEmojis = emojiRiddles[cardToUse.id] || [];
+    const reorderedEmojis = reorderEmojisForDifficulty(originalEmojis);
+    
+    setTargetCard(cardToUse);
+    setEmojis(reorderedEmojis);
+    setRevealedCount(1);
+    setGuesses([]);
+    setSearchTerm('');
+    setGameOver(false);
+    setWon(false);
+    setShowAnswer(false);
+    setShowBonusHint(false);
+    setDailyCompleted(false);
+    setDailyResult(null);
   }, []);
 
   useEffect(() => {

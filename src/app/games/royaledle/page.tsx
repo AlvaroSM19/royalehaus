@@ -143,22 +143,17 @@ export default function RoyaledlePage() {
   }, []);
 
   const initGame = useCallback(async () => {
-    console.log('[Royaledle] initGame called');
-    
     // Check localStorage first
     const today = new Date().toISOString().slice(0, 10);
     const lastDaily = localStorage.getItem('royaledle-last-daily');
     const lastDailyResultStr = localStorage.getItem('royaledle-daily-result');
     
     if (lastDaily === today && lastDailyResultStr) {
-      // Already completed today
       try {
         const result = JSON.parse(lastDailyResultStr) as DailyResult;
         setDailyCompleted(true);
         setDailyResult(result);
         setDailyStreak(getDailyStreakData());
-        
-        // Load the card to show result
         const card = baseCards.find(c => c.id === result.cardId);
         if (card) {
           setTargetCard(card);
@@ -166,32 +161,34 @@ export default function RoyaledlePage() {
           setWon(result.won);
           return;
         }
-      } catch (e) {
-        console.error('[Royaledle] Invalid stored result:', e);
-      }
+      } catch (e) { /* continue */ }
     }
     
-    // Not completed - fetch today's challenge
+    // Not completed - try API, fallback to local
+    let cardToUse: ClashCard | null = null;
+    
     try {
       const response = await fetch('/api/daily?game=royaledle');
-      if (!response.ok) throw new Error('Failed to fetch challenge');      
-      const challenge = await response.json();
-      const card = baseCards.find(c => c.id === challenge.cardId);
-      
-      if (card) {
-        setTargetCard(card);
-        setGuesses([]);
-        setSearchTerm('');
-        setGameOver(false);
-        setWon(false);
-        setDailyCompleted(false);
-        setDailyResult(null);
-      } else {
-        console.error('[Royaledle] Card not found:', challenge.cardId);
+      if (response.ok) {
+        const challenge = await response.json();
+        if (challenge?.cardId) {
+          cardToUse = baseCards.find(c => c.id === challenge.cardId) || null;
+        }
       }
-    } catch (error) {
-      console.error('[Royaledle] Failed to fetch challenge:', error);
+    } catch (e) { /* API failed, use fallback */ }
+    
+    // Fallback: deterministic local card
+    if (!cardToUse) {
+      cardToUse = getDailyCard();
     }
+    
+    setTargetCard(cardToUse);
+    setGuesses([]);
+    setSearchTerm('');
+    setGameOver(false);
+    setWon(false);
+    setDailyCompleted(false);
+    setDailyResult(null);
   }, []);
 
   useEffect(() => {

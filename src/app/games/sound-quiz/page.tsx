@@ -222,7 +222,6 @@ export default function SoundQuizPage() {
     setIsLoadingHints(true);
     
     if (cardsWithSounds.length === 0) {
-      console.warn('No cards with sounds available');
       setIsLoadingHints(false);
       return;
     }
@@ -233,13 +232,10 @@ export default function SoundQuizPage() {
     const lastDailyResultStr = localStorage.getItem('sound-quiz-daily-result');
     
     if (lastDaily === today && lastDailyResultStr) {
-      // Already completed today
       try {
         const result = JSON.parse(lastDailyResultStr) as DailyResult;
         setDailyCompleted(true);
         setDailyResult(result);
-        
-        // Show the completed card
         const card = baseCards.find(c => c.id === result.cardId);
         if (card && CARD_FOLDER_MAP[card.name]) {
           const hints = await fetchCardSounds(card);
@@ -249,61 +245,72 @@ export default function SoundQuizPage() {
           setGameOver(true);
           setWon(result.won);
           setIsLoadingHints(false);
-        }
-        return;
-      } catch (e) {
-        console.error('[SoundQuiz] Invalid stored result:', e);
-      }
-    }
-    
-    // Not completed - fetch today's challenge
-    try {
-      const response = await fetch('/api/daily?game=sound-quiz');
-      if (!response.ok) throw new Error('Failed to fetch challenge');
-      
-      const challenge = await response.json();
-      const card = baseCards.find(c => c.id === challenge.cardId);
-      
-      if (card && CARD_FOLDER_MAP[card.name]) {
-        const hints = await fetchCardSounds(card);
-        
-        if (hints.length === 0) {
-          console.warn(`No sounds available for ${card.name}`);
-          setIsLoadingHints(false);
           return;
         }
-        
-        setTargetCard(card);
-        setSoundHints(hints);
-        setCurrentHintIndex(0);
-        setGuesses([]);
-        setSearchTerm('');
-        setGameOver(false);
-        setWon(false);
-        setDailyCompleted(false);
-        setDailyResult(null);
-        setIsLoadingSound(false);
-        setIsLoadingHints(false);
-        
-        // Auto-play first sound
-        setTimeout(() => {
-          if (hints.length > 0) {
-            const firstAudio = new Audio(hints[0].url);
-            audioRef.current = firstAudio;
-            firstAudio.onplay = () => setIsPlaying(true);
-            firstAudio.onended = () => setIsPlaying(false);
-            firstAudio.onerror = () => setIsPlaying(false);
-            firstAudio.play().catch(err => console.error('Failed to play first sound:', err));
-          }
-        }, 500);
-      } else {
-        console.error('[SoundQuiz] Card not found or no sounds:', challenge.cardId);
-        setIsLoadingHints(false);
-      }
-    } catch (error) {
-      console.error('[SoundQuiz] Failed to fetch challenge:', error);
-      setIsLoadingHints(false);
+      } catch (e) { /* continue */ }
     }
+    
+    // Not completed - try API, fallback to local
+    let cardToUse: ClashCard | null = null;
+    
+    try {
+      const response = await fetch('/api/daily?game=sound-quiz');
+      if (response.ok) {
+        const challenge = await response.json();
+        if (challenge?.cardId) {
+          const c = baseCards.find(card => card.id === challenge.cardId);
+          if (c && CARD_FOLDER_MAP[c.name]) cardToUse = c;
+        }
+      }
+    } catch (e) { /* API failed, use fallback */ }
+    
+    // Fallback: deterministic local card with sounds
+    if (!cardToUse) {
+      const seed = today.split('-').reduce((acc: number, part: string) => acc + parseInt(part), 0) * 13337;
+      const x = Math.sin(seed) * 10000;
+      const rand = x - Math.floor(x);
+      const index = Math.floor(rand * cardsWithSounds.length);
+      cardToUse = cardsWithSounds[index];
+    }
+    
+    const hints = await fetchCardSounds(cardToUse);
+    
+    if (hints.length === 0) {
+      // Try random card if daily card has no sounds
+      const random = cardsWithSounds[Math.floor(Math.random() * cardsWithSounds.length)];
+      const fallbackHints = await fetchCardSounds(random);
+      if (fallbackHints.length > 0) {
+        cardToUse = random;
+        setTargetCard(random);
+        setSoundHints(fallbackHints);
+      }
+      setIsLoadingHints(false);
+      return;
+    }
+    
+    setTargetCard(cardToUse);
+    setSoundHints(hints);
+    setCurrentHintIndex(0);
+    setGuesses([]);
+    setSearchTerm('');
+    setGameOver(false);
+    setWon(false);
+    setDailyCompleted(false);
+    setDailyResult(null);
+    setIsLoadingSound(false);
+    setIsLoadingHints(false);
+    
+    // Auto-play first sound
+    setTimeout(() => {
+      if (hints.length > 0) {
+        const firstAudio = new Audio(hints[0].url);
+        audioRef.current = firstAudio;
+        firstAudio.onplay = () => setIsPlaying(true);
+        firstAudio.onended = () => setIsPlaying(false);
+        firstAudio.onerror = () => setIsPlaying(false);
+        firstAudio.play().catch(() => {});
+      }
+    }, 500);
   }, [cardsWithSounds, fetchCardSounds, stopSound]);
 
   useEffect(() => {
