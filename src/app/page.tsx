@@ -27,6 +27,14 @@ const dailyGames = [
     href: '/games/pixel-royale', 
     color: '#8b5cf6',
   },
+  { 
+    id: 'sound-quiz', 
+    title: 'SOUND QUIZ', 
+    description: 'Guess the card by sound',
+    image: '/images/games/9.webp',
+    href: '/games/sound-quiz', 
+    color: '#06b6d4',
+  },
 ]
 
 const games = [
@@ -59,12 +67,6 @@ const games = [
     title: 'ROYALE MEMORY', 
     image: '/images/games/7.webp',
     href: '/games/memory', 
-  },
-  { 
-    id: 'sound-quiz', 
-    title: 'SOUND QUIZ', 
-    image: '/images/games/9.webp',
-    href: '/games/sound-quiz', 
   },
   { 
     id: 'royale-guesser', 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
 import { cookies } from 'next/headers';
 
-const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale'] as const;
+const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale', 'sound-quiz'] as const;
 type GameType = typeof VALID_GAME_TYPES[number];
 
 // Check if user is admin

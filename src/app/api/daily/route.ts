@@ -3,7 +3,7 @@ import { prisma } from '@/server/prisma';
 import { cookies } from 'next/headers';
 
 // Valid game types for daily challenges
-const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale'] as const;
+const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'pixel-royale', 'sound-quiz'] as const;
 type GameType = typeof VALID_GAME_TYPES[number];
 
 // Get today's date in YYYY-MM-DD format
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if user is logged in
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sid = cookieStore.get('sid')?.value;
     let participation = null;
     let userId: string | null = null;
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 
     // User must be logged in
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sid = cookieStore.get('sid')?.value;
     
     if (!sid) {

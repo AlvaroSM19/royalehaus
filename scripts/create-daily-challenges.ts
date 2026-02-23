@@ -9,7 +9,7 @@ async function main() {
   
   console.log(`Creating/checking daily challenges for ${today}...\n`);
 
-  const gameTypes = ['royaledle', 'emoji-riddle', 'pixel-royale'];
+  const gameTypes = ['royaledle', 'emoji-riddle', 'pixel-royale', 'sound-quiz'];
 
   for (const gameType of gameTypes) {
     const challenge = await prisma.dailyChallenge.findUnique({
