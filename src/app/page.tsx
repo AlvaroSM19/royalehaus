@@ -20,14 +20,6 @@ const dailyGames = [
     color: '#ec4899',
   },
   { 
-    id: 'pixel-royale', 
-    title: 'PIXEL ROYALE', 
-    description: 'Identify the pixelated card',
-    image: '/images/games/6.webp',
-    href: '/games/pixel-royale', 
-    color: '#8b5cf6',
-  },
-  { 
     id: 'sound-quiz', 
     title: 'SOUND QUIZ', 
     description: 'Guess the card by sound',
@@ -38,6 +30,12 @@ const dailyGames = [
 ]
 
 const games = [
+  { 
+    id: 'pixel-royale', 
+    title: 'PIXEL ROYALE', 
+    image: '/images/games/6.webp',
+    href: '/games/pixel-royale', 
+  },
   { 
     id: 'impostor', 
     title: 'IMPOSTOR', 
@@ -84,10 +82,10 @@ export default function HomePage() {
         <div 
           className="max-w-[1100px] mx-auto rounded-2xl p-6 sm:p-8"
           style={{
-            background: 'linear-gradient(180deg, rgba(15, 12, 8, 0.85) 0%, rgba(20, 16, 10, 0.9) 50%, rgba(15, 12, 8, 0.85) 100%)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(180, 140, 60, 0.2)',
-            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 215, 100, 0.05)',
+            background: 'linear-gradient(180deg, rgba(10, 8, 5, 0.95) 0%, rgba(18, 14, 8, 0.97) 50%, rgba(10, 8, 5, 0.95) 100%)',
+            backdropFilter: 'blur(12px)',
+            border: '2px solid rgba(180, 140, 60, 0.3)',
+            boxShadow: '0 8px 40px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255, 215, 100, 0.08)',
           }}
         >
           {/* Section Header */}
