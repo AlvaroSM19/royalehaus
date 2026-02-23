@@ -1,36 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
+import { getAuthUser } from '@/server/auth-utils';
+
+export const runtime = 'nodejs';
 
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 
 // GET: Fetch user's streaks for daily challenges
 export async function GET(req: NextRequest) {
   try {
-    // User must be logged in
-    const sid = req.cookies.get('sid')?.value;
-    
-    if (!sid) {
+    // Authenticate using proven auth-store path
+    const user = await getAuthUser(req);
+    if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const session = await prisma.session.findUnique({
-      where: { id: sid },
-    });
-
-    if (!session || session.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Session expired' }, { status: 401 });
-    }
-
-    const userId = session.userId;
-
-    // Calculate streaks for each game type
     const streaks: Record<string, { current: number; best: number; totalWins: number }> = {};
 
     for (const gameType of VALID_GAME_TYPES) {
-      // Get all completed (won) participations for this game type, ordered by date
+      // Get all completed (won) participations for this game type
       const participations = await prisma.dailyParticipation.findMany({
         where: {
-          userId,
+          userId: user.id,
           won: true,
           challenge: { gameType },
         },
@@ -44,16 +35,15 @@ export async function GET(req: NextRequest) {
       // Calculate current streak (consecutive days from today backwards)
       let currentStreak = 0;
       const today = new Date();
-      
+
       for (let i = 0; i < 365; i++) {
         const checkDate = new Date(today);
         checkDate.setDate(today.getDate() - i);
         const dateStr = checkDate.toISOString().slice(0, 10);
-        
+
         if (winDates.includes(dateStr)) {
           currentStreak++;
         } else if (i > 0) {
-          // Allow today to be missing (user might not have played yet)
           break;
         }
       }
@@ -63,12 +53,11 @@ export async function GET(req: NextRequest) {
       let tempStreak = 0;
       let lastDate: Date | null = null;
 
-      // Sort dates chronologically for best streak calculation
       const sortedDates = [...winDates].sort();
-      
+
       for (const dateStr of sortedDates) {
         const date = new Date(dateStr);
-        
+
         if (lastDate) {
           const diffDays = Math.round((date.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
           if (diffDays === 1) {
@@ -79,7 +68,7 @@ export async function GET(req: NextRequest) {
         } else {
           tempStreak = 1;
         }
-        
+
         if (tempStreak > bestStreak) bestStreak = tempStreak;
         lastDate = date;
       }
@@ -89,7 +78,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ streaks });
   } catch (error) {
-    console.error('GET /api/daily/streaks error:', error);
+    console.error('[DAILY_STREAKS] GET error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

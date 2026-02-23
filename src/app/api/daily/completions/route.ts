@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
+import { getAuthUser } from '@/server/auth-utils';
+
+export const runtime = 'nodejs';
 
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 
@@ -10,19 +13,13 @@ function getTodayDate(): string {
 // GET: Returns completion status for all daily games for the logged-in user
 export async function GET(req: NextRequest) {
   try {
-    const sid = req.cookies.get('sid')?.value;
-
-    if (!sid) {
-      return NextResponse.json({ completions: {} });
-    }
-
-    const session = await prisma.session.findUnique({ where: { id: sid } });
-    if (!session || session.expiresAt < new Date()) {
+    // Authenticate using proven auth-store path
+    const user = await getAuthUser(req);
+    if (!user) {
       return NextResponse.json({ completions: {} });
     }
 
     const today = getTodayDate();
-    const completions: Record<string, { completed: boolean; won: boolean; attempts: number }> = {};
 
     // Get all today's challenges
     const challenges = await prisma.dailyChallenge.findMany({
@@ -36,10 +33,12 @@ export async function GET(req: NextRequest) {
     // Get participations for all challenges
     const participations = await prisma.dailyParticipation.findMany({
       where: {
-        userId: session.userId,
+        userId: user.id,
         challengeId: { in: challenges.map(c => c.id) },
       },
     });
+
+    const completions: Record<string, { completed: boolean; won: boolean; attempts: number }> = {};
 
     for (const challenge of challenges) {
       const participation = participations.find(p => p.challengeId === challenge.id);

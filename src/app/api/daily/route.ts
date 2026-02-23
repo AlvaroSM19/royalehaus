@@ -1,30 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
+import { getAuthUser } from '@/server/auth-utils';
 
-// Valid game types for daily challenges
+export const runtime = 'nodejs';
+
 const VALID_GAME_TYPES = ['royaledle', 'emoji-riddle', 'sound-quiz'] as const;
 type GameType = typeof VALID_GAME_TYPES[number];
 
-// Get today's date in YYYY-MM-DD format
 function getTodayDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// GET: Fetch today's daily challenge - PÚBLICO (no requiere autenticación)
-// Si el usuario está logueado, también devuelve su estado de participación
+// GET: Fetch today's daily challenge (public)
+// If user is logged in, also returns their participation status
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const gameType = searchParams.get('game') as GameType;
     const dateParam = searchParams.get('date');
-    
+
     if (!gameType || !VALID_GAME_TYPES.includes(gameType)) {
       return NextResponse.json({ error: 'Invalid game type' }, { status: 400 });
     }
 
     const date = dateParam || getTodayDate();
 
-    // Buscar el challenge del día
     const challenge = await prisma.dailyChallenge.findUnique({
       where: { date_gameType: { date, gameType } },
     });
@@ -33,22 +33,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No challenge for this date', date }, { status: 404 });
     }
 
-    // Check if user is logged in and has participation
+    // Check participation if user is logged in (uses proven auth-store path)
     let participation = null;
-    try {
-      const sid = req.cookies.get('sid')?.value;
-      if (sid) {
-        const session = await prisma.session.findUnique({ where: { id: sid } });
-        if (session && session.expiresAt > new Date()) {
-          const p = await prisma.dailyParticipation.findUnique({
-            where: { challengeId_userId: { challengeId: challenge.id, userId: session.userId } },
-          });
-          if (p) {
-            participation = { completed: p.completed, won: p.won, attempts: p.attempts };
-          }
-        }
+    const user = await getAuthUser(req);
+    if (user) {
+      const p = await prisma.dailyParticipation.findUnique({
+        where: { challengeId_userId: { challengeId: challenge.id, userId: user.id } },
+      });
+      if (p) {
+        participation = { completed: p.completed, won: p.won, attempts: p.attempts };
       }
-    } catch { /* No auth - that's fine */ }
+    }
 
     return NextResponse.json({
       id: challenge.id,
@@ -58,12 +53,12 @@ export async function GET(req: NextRequest) {
       participation,
     });
   } catch (error) {
-    console.error('[DAILY_API] GET error:', error);
+    console.error('[DAILY] GET error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
-// POST: Guardar participación (solo usuarios autenticados)
+// POST: Save daily participation (authenticated users only)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -73,26 +68,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid game type' }, { status: 400 });
     }
 
-    // Usuario debe estar logueado
-    const sid = req.cookies.get('sid')?.value;
-    
-    if (!sid) {
-      // No logueado - OK, se guarda en localStorage
-      return NextResponse.json({ ok: true, saved: false, message: 'Guest mode - saved locally' });
+    // Authenticate using proven auth-store path
+    const user = await getAuthUser(req);
+    if (!user) {
+      return NextResponse.json({ ok: true, saved: false, message: 'Not authenticated' });
     }
 
-    const session = await prisma.session.findUnique({
-      where: { id: sid },
-    });
-
-    if (!session || session.expiresAt < new Date()) {
-      return NextResponse.json({ ok: true, saved: false, message: 'Session expired' });
-    }
-
-    const userId = session.userId;
     const date = getTodayDate();
 
-    // Obtener challenge de hoy
     const challenge = await prisma.dailyChallenge.findUnique({
       where: { date_gameType: { date, gameType } },
     });
@@ -101,41 +84,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No challenge for today' }, { status: 404 });
     }
 
-    // Crear o actualizar participación
+    // Upsert participation
     const participation = await prisma.dailyParticipation.upsert({
-      where: { 
-        challengeId_userId: { 
-          challengeId: challenge.id, 
-          userId 
-        } 
+      where: {
+        challengeId_userId: { challengeId: challenge.id, userId: user.id },
       },
       create: {
         challengeId: challenge.id,
-        userId,
+        userId: user.id,
         attempts: attempts || 1,
         completed: true,
-        won,
+        won: !!won,
         completedAt: new Date(),
       },
       update: {
         attempts: attempts || 1,
         completed: true,
-        won,
+        won: !!won,
         completedAt: new Date(),
       },
     });
 
-    return NextResponse.json({ 
-      ok: true, 
+    return NextResponse.json({
+      ok: true,
       saved: true,
       participation: {
         completed: participation.completed,
         won: participation.won,
         attempts: participation.attempts,
-      }
+      },
     });
   } catch (error) {
-    console.error('[DAILY_API] POST error:', error);
+    console.error('[DAILY] POST error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

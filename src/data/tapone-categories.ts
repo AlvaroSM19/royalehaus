@@ -29,7 +29,7 @@ export const categories: TapOneCategory[] = [
       { id: 21, name: 'Giant Skeleton' },
       { id: 25, name: 'Royal Giant' },
       { id: 39, name: 'Ice Golem' },
-      { id: 54, name: 'Cannon Cart' },
+      { id: 49, name: 'Cannon Cart' },
     ]
   },
   {
@@ -42,7 +42,7 @@ export const categories: TapOneCategory[] = [
       { id: 62, name: 'Ram Rider' },
       { id: 58, name: 'Royal Hogs' },
       { id: 52, name: 'Skeleton Barrel' },
-      { id: 47, name: 'Battle Ram' },
+      { id: 44, name: 'Battle Ram' },
       { id: 32, name: 'Miner' },
       { id: 63, name: 'Wall Breakers' },
       { id: 26, name: 'Three Musketeers' },
@@ -77,7 +77,7 @@ export const categories: TapOneCategory[] = [
       { id: 103, name: 'Mortar' },
       { id: 111, name: 'Furnace' },
       { id: 109, name: 'Tombstone' },
-      { id: 110, name: 'Barbarian Hut' },
+      { id: 106, name: 'Barbarian Hut' },
     ]
   },
   {
@@ -109,7 +109,7 @@ export const categories: TapOneCategory[] = [
       { id: 8, name: 'Witch' },
       { id: 14, name: 'Bomber' },
       { id: 67, name: 'Firecracker' },
-      { id: 33, name: 'Dark Prince' },
+      { id: 27, name: 'Dark Prince' },
     ]
   },
   {
@@ -124,7 +124,7 @@ export const categories: TapOneCategory[] = [
       { id: 36, name: 'Lumberjack' },
       { id: 55, name: 'Royal Ghost' },
       { id: 28, name: 'Princess' },
-      { id: 44, name: 'Night Witch' },
+      { id: 47, name: 'Night Witch' },
       { id: 64, name: 'Fisherman' },
     ]
   },
@@ -156,7 +156,7 @@ export const categories: TapOneCategory[] = [
       { id: 6, name: 'Minions' },
       { id: 69, name: 'Skeleton Dragons' },
       { id: 51, name: 'Flying Machine' },
-      { id: 66, name: 'Electro Dragon' },
+      { id: 61, name: 'Electro Dragon' },
       { id: 48, name: 'Bats' },
     ]
   },
@@ -165,7 +165,7 @@ export const categories: TapOneCategory[] = [
     label: 'FIGHTERS',
     icon: '⚔️',
     elements: [
-      { id: 27, name: 'Sparky' },
+      { id: 33, name: 'Sparky' },
       { id: 17, name: 'Prince' },
       { id: 19, name: 'Mini P.E.K.K.A' },
       { id: 40, name: 'Elite Barbarians' },
