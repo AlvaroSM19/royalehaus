@@ -250,16 +250,35 @@ export default function SoundQuizPage() {
       } catch (e) { /* continue */ }
     }
     
-    // Not completed - try API, fallback to local
+    // Not completed locally - try API, which also returns DB participation
     let cardToUse: ClashCard | null = null;
     
     try {
-      const response = await fetch('/api/daily?game=sound-quiz');
+      const response = await fetch('/api/daily?game=sound-quiz', { credentials: 'include' });
       if (response.ok) {
         const challenge = await response.json();
         if (challenge?.cardId) {
           const c = baseCards.find(card => card.id === challenge.cardId);
           if (c && CARD_FOLDER_MAP[c.name]) cardToUse = c;
+        }
+        // Check if user already completed this from another device
+        if (challenge?.participation?.completed && cardToUse) {
+          localStorage.setItem('sound-quiz-last-daily', today);
+          localStorage.setItem('sound-quiz-daily-result', JSON.stringify({
+            won: challenge.participation.won,
+            guesses: challenge.participation.attempts,
+            cardId: cardToUse.id,
+          }));
+          const hints = await fetchCardSounds(cardToUse);
+          setDailyCompleted(true);
+          setDailyResult({ won: challenge.participation.won, guesses: challenge.participation.attempts, cardId: cardToUse.id });
+          setTargetCard(cardToUse);
+          setSoundHints(hints);
+          setCurrentHintIndex(hints.length - 1);
+          setGameOver(true);
+          setWon(challenge.participation.won);
+          setIsLoadingHints(false);
+          return;
         }
       }
     } catch (e) { /* API failed, use fallback */ }

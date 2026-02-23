@@ -12,6 +12,7 @@ function getTodayDate(): string {
 }
 
 // GET: Fetch today's daily challenge - PÚBLICO (no requiere autenticación)
+// Si el usuario está logueado, también devuelve su estado de participación
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -33,12 +34,30 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No challenge for this date', date }, { status: 404 });
     }
 
-    // Siempre devolver el cardId - es público
+    // Check if user is logged in and has participation
+    let participation = null;
+    try {
+      const cookieStore = await cookies();
+      const sid = cookieStore.get('sid')?.value;
+      if (sid) {
+        const session = await prisma.session.findUnique({ where: { id: sid } });
+        if (session && session.expiresAt > new Date()) {
+          const p = await prisma.dailyParticipation.findUnique({
+            where: { challengeId_userId: { challengeId: challenge.id, userId: session.userId } },
+          });
+          if (p) {
+            participation = { completed: p.completed, won: p.won, attempts: p.attempts };
+          }
+        }
+      }
+    } catch { /* No auth - that's fine */ }
+
     return NextResponse.json({
       id: challenge.id,
       date: challenge.date,
       gameType: challenge.gameType,
       cardId: challenge.cardId,
+      participation,
     });
   } catch (error) {
     console.error('[DAILY_API] GET error:', error);

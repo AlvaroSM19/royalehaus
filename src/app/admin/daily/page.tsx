@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import cards from '@/data/cards.json';
-import { Home, Calendar, Sparkles, Save, RefreshCw } from 'lucide-react';
+import { Home, Calendar, Sparkles, Save, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DailyChallenge {
   id: number;
@@ -21,46 +21,50 @@ const GAME_LABELS: Record<string, string> = {
   'sound-quiz': 'Sound Quiz',
 };
 
+function getTodayDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 export default function DailyAdminPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [challenges, setChallenges] = useState<DailyChallenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedGame, setSelectedGame] = useState<string>('royaledle');
-  const [selectedCard, setSelectedCard] = useState<number>(1);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  
+  // Edit state
+  const [editingCell, setEditingCell] = useState<{ date: string; gameType: string } | null>(null);
+  const [editCardId, setEditCardId] = useState<number>(1);
+  const [cardSearch, setCardSearch] = useState('');
 
   const fetchChallenges = useCallback(async () => {
     try {
-      console.log('[AdminDaily] Fetching challenges...');
-      // Últimos 10 días + hoy + próximos 10 días = 21 días total
       const today = new Date();
       const startDate = new Date(today);
       startDate.setDate(startDate.getDate() - 10);
       const endDate = new Date(today);
       endDate.setDate(endDate.getDate() + 10);
-      
+
       const start = startDate.toISOString().slice(0, 10);
       const end = endDate.toISOString().slice(0, 10);
-      
-      console.log('[AdminDaily] Fetching from:', start, 'to:', end);
-      const res = await fetch(`/api/daily/admin?start=${start}&end=${end}`);
-      console.log('[AdminDaily] Response status:', res.status);
-      
+
+      const res = await fetch(`/api/daily/admin?start=${start}&end=${end}`, { credentials: 'include' });
+
       if (res.ok) {
         const data = await res.json();
-        console.log('[AdminDaily] Received challenges:', data.challenges?.length || 0);
         setChallenges(data.challenges || []);
       } else {
-        const errorText = await res.text();
-        console.error('[AdminDaily] Failed to fetch challenges:', res.status, res.statusText, errorText);
-        showMessage('Error loading challenges', 'error');
+        const errorData = await res.json().catch(() => ({}));
+        showMessage(`Error: ${errorData.error || res.statusText}`, 'error');
       }
     } catch (error) {
-      console.error('[AdminDaily] Error fetching challenges:', error);
       showMessage('Error connecting to server', 'error');
     } finally {
       setLoading(false);
@@ -68,15 +72,11 @@ export default function DailyAdminPage() {
   }, []);
 
   useEffect(() => {
-    console.log('[AdminDaily] useEffect - authLoading:', authLoading, 'user:', user ? { id: user.id, role: user.role } : 'null');
-    
     if (!authLoading) {
       if (!user || user.role !== 'admin') {
-        console.log('[AdminDaily] Not admin, redirecting to home');
         router.push('/');
         return;
       }
-      console.log('[AdminDaily] Is admin, fetching challenges');
       fetchChallenges();
     }
   }, [user, authLoading, router, fetchChallenges]);
@@ -87,29 +87,51 @@ export default function DailyAdminPage() {
     setTimeout(() => setMessage(''), 4000);
   };
 
-  const handleSaveChallenge = async () => {
-    if (!selectedDate) {
-      showMessage('Please select a date', 'error');
-      return;
+  // Generate the 21 dates (10 past + today + 10 future)
+  const getDates = (): string[] => {
+    const dates: string[] = [];
+    const today = new Date();
+    for (let i = -10; i <= 10; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      dates.push(d.toISOString().slice(0, 10));
     }
+    return dates;
+  };
+
+  // Group challenges by key
+  const challengeMap = new Map<string, DailyChallenge>();
+  challenges.forEach(c => {
+    challengeMap.set(`${c.date}|${c.gameType}`, c);
+  });
+
+  const getChallenge = (date: string, gameType: string) => challengeMap.get(`${date}|${gameType}`);
+
+  const getCardName = (cardId: number): string => {
+    const card = cards.find((c: { id: number; name: string }) => c.id === cardId);
+    return card?.name || `Card #${cardId}`;
+  };
+
+  const today = getTodayDate();
+  const dates = getDates();
+
+  const handleSave = async (date: string, gameType: string, cardId: number) => {
     setSaving(true);
     try {
       const res = await fetch('/api/daily/admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: selectedDate,
-          gameType: selectedGame,
-          cardId: selectedCard,
-        }),
+        credentials: 'include',
+        body: JSON.stringify({ date, gameType, cardId }),
       });
-      
+
       if (res.ok) {
-        showMessage('Challenge saved successfully!', 'success');
+        showMessage(`${GAME_LABELS[gameType]} for ${formatDate(date)} saved!`, 'success');
+        setEditingCell(null);
         fetchChallenges();
       } else {
-        const data = await res.json();
-        showMessage(`Error: ${data.error}`, 'error');
+        const data = await res.json().catch(() => ({}));
+        showMessage(`Error: ${data.error || 'Failed to save'}`, 'error');
       }
     } catch {
       showMessage('Error saving challenge', 'error');
@@ -119,66 +141,58 @@ export default function DailyAdminPage() {
   };
 
   const handleAutoFill = async () => {
-    if (!confirm('This will auto-generate 30 days of challenges. Existing challenges will not be overwritten. Continue?')) {
-      return;
-    }
-    
+    if (!confirm('Auto-generate random challenges for empty future slots (next 30 days)?')) return;
+
     setSaving(true);
     try {
       const newChallenges: { date: string; gameType: string; cardId: number }[] = [];
-      const today = new Date();
-      
-      for (let i = 0; i < 30; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
+      const todayDate = new Date();
+
+      for (let i = 0; i <= 30; i++) {
+        const date = new Date(todayDate);
+        date.setDate(todayDate.getDate() + i);
         const dateStr = date.toISOString().slice(0, 10);
-        
+
         for (const gameType of GAME_TYPES) {
-          const exists = challenges.find(c => c.date === dateStr && c.gameType === gameType);
-          if (!exists) {
+          if (!challengeMap.has(`${dateStr}|${gameType}`)) {
             const cardId = Math.floor(Math.random() * 168) + 1;
             newChallenges.push({ date: dateStr, gameType, cardId });
           }
         }
       }
-      
+
       if (newChallenges.length === 0) {
-        showMessage('All challenges already exist for the next 30 days!', 'success');
+        showMessage('All slots already filled!', 'success');
         setSaving(false);
         return;
       }
-      
+
       const res = await fetch('/api/daily/admin', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ challenges: newChallenges }),
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         showMessage(`Created ${data.created} new challenges!`, 'success');
         fetchChallenges();
       } else {
-        showMessage('Error auto-filling challenges', 'error');
+        showMessage('Error auto-filling', 'error');
       }
     } catch {
-      showMessage('Error auto-filling challenges', 'error');
+      showMessage('Error auto-filling', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  // Group challenges by date
-  const challengesByDate: Record<string, Record<string, DailyChallenge>> = {};
-  challenges.forEach(c => {
-    if (!challengesByDate[c.date]) challengesByDate[c.date] = {};
-    challengesByDate[c.date][c.gameType] = c;
-  });
-
-  const getCardName = (cardId: number) => {
-    const card = cards.find((c: { id: number; name: string }) => c.id === cardId);
-    return card?.name || `Card #${cardId}`;
-  };
+  const filteredCardsForEdit = cardSearch.length >= 1
+    ? cards.filter((c: { id: number; name: string }) =>
+        c.name.toLowerCase().includes(cardSearch.toLowerCase())
+      ).slice(0, 15)
+    : cards.slice(0, 15);
 
   if (authLoading || loading) {
     return (
@@ -188,16 +202,12 @@ export default function DailyAdminPage() {
     );
   }
 
-  if (!user || user.role !== 'admin') {
-    return null;
-  }
+  if (!user || user.role !== 'admin') return null;
 
   return (
     <div className="min-h-screen relative flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Dark Overlay */}
       <div className="fixed inset-0 bg-black/30 pointer-events-none z-0" />
 
-      {/* Content */}
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header */}
         <header className="bg-slate-900/95 border-b border-amber-900/30 sticky top-0 z-20">
@@ -210,204 +220,219 @@ export default function DailyAdminPage() {
               <span className="text-slate-600">/</span>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-amber-400" />
-                <h1 className="text-base sm:text-lg md:text-xl font-black text-amber-400 tracking-wider">
+                <h1 className="text-base sm:text-lg font-black text-amber-400 tracking-wider">
                   DAILY CHALLENGES
                 </h1>
               </div>
             </div>
 
-            <button
-              onClick={handleAutoFill}
-              disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-slate-900 font-bold rounded-lg hover:from-cyan-400 hover:to-cyan-500 shadow-lg shadow-cyan-500/20 text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5" />
-              )}
-              <span className="hidden sm:inline">{saving ? 'Processing...' : 'Auto-fill 30 Days'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={fetchChallenges}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 text-slate-200 font-bold rounded-lg hover:bg-slate-600 text-xs transition-all disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                onClick={handleAutoFill}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-slate-900 font-bold rounded-lg hover:from-cyan-400 hover:to-cyan-500 shadow-lg shadow-cyan-500/20 text-xs transition-all disabled:opacity-50"
+              >
+                {saving ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5" />
+                )}
+                <span className="hidden sm:inline">{saving ? 'Processing...' : 'Auto-fill 30d'}</span>
+              </button>
+            </div>
           </div>
         </header>
 
-        <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 flex-1 max-w-5xl">
+        <main className="container mx-auto px-3 sm:px-4 py-6 flex-1 max-w-6xl">
           {/* Message Toast */}
           {message && (
-            <div 
-              className={`mb-6 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 ${
-                messageType === 'error' 
-                  ? 'bg-red-500/10 text-red-300 border border-red-500/30' 
+            <div
+              className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 ${
+                messageType === 'error'
+                  ? 'bg-red-500/10 text-red-300 border border-red-500/30'
                   : 'bg-green-500/10 text-green-300 border border-green-500/30'
               }`}
-              style={{
-                boxShadow: messageType === 'error' 
-                  ? '0 0 20px rgba(239, 68, 68, 0.15)' 
-                  : '0 0 20px rgba(34, 197, 94, 0.15)'
-              }}
             >
               {messageType === 'success' ? '✓' : '✕'} {message}
             </div>
           )}
 
-          {/* Add/Edit Challenge Form */}
-          <div 
-            className="relative mb-8 p-5 sm:p-6 rounded-xl sm:rounded-2xl overflow-hidden"
+          {/* Calendar Table */}
+          <div
+            className="relative rounded-xl overflow-hidden"
             style={{
               background: 'linear-gradient(180deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
               border: '2px solid rgba(60, 90, 140, 0.4)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
             }}
           >
-            {/* Decorative corners */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-amber-400/40 rounded-tl-xl" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-amber-400/40 rounded-tr-xl" />
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-amber-400/40 rounded-bl-xl" />
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-amber-400/40 rounded-br-xl" />
-
-            <h2 className="text-cyan-400 font-bold mb-5 uppercase tracking-wider text-xs flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Add / Edit Challenge
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-slate-400 text-[10px] mb-2 uppercase tracking-wider font-bold">Date</label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().slice(0, 10)}
-                  className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700/60 rounded-lg text-white text-sm focus:border-cyan-400/60 focus:outline-none transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-400 text-[10px] mb-2 uppercase tracking-wider font-bold">Game</label>
-                <select
-                  value={selectedGame}
-                  onChange={(e) => setSelectedGame(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700/60 rounded-lg text-white text-sm focus:border-cyan-400/60 focus:outline-none transition-colors"
-                >
-                  {GAME_TYPES.map(g => (
-                    <option key={g} value={g}>{GAME_LABELS[g]}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-slate-400 text-[10px] mb-2 uppercase tracking-wider font-bold">Card</label>
-                <select
-                  value={selectedCard}
-                  onChange={(e) => setSelectedCard(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 bg-slate-900/80 border border-slate-700/60 rounded-lg text-white text-sm focus:border-cyan-400/60 focus:outline-none transition-colors"
-                >
-                  {cards.map((card: { id: number; name: string }) => (
-                    <option key={card.id} value={card.id}>{card.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-end">
-                <button
-                  onClick={handleSaveChallenge}
-                  disabled={saving || !selectedDate}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-bold text-sm rounded-lg hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Challenges Table */}
-          <div 
-            className="relative rounded-xl sm:rounded-2xl overflow-hidden"
-            style={{
-              background: 'linear-gradient(180deg, rgba(25, 40, 65, 0.95) 0%, rgba(15, 28, 50, 0.98) 100%)',
-              border: '2px solid rgba(60, 90, 140, 0.4)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
-            }}
-          >
-            {/* Decorative corners */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-amber-400/40 rounded-tl-xl pointer-events-none z-10" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-amber-400/40 rounded-tr-xl pointer-events-none z-10" />
-
-            <div className="p-4 border-b border-slate-700/40 flex items-center justify-between">
-              <h2 className="text-amber-400 font-bold uppercase tracking-wider text-xs flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Upcoming Challenges
-              </h2>
-              <span className="text-slate-500 text-[10px] uppercase tracking-wider">
-                {Object.keys(challengesByDate).length} days configured
-              </span>
-            </div>
-
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-700/30 bg-slate-900/50">
-                    <th className="px-4 py-3 text-left text-slate-400 text-[10px] uppercase tracking-wider font-bold">Date</th>
+                  <tr className="border-b border-slate-700/30 bg-slate-900/70">
+                    <th className="px-3 py-3 text-left text-slate-400 text-[10px] uppercase tracking-wider font-bold w-[140px] sticky left-0 bg-slate-900/95 z-10">
+                      Date
+                    </th>
                     {GAME_TYPES.map(g => (
-                      <th key={g} className="px-4 py-3 text-left text-[10px] uppercase tracking-wider font-bold text-cyan-400">
+                      <th key={g} className="px-3 py-3 text-left text-[10px] uppercase tracking-wider font-bold text-cyan-400 min-w-[180px]">
                         {GAME_LABELS[g]}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.keys(challengesByDate).sort().map((date, idx) => (
-                    <tr 
-                      key={date} 
-                      className={`border-b border-slate-700/20 hover:bg-cyan-400/5 transition-colors ${
-                        idx % 2 === 0 ? 'bg-slate-900/20' : ''
-                      }`}
-                    >
-                      <td className="px-4 py-3 text-white text-sm font-medium">
-                        {new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                      </td>
-                      {GAME_TYPES.map(g => {
-                        const challenge = challengesByDate[date]?.[g];
-                        return (
-                          <td key={g} className="px-4 py-3">
-                            {challenge ? (
-                              <button
-                                onClick={() => {
-                                  setSelectedDate(date);
-                                  setSelectedGame(g);
-                                  setSelectedCard(challenge.cardId);
-                                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
-                                className="text-slate-300 text-sm hover:text-amber-400 transition-colors flex items-center gap-1.5"
-                              >
-                                <img 
-                                  src={`/images/cards/${challenge.cardId}.webp`}
-                                  alt=""
-                                  className="w-6 h-6 rounded object-contain bg-slate-800/50"
-                                />
-                                <span className="hidden sm:inline">{getCardName(challenge.cardId)}</span>
-                              </button>
-                            ) : (
-                              <span className="text-slate-600 text-sm">—</span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                  {Object.keys(challengesByDate).length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-12 text-center">
-                        <div className="text-slate-500 text-sm mb-2">No challenges configured</div>
-                        <div className="text-slate-600 text-xs">Click &quot;Auto-fill 30 Days&quot; to generate default challenges</div>
-                      </td>
-                    </tr>
-                  )}
+                  {dates.map((date) => {
+                    const isToday = date === today;
+                    const isPast = date < today;
+
+                    return (
+                      <tr
+                        key={date}
+                        className={`border-b border-slate-700/20 transition-colors ${
+                          isToday
+                            ? 'bg-amber-500/10 border-amber-500/30'
+                            : isPast
+                            ? 'bg-slate-900/40 opacity-60'
+                            : 'hover:bg-cyan-400/5'
+                        }`}
+                      >
+                        <td className={`px-3 py-2.5 text-sm font-medium sticky left-0 z-10 ${
+                          isToday
+                            ? 'text-amber-400 font-bold bg-amber-500/10'
+                            : isPast
+                            ? 'text-slate-500 bg-slate-900/80'
+                            : 'text-white bg-slate-900/80'
+                        }`}>
+                          <div className="flex items-center gap-1.5">
+                            {isToday && <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">HOY</span>}
+                            <span className="whitespace-nowrap">{formatDate(date)}</span>
+                          </div>
+                        </td>
+                        {GAME_TYPES.map(g => {
+                          const challenge = getChallenge(date, g);
+                          const isEditing = editingCell?.date === date && editingCell?.gameType === g;
+                          const canEdit = !isPast;
+
+                          if (isEditing) {
+                            return (
+                              <td key={g} className="px-2 py-1.5">
+                                <div className="flex flex-col gap-1.5 min-w-[200px]">
+                                  <input
+                                    type="text"
+                                    placeholder="Search card..."
+                                    value={cardSearch}
+                                    onChange={(e) => setCardSearch(e.target.value)}
+                                    className="w-full px-2 py-1.5 bg-slate-800 border border-cyan-500/40 rounded text-white text-xs focus:outline-none focus:border-cyan-400"
+                                    autoFocus
+                                  />
+                                  <div className="max-h-[200px] overflow-y-auto bg-slate-800 rounded border border-slate-700/50">
+                                    {filteredCardsForEdit.map((card: { id: number; name: string }) => (
+                                      <button
+                                        key={card.id}
+                                        onClick={() => setEditCardId(card.id)}
+                                        className={`w-full flex items-center gap-2 px-2 py-1 hover:bg-cyan-500/10 transition-colors text-left ${
+                                          editCardId === card.id ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-300'
+                                        }`}
+                                      >
+                                        <img
+                                          src={`/images/cards/${card.id}.webp`}
+                                          alt=""
+                                          className="w-5 h-5 rounded object-contain bg-slate-700/50"
+                                        />
+                                        <span className="text-[11px] truncate">{card.name}</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={() => handleSave(date, g, editCardId)}
+                                      disabled={saving}
+                                      className="flex-1 flex items-center justify-center gap-1 px-2 py-1 bg-green-600 text-white text-[10px] font-bold rounded hover:bg-green-500 disabled:opacity-50"
+                                    >
+                                      <Save className="w-3 h-3" />
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={() => { setEditingCell(null); setCardSearch(''); }}
+                                      className="px-2 py-1 bg-slate-700 text-slate-300 text-[10px] font-bold rounded hover:bg-slate-600"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            );
+                          }
+
+                          return (
+                            <td key={g} className="px-3 py-2.5">
+                              {challenge ? (
+                                <button
+                                  onClick={() => {
+                                    if (!canEdit) return;
+                                    setEditingCell({ date, gameType: g });
+                                    setEditCardId(challenge.cardId);
+                                    setCardSearch('');
+                                  }}
+                                  disabled={!canEdit}
+                                  className={`flex items-center gap-2 transition-colors ${
+                                    canEdit
+                                      ? 'text-slate-300 hover:text-amber-400 cursor-pointer'
+                                      : 'text-slate-500 cursor-default'
+                                  }`}
+                                >
+                                  <img
+                                    src={`/images/cards/${challenge.cardId}.webp`}
+                                    alt=""
+                                    className="w-7 h-8 rounded object-contain bg-slate-800/50"
+                                  />
+                                  <span className="text-xs hidden sm:inline">{getCardName(challenge.cardId)}</span>
+                                </button>
+                              ) : canEdit ? (
+                                <button
+                                  onClick={() => {
+                                    setEditingCell({ date, gameType: g });
+                                    setEditCardId(1);
+                                    setCardSearch('');
+                                  }}
+                                  className="text-slate-600 text-xs hover:text-cyan-400 transition-colors border border-dashed border-slate-700 rounded px-2 py-1 hover:border-cyan-500/50"
+                                >
+                                  + Add
+                                </button>
+                              ) : (
+                                <span className="text-slate-700 text-xs">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+          </div>
 
-            {/* Decorative bottom corners */}
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-amber-400/40 rounded-bl-xl pointer-events-none z-10" />
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-amber-400/40 rounded-br-xl pointer-events-none z-10" />
+          {/* Legend */}
+          <div className="mt-4 flex items-center gap-4 text-[10px] text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-amber-500/20 border border-amber-500/40" />
+              Hoy
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-slate-900/60 border border-slate-700/40 opacity-70" />
+              Pasado (solo lectura)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-slate-900/40 border border-slate-700/40" />
+              Futuro (editable)
+            </span>
           </div>
         </main>
       </div>

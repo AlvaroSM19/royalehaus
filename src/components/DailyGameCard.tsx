@@ -14,7 +14,7 @@ interface DailyGame {
   color: string;
 }
 
-// Check if a daily game has been completed today (localStorage - fuente única)
+// Check if a daily game has been completed today (localStorage)
 function isDailyCompleted(gameId: string): boolean {
   if (typeof window === 'undefined') return false;
   
@@ -22,6 +22,17 @@ function isDailyCompleted(gameId: string): boolean {
   const lastDaily = localStorage.getItem(`${gameId}-last-daily`);
   
   return lastDaily === today;
+}
+
+// Sync a DB completion into localStorage so other checks pick it up
+function syncCompletionToLocalStorage(gameId: string, won: boolean, attempts: number, cardId?: number) {
+  const today = new Date().toISOString().slice(0, 10);
+  localStorage.setItem(`${gameId}-last-daily`, today);
+  localStorage.setItem(`${gameId}-daily-result`, JSON.stringify({
+    won,
+    guesses: attempts,
+    cardId: cardId || 0,
+  }));
 }
 
 // Calculate time until midnight UTC
@@ -51,18 +62,19 @@ function formatCountdown(time: { hours: number; minutes: number; seconds: number
 
 interface DailyGameCardProps {
   game: DailyGame;
+  dbCompleted?: boolean;
 }
 
-export function DailyGameCard({ game }: DailyGameCardProps) {
+export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
   const [completed, setCompleted] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [mounted, setMounted] = useState(false);
 
-  // Check completion status - solo localStorage (fuente única)
+  // Check completion status - localStorage first, then DB override
   const checkCompletion = useCallback(() => {
-    const isCompleted = isDailyCompleted(game.id);
+    const isCompleted = isDailyCompleted(game.id) || !!dbCompleted;
     setCompleted(isCompleted);
-  }, [game.id]);
+  }, [game.id, dbCompleted]);
 
   useEffect(() => {
     setMounted(true);
@@ -214,10 +226,30 @@ interface DailyGamesGridProps {
 }
 
 export function DailyGamesGrid({ games }: DailyGamesGridProps) {
+  const [dbCompletions, setDbCompletions] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    // Fetch completion status from DB for logged-in users
+    fetch('/api/daily/completions', { credentials: 'include' })
+      .then(res => res.ok ? res.json() : { completions: {} })
+      .then(data => {
+        const completions: Record<string, boolean> = {};
+        for (const [gameType, info] of Object.entries(data.completions || {})) {
+          if ((info as any)?.completed) {
+            completions[gameType] = true;
+            // Sync to localStorage so game pages also know
+            syncCompletionToLocalStorage(gameType, (info as any).won, (info as any).attempts);
+          }
+        }
+        setDbCompletions(completions);
+      })
+      .catch(() => {}); // Silently fail - localStorage still works
+  }, []);
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {games.map((game) => (
-        <DailyGameCard key={game.id} game={game} />
+        <DailyGameCard key={game.id} game={game} dbCompleted={dbCompletions[game.id]} />
       ))}
     </div>
   );

@@ -164,15 +164,32 @@ export default function RoyaledlePage() {
       } catch (e) { /* continue */ }
     }
     
-    // Not completed - try API, fallback to local
+    // Not completed locally - try API, which also returns DB participation
     let cardToUse: ClashCard | null = null;
     
     try {
-      const response = await fetch('/api/daily?game=royaledle');
+      const response = await fetch('/api/daily?game=royaledle', { credentials: 'include' });
       if (response.ok) {
         const challenge = await response.json();
         if (challenge?.cardId) {
           cardToUse = baseCards.find(c => c.id === challenge.cardId) || null;
+        }
+        // Check if user already completed this from another device
+        if (challenge?.participation?.completed && cardToUse) {
+          const today = new Date().toISOString().slice(0, 10);
+          localStorage.setItem('royaledle-last-daily', today);
+          localStorage.setItem('royaledle-daily-result', JSON.stringify({
+            won: challenge.participation.won,
+            guesses: challenge.participation.attempts,
+            cardId: cardToUse.id,
+          }));
+          setDailyCompleted(true);
+          setDailyResult({ won: challenge.participation.won, guesses: challenge.participation.attempts, cardId: cardToUse.id });
+          setDailyStreak(getDailyStreakData());
+          setTargetCard(cardToUse);
+          setGameOver(true);
+          setWon(challenge.participation.won);
+          return;
         }
       }
     } catch (e) { /* API failed, use fallback */ }
