@@ -76,32 +76,32 @@ export default function CardsPage() {
   }
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen py-4 sm:py-8">
+      <div className="container mx-auto px-3 sm:px-4">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">
+        <div className="text-center mb-5 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold mb-2 sm:mb-4 tracking-tight">
             <span className="bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
               CARDS WIKI
             </span>
           </h1>
-          <p className="text-blue-200/70 text-lg max-w-2xl mx-auto">
+          <p className="text-blue-200/70 text-sm sm:text-lg max-w-2xl mx-auto">
             Browse all {cardsData.length} Clash Royale cards. Filter and search to find what you need.
           </p>
         </div>
 
         {/* Filters Section */}
-        <div className="bg-blue-900/30 border border-blue-700/30 rounded-2xl p-6 mb-8 backdrop-blur-sm">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="bg-blue-900/30 border border-blue-700/30 rounded-xl sm:rounded-2xl p-3 sm:p-6 mb-5 sm:mb-8 backdrop-blur-sm">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-3 sm:mb-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
               <input
                 type="text"
                 placeholder="Search cards..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-blue-950/50 border border-blue-700/50 rounded-xl text-blue-100 placeholder-blue-400/50 focus:outline-none focus:border-yellow-400/50 transition-colors"
+                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 bg-blue-950/50 border border-blue-700/50 rounded-lg sm:rounded-xl text-blue-100 placeholder-blue-400/50 focus:outline-none focus:border-yellow-400/50 transition-colors text-sm sm:text-base"
               />
             </div>
 
@@ -110,14 +110,14 @@ export default function CardsPage() {
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value as CardType | 'all')}
-                className="w-full px-4 py-3 bg-blue-950/50 border border-blue-700/50 rounded-xl text-blue-100 focus:outline-none focus:border-yellow-400/50 appearance-none cursor-pointer"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-950/50 border border-blue-700/50 rounded-lg sm:rounded-xl text-blue-100 focus:outline-none focus:border-yellow-400/50 appearance-none cursor-pointer text-sm sm:text-base"
               >
                 <option value="all">All Types</option>
                 {cardTypes.map(type => (
                   <option key={type} value={type}>{TYPE_ICONS[type]} {type}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-blue-400 pointer-events-none" />
             </div>
 
             {/* Rarity Filter */}
@@ -125,14 +125,14 @@ export default function CardsPage() {
               <select
                 value={selectedRarity}
                 onChange={(e) => setSelectedRarity(e.target.value as CardRarity | 'all')}
-                className="w-full px-4 py-3 bg-blue-950/50 border border-blue-700/50 rounded-xl text-blue-100 focus:outline-none focus:border-yellow-400/50 appearance-none cursor-pointer"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-950/50 border border-blue-700/50 rounded-lg sm:rounded-xl text-blue-100 focus:outline-none focus:border-yellow-400/50 appearance-none cursor-pointer text-sm sm:text-base"
               >
                 <option value="all">All Rarities</option>
                 {cardRarities.map(rarity => (
                   <option key={rarity} value={rarity}>{rarity}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-blue-400 pointer-events-none" />
             </div>
 
             {/* Elixir Filter */}
@@ -140,36 +140,36 @@ export default function CardsPage() {
               <select
                 value={selectedElixir}
                 onChange={(e) => setSelectedElixir(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                className="w-full px-4 py-3 bg-blue-950/50 border border-blue-700/50 rounded-xl text-blue-100 focus:outline-none focus:border-yellow-400/50 appearance-none cursor-pointer"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-950/50 border border-blue-700/50 rounded-lg sm:rounded-xl text-blue-100 focus:outline-none focus:border-yellow-400/50 appearance-none cursor-pointer text-sm sm:text-base"
               >
                 <option value="all">All Elixir</option>
                 {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(elixir => (
                   <option key={elixir} value={elixir}>💧 {elixir} Elixir</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-blue-400 pointer-events-none" />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             {/* Evolution Toggle */}
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={showEvolutionsOnly}
                 onChange={(e) => setShowEvolutionsOnly(e.target.checked)}
-                className="w-5 h-5 rounded bg-blue-950/50 border border-blue-700/50 text-yellow-400 focus:ring-yellow-400/50"
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded bg-blue-950/50 border border-blue-700/50 text-yellow-400 focus:ring-yellow-400/50"
               />
-              <span className="text-blue-200/80 text-sm">Has Evolution 🧬</span>
+              <span className="text-blue-200/80 text-xs sm:text-sm">Has Evolution 🧬</span>
             </label>
 
             {/* Sort By */}
-            <div className="flex items-center gap-2 ml-auto">
-              <span className="text-blue-200/60 text-sm">Sort by:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+              <span className="text-blue-200/60 text-xs sm:text-sm">Sort:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="px-3 py-1.5 bg-blue-950/50 border border-blue-700/50 rounded-lg text-blue-100 text-sm focus:outline-none focus:border-yellow-400/50"
+                className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-950/50 border border-blue-700/50 rounded-lg text-blue-100 text-xs sm:text-sm focus:outline-none focus:border-yellow-400/50"
               >
                 <option value="name">Name</option>
                 <option value="elixir">Elixir</option>
@@ -179,14 +179,14 @@ export default function CardsPage() {
             </div>
 
             {/* Results count */}
-            <span className="text-blue-200/60 text-sm">
-              {filteredCards.length} cards found
+            <span className="text-blue-200/60 text-xs sm:text-sm">
+              {filteredCards.length} cards
             </span>
           </div>
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
           {filteredCards.map(card => {
             const rarityColors = getRarityColor(card.rarity)
             
@@ -207,12 +207,12 @@ export default function CardsPage() {
                 </div>
                 
                 {/* Card Info */}
-                <div className="p-3">
-                  <h3 className="text-sm font-bold text-blue-50 truncate group-hover:text-yellow-300 transition-colors">
+                <div className="p-1.5 sm:p-3">
+                  <h3 className="text-[10px] sm:text-sm font-bold text-blue-50 truncate group-hover:text-yellow-300 transition-colors">
                     {getCardNameTranslated(card.id)}
                   </h3>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${rarityColors.bg} ${rarityColors.text}`}>
+                  <div className="flex items-center justify-between mt-0.5 sm:mt-1">
+                    <span className={`text-[8px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded ${rarityColors.bg} ${rarityColors.text}`}>
                       {card.rarity}
                     </span>
                   </div>

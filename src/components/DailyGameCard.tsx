@@ -141,7 +141,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
     >
       {/* Daily badge or Completed badge */}
       <div 
-        className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+        className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[10px] font-bold uppercase tracking-wider flex items-center gap-0.5 sm:gap-1"
         style={{
           background: completed 
             ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.4))'
@@ -163,7 +163,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-[16/9] overflow-hidden">
+      <div className="relative aspect-[4/3] xs:aspect-[16/9] overflow-hidden">
         <Image
           src={game.image}
           alt={game.title}
@@ -184,7 +184,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
 
       {/* Content */}
       <div 
-        className="py-3 px-4"
+        className="py-2 sm:py-3 px-2 sm:px-4"
         style={{
           background: completed
             ? 'linear-gradient(90deg, rgba(30, 30, 30, 0.95) 0%, rgba(40, 40, 40, 0.95) 50%, rgba(30, 30, 30, 0.95) 100%)'
@@ -195,7 +195,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
         }}
       >
         <h3 
-          className="text-center text-[12px] font-extrabold tracking-[0.2em] uppercase"
+          className="text-center text-[10px] xs:text-[11px] sm:text-[12px] font-extrabold tracking-[0.1em] sm:tracking-[0.2em] uppercase"
           style={{
             background: completed
               ? 'linear-gradient(180deg, #a0a0a0 0%, #707070 100%)'
@@ -209,12 +209,12 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
         </h3>
         
         {completed ? (
-          <div className="flex items-center justify-center gap-1.5 text-gray-300 text-[11px] mt-1.5 bg-black/20 rounded-full px-2.5 py-0.5 mx-auto w-fit">
-            <Clock className="w-3 h-3" />
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5 text-gray-300 text-[9px] sm:text-[11px] mt-1 sm:mt-1.5 bg-black/20 rounded-full px-2 sm:px-2.5 py-0.5 mx-auto w-fit">
+            <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             <span>Next in {countdown}</span>
           </div>
         ) : (
-          <p className="text-center text-amber-100/70 text-[11px] mt-1.5 font-medium">{game.description}</p>
+          <p className="text-center text-amber-100/70 text-[9px] sm:text-[11px] mt-1 sm:mt-1.5 font-medium line-clamp-1 sm:line-clamp-none">{game.description}</p>
         )}
       </div>
     </Link>
@@ -247,7 +247,7 @@ export function DailyGamesGrid({ games }: DailyGamesGridProps) {
   }, []);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="daily-games-grid grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 gap-2.5 sm:gap-4">
       {games.map((game) => (
         <DailyGameCard key={game.id} game={game} dbCompleted={dbCompletions[game.id]} />
       ))}

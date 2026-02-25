@@ -174,41 +174,41 @@ export default function RootLayout({
           </header>
 
           {/* Haus Universe Bar */}
-          <div className="w-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-amber-900/30">
-            <div className="container flex items-center justify-center gap-3 py-1.5 px-4">
-              <div className="flex items-center gap-3">
+          <div className="w-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-amber-900/30 overflow-hidden">
+            <div className="container flex items-center justify-center gap-3 py-1.5 px-2 sm:px-4">
+              <div className="haus-bar-links flex items-center gap-2 sm:gap-3 whitespace-nowrap">
                 {/* OnePieceHaus */}
                 <a 
                   href="https://onepiecehaus.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-amber-500/10 transition group"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md hover:bg-amber-500/10 transition group"
                 >
-                  <img src="/images/onepiece-logo.svg" alt="" className="w-5 h-5" />
-                  <span className="text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent group-hover:from-amber-200 group-hover:to-yellow-100">ONEPIECEHAUS</span>
+                  <img src="/images/onepiece-logo.svg" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent group-hover:from-amber-200 group-hover:to-yellow-100">ONEPIECEHAUS</span>
                 </a>
                 
-                <span className="text-amber-700/50">•</span>
+                <span className="text-amber-700/50 text-xs">•</span>
                 
                 {/* RoyaleHaus (current) */}
                 <a 
                   href="/"
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/25"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/25"
                 >
-                  <img src="/favicon-cr.png" alt="" className="w-5 h-5" />
-                  <span className="text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">ROYALEHAUS</span>
+                  <img src="/favicon-cr.png" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">ROYALEHAUS</span>
                 </a>
 
-                <span className="text-amber-700/50">•</span>
+                <span className="text-amber-700/50 text-xs">•</span>
 
                 {/* JJKHaus */}
                 <a 
                   href="https://jujutsukaisenhaus-jujutsu-f3r2po-cddd1f-72-62-237-156.traefik.me/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md hover:bg-purple-500/15 transition group"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md hover:bg-purple-500/15 transition group"
                 >
-                  <span className="text-xs font-bold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-200 to-purple-400 bg-clip-text text-transparent group-hover:from-purple-200 group-hover:to-fuchsia-100">JJKHAUS</span>
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-200 to-purple-400 bg-clip-text text-transparent group-hover:from-purple-200 group-hover:to-fuchsia-100">JJKHAUS</span>
                 </a>
               </div>
             </div>
@@ -218,9 +218,9 @@ export default function RootLayout({
             {children}
           </main>
           
-          <footer className="py-6 md:px-8 md:py-0">
-            <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-              <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
+          <footer className="py-4 sm:py-6 px-4 md:px-8 md:py-0">
+            <div className="container flex flex-col items-center justify-between gap-3 sm:gap-4 md:h-24 md:flex-row">
+              <p className="text-center text-xs sm:text-sm leading-loose text-muted-foreground md:text-left">
                 Built by{" "}
                 <a
                   href="https://github.com/royalehaus"
@@ -233,10 +233,10 @@ export default function RootLayout({
                 . Fan project - Not affiliated with Supercell.
               </p>
               <div className="flex items-center space-x-4">
-                <a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
+                <a href="/privacy" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                   Privacy
                 </a>
-                <a href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
+                <a href="/terms" className="text-xs sm:text-sm text-muted-foreground hover:text-foreground">
                   Terms
                 </a>
               </div>

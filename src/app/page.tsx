@@ -78,9 +78,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Daily Games Section */}
-      <section className="px-6 sm:px-10 pt-10 pb-8">
+      <section className="px-3 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-6 sm:pb-8">
         <div 
-          className="max-w-[1100px] mx-auto rounded-2xl p-6 sm:p-8"
+          className="daily-section max-w-[1100px] mx-auto rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8"
           style={{
             background: 'linear-gradient(180deg, rgba(10, 8, 5, 0.95) 0%, rgba(18, 14, 8, 0.97) 50%, rgba(10, 8, 5, 0.95) 100%)',
             backdropFilter: 'blur(12px)',
@@ -89,7 +89,7 @@ export default function HomePage() {
           }}
         >
           {/* Section Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-4 sm:mb-8">
             <div className="inline-flex items-center gap-3 mb-3">
               <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200, 165, 70, 0.6))' }} />
               <span className="text-[11px] font-bold uppercase tracking-[0.4em] text-amber-400/70 flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
@@ -101,7 +101,7 @@ export default function HomePage() {
               <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.6), transparent)' }} />
             </div>
             <h2 
-              className="text-2xl sm:text-3xl font-black uppercase tracking-[0.2em]"
+              className="text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.1em] sm:tracking-[0.2em]"
               style={{
                 background: 'linear-gradient(180deg, #ffe6a0 0%, #d4a843 40%, #a07830 100%)',
                 WebkitBackgroundClip: 'text',
@@ -112,7 +112,7 @@ export default function HomePage() {
               Daily Challenges
             </h2>
             <p 
-              className="mt-3 text-sm font-semibold px-5 py-2 rounded-full inline-block bg-black/50 border border-amber-500/30 text-amber-100"
+              className="mt-2 sm:mt-3 text-xs sm:text-sm font-semibold px-3 sm:px-5 py-1.5 sm:py-2 rounded-full inline-block bg-black/50 border border-amber-500/30 text-amber-100"
               style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
             >
               One attempt per day • Build your streak!
@@ -125,51 +125,51 @@ export default function HomePage() {
       </section>
 
       {/* Divider */}
-      <div className="px-6 sm:px-10">
+      <div className="px-3 sm:px-6 lg:px-10">
         <div className="max-w-[1100px] mx-auto">
           <div className="h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(180, 140, 60, 0.3), transparent)' }} />
         </div>
       </div>
 
       {/* Games Grid */}
-      <section className="px-6 sm:px-10 pt-8 pb-20">
+      <section className="px-3 sm:px-6 lg:px-10 pt-6 sm:pt-8 pb-12 sm:pb-20">
         <div className="max-w-[1100px] mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="home-games-grid grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-5">
             {games.map((game) => (
               <Link
                 key={game.id}
                 href={game.href}
-                className="group block rounded-xl overflow-hidden relative transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_8px_40px_rgba(245,180,50,0.15)]"
+                className="home-game-card group block rounded-lg sm:rounded-xl overflow-hidden relative transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_8px_40px_rgba(245,180,50,0.15)]"
                 style={{
                   border: '2px solid rgba(180, 140, 60, 0.35)',
                   background: 'linear-gradient(180deg, rgba(30, 25, 18, 0.6) 0%, rgba(20, 18, 12, 0.8) 100%)',
                 }}
               >
                 {/* Image */}
-                <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden">
                   <Image
                     src={game.image}
                     alt={game.title}
                     fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   />
                   {/* Gradient overlay on image bottom */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                   {/* Hover shine */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/0 via-amber-300/0 to-amber-200/0 group-hover:from-amber-400/5 group-hover:via-amber-300/10 group-hover:to-amber-200/5 transition-all duration-500" />
                 </div>
 
                 {/* Title bar */}
                 <div 
-                  className="py-3 px-4"
+                  className="game-title-bar py-2 sm:py-3 px-2 sm:px-4"
                   style={{
                     background: 'linear-gradient(90deg, rgba(42, 35, 22, 0.95) 0%, rgba(55, 45, 28, 0.95) 50%, rgba(42, 35, 22, 0.95) 100%)',
                     borderTop: '1px solid rgba(180, 140, 60, 0.25)',
                   }}
                 >
                   <h3 
-                    className="text-center text-[13px] font-extrabold tracking-[0.25em] uppercase"
+                    className="text-center text-[0.6rem] xs:text-[0.7rem] sm:text-[13px] font-extrabold tracking-[0.15em] sm:tracking-[0.25em] uppercase"
                     style={{
                       background: 'linear-gradient(180deg, #f5d485 0%, #c9a44a 100%)',
                       WebkitBackgroundClip: 'text',
@@ -188,7 +188,7 @@ export default function HomePage() {
       </section>
 
       {/* Cards Wiki Section */}
-      <section className="px-6 sm:px-10 pb-16">
+      <section className="px-3 sm:px-6 lg:px-10 pb-10 sm:pb-16">
         <div className="max-w-[1100px] mx-auto">
           <div 
             className="relative rounded-xl overflow-hidden"
@@ -208,7 +208,7 @@ export default function HomePage() {
               style={{ background: 'radial-gradient(ellipse at center top, rgba(200, 165, 70, 0.06) 0%, transparent 70%)' }}
             />
 
-            <div className="relative px-8 py-10 sm:px-12 sm:py-12">
+            <div className="wiki-section relative px-4 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
               {/* Header */}
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-3 mb-4">
@@ -217,7 +217,7 @@ export default function HomePage() {
                   <div className="w-8 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.5), transparent)' }} />
                 </div>
                 <h2 
-                  className="text-3xl sm:text-4xl font-black uppercase tracking-[0.15em]"
+                  className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-[0.1em] sm:tracking-[0.15em]"
                   style={{
                     background: 'linear-gradient(180deg, #ffe6a0 0%, #d4a843 40%, #a07830 100%)',
                     WebkitBackgroundClip: 'text',
@@ -227,13 +227,13 @@ export default function HomePage() {
                 >
                   Cards Wiki
                 </h2>
-                <p className="text-amber-100/30 mt-3 text-sm tracking-wide font-medium">
+                <p className="text-amber-100/30 mt-2 sm:mt-3 text-xs sm:text-sm tracking-wide font-medium">
                   168 cards from the complete Clash Royale universe
                 </p>
               </div>
 
               {/* Stats grid */}
-              <div className="grid grid-cols-4 gap-3 sm:gap-4 mb-10">
+              <div className="wiki-stats-grid grid grid-cols-4 gap-1.5 xs:gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-10">
                 {[
                   { count: '79', label: 'Troops', accent: '#4ade80' },
                   { count: '21', label: 'Spells', accent: '#60a5fa' },
@@ -254,12 +254,12 @@ export default function HomePage() {
                       style={{ background: `linear-gradient(90deg, transparent, ${stat.accent}40, transparent)` }}
                     />
                     <div 
-                      className="text-3xl sm:text-4xl font-black"
+                      className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-black"
                       style={{ color: stat.accent, filter: `drop-shadow(0 0 8px ${stat.accent}30)` }}
                     >
                       {stat.count}
                     </div>
-                    <div className="text-amber-100/30 text-[10px] sm:text-xs uppercase tracking-[0.25em] mt-2 font-bold">
+                    <div className="text-amber-100/30 text-[8px] xs:text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.25em] mt-1 sm:mt-2 font-bold">
                       {stat.label}
                     </div>
                   </div>

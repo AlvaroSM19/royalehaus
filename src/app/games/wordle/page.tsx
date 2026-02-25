@@ -321,7 +321,7 @@ export default function WordlePage() {
         {/* Game Over Modal - Shows at top */}
         {gameOver && targetCard && (
           <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-            <div className={`max-w-md w-full rounded-2xl p-8 text-center ${won ? 'bg-gradient-to-b from-green-900/90 to-green-950/90 border-2 border-green-500' : 'bg-gradient-to-b from-red-900/90 to-red-950/90 border-2 border-red-500'}`}>
+            <div className={`max-w-md w-full rounded-xl sm:rounded-2xl p-5 sm:p-8 text-center ${won ? 'bg-gradient-to-b from-green-900/90 to-green-950/90 border-2 border-green-500' : 'bg-gradient-to-b from-red-900/90 to-red-950/90 border-2 border-red-500'}`}>
               {/* Card Image */}
               <div className="mb-6">
                 <img 
@@ -333,16 +333,16 @@ export default function WordlePage() {
               
               {won ? (
                 <>
-                  <h2 className="text-3xl font-black text-green-400 mb-2 tracking-wide">VICTORY!</h2>
-                  <p className="text-gray-300 text-lg">
+                  <h2 className="text-2xl sm:text-3xl font-black text-green-400 mb-2 tracking-wide">VICTORY!</h2>
+                  <p className="text-gray-300 text-base sm:text-lg">
                     You guessed <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span>
                   </p>
                   <p className="text-gray-400 mt-1">in {guesses.length} {guesses.length === 1 ? 'try' : 'tries'}</p>
                 </>
               ) : (
                 <>
-                  <h2 className="text-3xl font-black text-red-400 mb-2 tracking-wide">GAME OVER</h2>
-                  <p className="text-gray-300 text-lg">
+                  <h2 className="text-2xl sm:text-3xl font-black text-red-400 mb-2 tracking-wide">GAME OVER</h2>
+                  <p className="text-gray-300 text-base sm:text-lg">
                     The word was <span className="text-yellow-400 font-bold">{getCardNameTranslated(targetCard.id)}</span>
                   </p>
                 </>
@@ -450,7 +450,7 @@ export default function WordlePage() {
                     return (
                       <div
                         key={colIndex}
-                        className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center text-xl md:text-2xl font-bold rounded-lg border-2 transition-all ${getCellClass(letter, colIndex, rowIndex, word)}`}
+                        className={`w-9 xs:w-10 sm:w-12 md:w-14 h-9 xs:h-10 sm:h-12 md:h-14 flex items-center justify-center text-base xs:text-lg sm:text-xl md:text-2xl font-bold rounded-md sm:rounded-lg border-2 transition-all ${getCellClass(letter, colIndex, rowIndex, word)}`}
                         style={revealRow === rowIndex ? { animationDelay: `${colIndex * 150}ms` } : {}}
                       >
                         {letter}
@@ -475,7 +475,7 @@ export default function WordlePage() {
                     key={key}
                     onClick={() => handleKeyPress(key)}
                     disabled={gameOver}
-                    className={`${key === 'ENTER' || key === 'BACK' ? 'px-3 md:px-4 text-xs' : 'w-11 md:w-14'} h-12 md:h-14 rounded-lg border-2 font-bold transition-all ${getKeyClass(key)} disabled:opacity-50`}
+                    className={`${key === 'ENTER' || key === 'BACK' ? 'px-2 sm:px-3 md:px-4 text-[10px] sm:text-xs' : 'w-8 xs:w-9 sm:w-11 md:w-14'} h-10 xs:h-11 sm:h-12 md:h-14 rounded-md sm:rounded-lg border-2 font-bold transition-all text-xs sm:text-sm ${getKeyClass(key)} disabled:opacity-50`}
                   >
                     {key === 'BACK' ? <Delete className="w-5 h-5 mx-auto" /> : key}
                   </button>
