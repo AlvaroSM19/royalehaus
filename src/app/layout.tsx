@@ -166,7 +166,7 @@ export default function RootLayout({
                   <WallpaperSelector />
                   <span className="hidden sm:inline-flex"><LevelBadge /></span>
                   <span className="hidden sm:inline-flex"><FeedbackModal /></span>
-                  <span className="hidden sm:inline-flex"><LanguageSelector /></span>
+                  <LanguageSelector />
                   <span className="hidden md:inline-flex"><AuthNav /></span>
                 </nav>
               </div>
