@@ -195,7 +195,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
         }}
       >
         <h3 
-          className="text-center text-[10px] xs:text-[11px] sm:text-[12px] font-extrabold tracking-[0.1em] sm:tracking-[0.2em] uppercase"
+          className="text-center text-[9px] xs:text-[10px] sm:text-[12px] font-extrabold tracking-[0.05em] xs:tracking-[0.1em] sm:tracking-[0.2em] uppercase"
           style={{
             background: completed
               ? 'linear-gradient(180deg, #a0a0a0 0%, #707070 100%)'
@@ -214,7 +214,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
             <span>Next in {countdown}</span>
           </div>
         ) : (
-          <p className="text-center text-amber-100/70 text-[9px] sm:text-[11px] mt-1 sm:mt-1.5 font-medium line-clamp-1 sm:line-clamp-none">{game.description}</p>
+          <p className="text-center text-amber-100/70 text-[8px] xs:text-[9px] sm:text-[11px] mt-0.5 sm:mt-1.5 font-medium line-clamp-2 sm:line-clamp-none">{game.description}</p>
         )}
       </div>
     </Link>

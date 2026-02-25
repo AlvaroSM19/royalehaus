@@ -369,9 +369,9 @@ export default function WordlePage() {
         )}
 
         {/* Game Area */}
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 flex flex-col items-center">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-6 flex flex-col items-center">
           {/* Hints Section */}
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-4 mb-3 sm:mb-6">
             {/* Rarity Hint - Unlocks at 3 attempts */}
             <div className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg border-2 transition-all ${
               guesses.length >= 3 
@@ -430,27 +430,27 @@ export default function WordlePage() {
           </div>
 
           {/* Word Length */}
-          <div className="text-gray-400 text-sm mb-4 flex items-center gap-2">
-            <span className="bg-gray-800/50 px-3 py-1 rounded-full border border-gray-700">
+          <div className="text-gray-400 text-xs sm:text-sm mb-2 sm:mb-4 flex items-center gap-2">
+            <span className="bg-gray-800/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-gray-700">
               {targetWord.length} letters
             </span>
           </div>
 
           {/* Grid */}
-          <div className={`flex flex-col gap-2 mb-6 ${shake ? 'animate-shake' : ''}`}>
+          <div className={`flex flex-col gap-1 sm:gap-2 mb-3 sm:mb-6 ${shake ? 'animate-shake' : ''}`}>
             {Array.from({ length: MAX_GUESSES }).map((_, rowIndex) => {
               const isCurrentRow = rowIndex === guesses.length;
               const word = rowIndex < guesses.length ? guesses[rowIndex] : isCurrentRow ? currentGuess : '';
               
               return (
-                <div key={rowIndex} className="flex gap-2 justify-center">
+                <div key={rowIndex} className="flex gap-1 sm:gap-2 justify-center">
                   {Array.from({ length: targetWord.length }).map((_, colIndex) => {
                     const letter = word[colIndex] || '';
                     
                     return (
                       <div
                         key={colIndex}
-                        className={`w-9 xs:w-10 sm:w-12 md:w-14 h-9 xs:h-10 sm:h-12 md:h-14 flex items-center justify-center text-base xs:text-lg sm:text-xl md:text-2xl font-bold rounded-md sm:rounded-lg border-2 transition-all ${getCellClass(letter, colIndex, rowIndex, word)}`}
+                        className={`w-7 xs:w-8 sm:w-12 md:w-14 h-7 xs:h-8 sm:h-12 md:h-14 flex items-center justify-center text-xs xs:text-sm sm:text-xl md:text-2xl font-bold rounded sm:rounded-lg border-2 transition-all ${getCellClass(letter, colIndex, rowIndex, word)}`}
                         style={revealRow === rowIndex ? { animationDelay: `${colIndex * 150}ms` } : {}}
                       >
                         {letter}
@@ -462,22 +462,18 @@ export default function WordlePage() {
             })}
           </div>
 
-          {/* Keyboard - horizontal scroll on mobile */}
-          <div className="flex flex-col gap-2 mt-2">
-            {/* Scroll hint for mobile */}
-            <div className="block sm:hidden text-center mb-1 select-none pointer-events-none">
-              <span className="inline-block bg-slate-900/80 text-cyan-300 text-xs px-3 py-1 rounded-full shadow-md animate-pulse">Desliza el teclado →</span>
-            </div>
+          {/* Keyboard */}
+          <div className="flex flex-col gap-1 sm:gap-2 mt-1 sm:mt-2">
             {KEYBOARD_ROWS.map((row, rowIndex) => (
-              <div key={rowIndex} className="flex gap-1 justify-center overflow-x-auto pb-1 px-1 sm:overflow-visible">
+              <div key={rowIndex} className="flex gap-[3px] sm:gap-1 justify-center">
                 {row.map((key) => (
                   <button
                     key={key}
                     onClick={() => handleKeyPress(key)}
                     disabled={gameOver}
-                    className={`${key === 'ENTER' || key === 'BACK' ? 'px-2 sm:px-3 md:px-4 text-[10px] sm:text-xs' : 'w-8 xs:w-9 sm:w-11 md:w-14'} h-10 xs:h-11 sm:h-12 md:h-14 rounded-md sm:rounded-lg border-2 font-bold transition-all text-xs sm:text-sm ${getKeyClass(key)} disabled:opacity-50`}
+                    className={`${key === 'ENTER' || key === 'BACK' ? 'px-1.5 sm:px-3 md:px-4 text-[9px] sm:text-xs' : 'w-[28px] xs:w-8 sm:w-11 md:w-14'} h-9 xs:h-10 sm:h-12 md:h-14 rounded sm:rounded-lg border-2 font-bold transition-all text-[11px] sm:text-sm ${getKeyClass(key)} disabled:opacity-50`}
                   >
-                    {key === 'BACK' ? <Delete className="w-5 h-5 mx-auto" /> : key}
+                    {key === 'BACK' ? <Delete className="w-4 h-4 sm:w-5 sm:h-5 mx-auto" /> : key}
                   </button>
                 ))}
               </div>
