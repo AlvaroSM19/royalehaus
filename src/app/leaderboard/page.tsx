@@ -77,7 +77,8 @@ export default function LeaderboardPage() {
       higherlower: 'higherlower',
       royaledle: 'royaledle',
       impostor: 'impostor',
-      wordle: 'wordle'
+      wordle: 'wordle',
+      tapone: 'tapone'
     };
     const type = typeMap[filter];
     if (!type) return;
