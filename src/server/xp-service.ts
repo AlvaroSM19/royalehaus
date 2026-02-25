@@ -86,6 +86,15 @@ export async function grantXp(userId: string, amount: number, kind: string, meta
   
   if (!user) return { userId, added: 0, xpTotal: 0, level: 1, leveledUp: false, cappedReason: null };
 
+  // Compute platform-specific XP from royale: events only (not shared user.xpTotal)
+  const xpResult = await prisma.$queryRaw<{ total: bigint }[]>`
+    SELECT COALESCE(SUM(amount), 0) AS total
+    FROM "XpEvent"
+    WHERE "userId" = ${userId} AND kind LIKE 'royale:%'
+  `;
+  const currentRoyaleXp = Number(xpResult[0]?.total || 0);
+  const currentLevel = levelFromXp(currentRoyaleXp);
+
   // Apply caps
   const { total, perGame } = await getTodayCounters(userId);
   let adj = amount;
@@ -112,13 +121,13 @@ export async function grantXp(userId: string, amount: number, kind: string, meta
   const prefixedKind = kind.startsWith('royale:') ? kind : `royale:${kind}`;
 
   if (adj <= 0) {
-    return { userId, added: 0, xpTotal: user.xpTotal, level: user.level, leveledUp: false, cappedReason };
+    return { userId, added: 0, xpTotal: currentRoyaleXp, level: currentLevel, leveledUp: false, cappedReason };
   }
 
-  const newTotal = user.xpTotal + adj;
+  const newTotal = currentRoyaleXp + adj;
   
   // Level up loop with overflow
-  let level = user.level;
+  let level = currentLevel;
   let leftoverXp = newTotal - totalXpForLevel(level);
   let gained = 0;
   
@@ -143,7 +152,7 @@ export async function grantXp(userId: string, amount: number, kind: string, meta
     });
   } catch (e) {
     // If columns/table are missing, degrade gracefully
-    return { userId, added: 0, xpTotal: user.xpTotal || 0, level: user.level || 1, leveledUp: false, cappedReason: null };
+    return { userId, added: 0, xpTotal: currentRoyaleXp, level: currentLevel, leveledUp: false, cappedReason: null };
   }
 
   return { userId, added: adj, xpTotal: newTotal, level, leveledUp: gained > 0, levelsGained: gained, cappedReason };
