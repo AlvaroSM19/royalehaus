@@ -89,7 +89,7 @@ export default function HomePage() {
           }}
         >
           {/* Section Header */}
-          <div className="text-center mb-4 sm:mb-8">
+          <div className="text-center mb-3 sm:mb-8">
             <div className="inline-flex items-center gap-3 mb-3">
               <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200, 165, 70, 0.6))' }} />
               <span className="text-[11px] font-bold uppercase tracking-[0.4em] text-amber-400/70 flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
@@ -101,7 +101,7 @@ export default function HomePage() {
               <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.6), transparent)' }} />
             </div>
             <h2 
-              className="text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.1em] sm:tracking-[0.2em]"
+              className="text-lg sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.1em] sm:tracking-[0.2em]"
               style={{
                 background: 'linear-gradient(180deg, #ffe6a0 0%, #d4a843 40%, #a07830 100%)',
                 WebkitBackgroundClip: 'text',

@@ -163,7 +163,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-[4/3] xs:aspect-[16/9] overflow-hidden">
+      <div className="relative aspect-[3/2] xs:aspect-[4/3] sm:aspect-[16/9] overflow-hidden">
         <Image
           src={game.image}
           alt={game.title}
@@ -195,7 +195,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
         }}
       >
         <h3 
-          className="text-center text-[9px] xs:text-[10px] sm:text-[12px] font-extrabold tracking-[0.05em] xs:tracking-[0.1em] sm:tracking-[0.2em] uppercase"
+          className="text-center text-[10px] xs:text-[11px] sm:text-[12px] font-extrabold tracking-[0.05em] xs:tracking-[0.1em] sm:tracking-[0.2em] uppercase"
           style={{
             background: completed
               ? 'linear-gradient(180deg, #a0a0a0 0%, #707070 100%)'
@@ -214,7 +214,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
             <span>Next in {countdown}</span>
           </div>
         ) : (
-          <p className="text-center text-amber-100/70 text-[8px] xs:text-[9px] sm:text-[11px] mt-0.5 sm:mt-1.5 font-medium line-clamp-2 sm:line-clamp-none">{game.description}</p>
+          <p className="text-center text-amber-100/70 text-[9px] xs:text-[10px] sm:text-[11px] mt-0.5 sm:mt-1.5 font-medium line-clamp-2 sm:line-clamp-none">{game.description}</p>
         )}
       </div>
     </Link>
@@ -247,7 +247,7 @@ export function DailyGamesGrid({ games }: DailyGamesGridProps) {
   }, []);
 
   return (
-    <div className="daily-games-grid grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 gap-2.5 sm:gap-4">
+    <div className="daily-games-grid grid grid-cols-3 xs:grid-cols-3 sm:grid-cols-3 gap-2 xs:gap-2.5 sm:gap-4">
       {games.map((game) => (
         <DailyGameCard key={game.id} game={game} dbCompleted={dbCompletions[game.id]} />
       ))}
