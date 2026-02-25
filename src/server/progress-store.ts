@@ -19,19 +19,10 @@ const APP_NAMESPACE = 'royale';
 // Extract RoyaleHaus progress from combined DB record
 function extractAppProgress(dbData: any): any {
   if (!dbData || typeof dbData !== 'object') return null;
-  // If data is already namespaced, extract our app's data
+  // Only read from the 'royale' namespace — never fall back to root-level data
+  // Root-level data belongs to OnePieceHaus and must not leak into our leaderboards
   if (dbData[APP_NAMESPACE]) {
     return dbData[APP_NAMESPACE];
-  }
-  // Legacy data: check if it looks like RoyaleHaus data
-  // ONLY accept data with RoyaleHaus-UNIQUE game IDs to avoid confusion with OnePieceHaus
-  // royaledle, higherlower, pixel-royale, emoji-riddle are unique to RoyaleHaus
-  const UNIQUE_ROYALE_GAMES = ['royaledle', 'higherlower', 'pixel-royale', 'emoji-riddle'];
-  const gamesById = dbData?.stats?.gamesPlayedById || {};
-  const hasUniqueRoyaleGames = UNIQUE_ROYALE_GAMES.some(id => typeof gamesById[id] === 'number' && gamesById[id] > 0);
-  if (hasUniqueRoyaleGames) {
-    // Return as-is for backward compatibility (will be migrated on next save)
-    return dbData;
   }
   // No RoyaleHaus data found
   return null;
