@@ -118,6 +118,7 @@ interface SoundHint {
 export default function SoundQuizPage() {
   const { getCardNameTranslated } = useLanguage();
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [soundHints, setSoundHints] = useState<SoundHint[]>([]);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
@@ -401,7 +402,7 @@ export default function SoundQuizPage() {
   }, [gameOver, soundHints, currentHintIndex, stopSound, targetCard]);
 
   const handleGuess = (card: ClashCard) => {
-    if (gameOver || !targetCard || dailyCompleted) return;
+    if (gameOver || !targetCard || (dailyCompleted && !isAdmin)) return;
 
     const newGuesses = [...guesses, card];
     setGuesses(newGuesses);
@@ -673,10 +674,32 @@ export default function SoundQuizPage() {
                 Play Again
               </button>
               <button
-                onClick={initGame}
-                className="px-4 xs:px-5 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold text-xs xs:text-sm sm:text-base transition-all hover:scale-105 shadow-lg hover:shadow-amber-500/30 border border-amber-400/50"
+                onClick={() => {
+                  if (isAdmin) {
+                    stopSound();
+                    const randomCard = cardsWithSounds[Math.floor(Math.random() * cardsWithSounds.length)];
+                    fetchCardSounds(randomCard).then(hints => {
+                      setTargetCard(randomCard);
+                      setSoundHints(hints);
+                      setCurrentHintIndex(0);
+                      setGuesses([]);
+                      setSearchTerm('');
+                      setGameOver(false);
+                      setWon(false);
+                      setDailyCompleted(false);
+                      setDailyResult(null);
+                    });
+                  } else {
+                    initGame();
+                  }
+                }}
+                className={`px-4 xs:px-5 sm:px-6 py-2 xs:py-2.5 sm:py-3 rounded-lg xs:rounded-xl font-bold text-xs xs:text-sm sm:text-base transition-all hover:scale-105 shadow-lg border ${
+                  isAdmin
+                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white hover:shadow-purple-500/30 border-purple-400/50'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 hover:shadow-amber-500/30 border-amber-400/50'
+                }`}
               >
-                New Game
+                {isAdmin ? 'Play Again (Admin)' : 'New Game'}
               </button>
             </div>
           </div>

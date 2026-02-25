@@ -123,6 +123,7 @@ function getTimeUntilReset(): { hours: number; minutes: number; seconds: number 
 export default function RoyaledlePage() {
   const { getCardNameTranslated } = useLanguage();
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -310,7 +311,7 @@ export default function RoyaledlePage() {
   };
 
   const handleGuess = (card: ClashCard) => {
-    if (gameOver || !targetCard || dailyCompleted) return;
+    if (gameOver || !targetCard || (dailyCompleted && !isAdmin)) return;
     if (guesses.some(g => g.card.id === card.id)) return;
 
     const result = compareCards(card, targetCard);
@@ -541,6 +542,7 @@ export default function RoyaledlePage() {
                 </div>
                 
                 {/* Countdown to next daily */}
+                {!isAdmin && (
                 <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
                   <div className="flex items-center justify-center gap-2 text-slate-400 text-sm mb-2">
                     <Clock className="w-4 h-4" />
@@ -563,6 +565,27 @@ export default function RoyaledlePage() {
                     </div>
                   </div>
                 </div>
+                )}
+
+                {/* Admin Play Again */}
+                {isAdmin && (
+                  <button
+                    onClick={() => {
+                      const card = getRandomCard();
+                      setTargetCard(card);
+                      setGuesses([]);
+                      setSearchTerm('');
+                      setGameOver(false);
+                      setWon(false);
+                      setDailyCompleted(false);
+                      setDailyResult(null);
+                    }}
+                    className="mt-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all shadow-lg border-2 border-purple-400/50 flex items-center gap-2 mx-auto"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Play Again (Admin)
+                  </button>
+                )}
                 
                 {/* Account Creation Reminder */}
                 {!user && (
@@ -751,8 +774,28 @@ export default function RoyaledlePage() {
                 </>
               )}
 
+              {/* Admin Play Again */}
+              {dailyCompleted && isAdmin && (
+                <button
+                  onClick={() => {
+                    const card = getRandomCard();
+                    setTargetCard(card);
+                    setGuesses([]);
+                    setSearchTerm('');
+                    setGameOver(false);
+                    setWon(false);
+                    setDailyCompleted(false);
+                    setDailyResult(null);
+                  }}
+                  className="mt-4 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all shadow-lg border-2 border-purple-400/50 flex items-center gap-2 mx-auto"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Play Again (Admin)
+                </button>
+              )}
+
               {/* Next daily countdown */}
-              {dailyCompleted && (
+              {dailyCompleted && !isAdmin && (
                 <div className="mt-4 flex items-center justify-center gap-2 text-gray-400 text-sm">
                   <Clock className="w-4 h-4" />
                   <span>Next daily in {countdown.hours.toString().padStart(2, '0')}:{countdown.minutes.toString().padStart(2, '0')}:{countdown.seconds.toString().padStart(2, '0')}</span>

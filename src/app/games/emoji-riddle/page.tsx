@@ -182,6 +182,7 @@ export default function EmojiRiddlePage() {
   // This is now a daily-only game
   
   const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const { getCardNameTranslated } = useLanguage();
   const [targetCard, setTargetCard] = useState<ClashCard | null>(null);
   const [emojis, setEmojis] = useState<string[]>([]);
@@ -307,7 +308,7 @@ export default function EmojiRiddlePage() {
 
   const handleGuess = (card: ClashCard) => {
     if (gameOver || !targetCard) return;
-    if (dailyCompleted) return;
+    if (dailyCompleted && !isAdmin) return;
 
     const newGuesses = [...guesses, card];
     setGuesses(newGuesses);
@@ -550,8 +551,35 @@ export default function EmojiRiddlePage() {
               </div>
             )}
 
+            {/* Admin Play Again */}
+            {dailyCompleted && isAdmin && (
+              <button
+                onClick={() => {
+                  const cardsWithRiddles = baseCards.filter(c => emojiRiddles[c.id]);
+                  const randomCard = cardsWithRiddles[Math.floor(Math.random() * cardsWithRiddles.length)];
+                  const originalEmojis = emojiRiddles[randomCard.id] || [];
+                  const reorderedEmojis = reorderEmojisForDifficulty(originalEmojis);
+                  setTargetCard(randomCard);
+                  setEmojis(reorderedEmojis);
+                  setRevealedCount(1);
+                  setGuesses([]);
+                  setSearchTerm('');
+                  setGameOver(false);
+                  setWon(false);
+                  setShowAnswer(false);
+                  setShowBonusHint(false);
+                  setDailyCompleted(false);
+                  setDailyResult(null);
+                }}
+                className="mt-3 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all shadow-lg border-2 border-purple-400/50 flex items-center gap-2 mx-auto text-sm"
+              >
+                <Sparkles className="w-4 h-4" />
+                Play Again (Admin)
+              </button>
+            )}
+
             {/* Next daily countdown */}
-            {dailyCompleted && (
+            {dailyCompleted && !isAdmin && (
               <div className="mt-2 flex items-center justify-center gap-2 text-gray-400 text-sm">
                 <Clock className="w-4 h-4" />
                 <span>Next daily in {countdown}</span>
