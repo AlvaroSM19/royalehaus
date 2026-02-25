@@ -163,7 +163,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-[3/2] xs:aspect-[4/3] sm:aspect-[16/9] overflow-hidden">
+      <div className="relative aspect-[3/4] xs:aspect-[3/3] sm:aspect-[16/9] overflow-hidden">
         <Image
           src={game.image}
           alt={game.title}
@@ -184,7 +184,7 @@ export function DailyGameCard({ game, dbCompleted }: DailyGameCardProps) {
 
       {/* Content */}
       <div 
-        className="py-2 sm:py-3 px-2 sm:px-4"
+        className="py-1.5 xs:py-2 sm:py-3 px-1 xs:px-2 sm:px-4"
         style={{
           background: completed
             ? 'linear-gradient(90deg, rgba(30, 30, 30, 0.95) 0%, rgba(40, 40, 40, 0.95) 50%, rgba(30, 30, 30, 0.95) 100%)'
@@ -247,7 +247,7 @@ export function DailyGamesGrid({ games }: DailyGamesGridProps) {
   }, []);
 
   return (
-    <div className="daily-games-grid grid grid-cols-3 xs:grid-cols-3 sm:grid-cols-3 gap-2 xs:gap-2.5 sm:gap-4">
+    <div className="daily-games-grid grid grid-cols-3 gap-1.5 xs:gap-2 sm:gap-4">
       {games.map((game) => (
         <DailyGameCard key={game.id} game={game} dbCompleted={dbCompletions[game.id]} />
       ))}

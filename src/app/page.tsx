@@ -78,9 +78,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Daily Games Section */}
-      <section className="px-3 sm:px-6 lg:px-10 pt-6 sm:pt-10 pb-6 sm:pb-8">
+      <section className="px-2 sm:px-6 lg:px-10 pt-4 sm:pt-10 pb-4 sm:pb-8">
         <div 
-          className="daily-section max-w-[1100px] mx-auto rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8"
+          className="daily-section max-w-[1100px] mx-auto rounded-xl sm:rounded-2xl p-2.5 sm:p-6 lg:p-8"
           style={{
             background: 'linear-gradient(180deg, rgba(10, 8, 5, 0.95) 0%, rgba(18, 14, 8, 0.97) 50%, rgba(10, 8, 5, 0.95) 100%)',
             backdropFilter: 'blur(12px)',
@@ -89,19 +89,19 @@ export default function HomePage() {
           }}
         >
           {/* Section Header */}
-          <div className="text-center mb-3 sm:mb-8">
-            <div className="inline-flex items-center gap-3 mb-3">
-              <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200, 165, 70, 0.6))' }} />
-              <span className="text-[11px] font-bold uppercase tracking-[0.4em] text-amber-400/70 flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <div className="text-center mb-2 sm:mb-8">
+            <div className="inline-flex items-center gap-2 mb-1 sm:mb-3">
+              <div className="w-6 sm:w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(200, 165, 70, 0.6))' }} />
+              <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.3em] sm:tracking-[0.4em] text-amber-400/70 flex items-center gap-1.5 sm:gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
                 </svg>
                 Resets Daily
               </span>
-              <div className="w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.6), transparent)' }} />
+              <div className="w-6 sm:w-10 h-[1px]" style={{ background: 'linear-gradient(90deg, rgba(200, 165, 70, 0.6), transparent)' }} />
             </div>
             <h2 
-              className="text-lg sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.1em] sm:tracking-[0.2em]"
+              className="text-base sm:text-2xl lg:text-3xl font-black uppercase tracking-[0.05em] sm:tracking-[0.2em]"
               style={{
                 background: 'linear-gradient(180deg, #ffe6a0 0%, #d4a843 40%, #a07830 100%)',
                 WebkitBackgroundClip: 'text',
@@ -112,7 +112,7 @@ export default function HomePage() {
               Daily Challenges
             </h2>
             <p 
-              className="mt-2 sm:mt-3 text-xs sm:text-sm font-semibold px-3 sm:px-5 py-1.5 sm:py-2 rounded-full inline-block bg-black/50 border border-amber-500/30 text-amber-100"
+              className="mt-1 sm:mt-3 text-[10px] sm:text-sm font-semibold px-2.5 sm:px-5 py-1 sm:py-2 rounded-full inline-block bg-black/50 border border-amber-500/30 text-amber-100"
               style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
             >
               One attempt per day • Build your streak!
