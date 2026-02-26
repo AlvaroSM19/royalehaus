@@ -982,7 +982,7 @@ export default function ImpostorPage() {
           </div>
 
           {/* Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap justify-center gap-2 sm:gap-3 lg:gap-5 mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap justify-center justify-items-center gap-2 sm:gap-3 lg:gap-5 mb-6 sm:mb-8">
             {cards.map((card, index) => {
               const isImpostor = index === impostorIndex;
               const isSelected = selectedIndex === index;
