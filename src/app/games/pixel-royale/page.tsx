@@ -222,11 +222,7 @@ export default function PixelRoyalePage() {
                   className="w-full h-full object-cover object-top transition-all duration-500"
                   style={{ filter: `blur(${currentBlur}px)`, transform: 'scale(1.1)' }}
                 />
-                {currentBlur > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-5xl opacity-30">🔍</span>
-                  </div>
-                )}
+
               </div>
             </div>
 
