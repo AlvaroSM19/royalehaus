@@ -278,8 +278,8 @@ export default function EmojiRiddlePage() {
               <img src={`/images/cards/${targetCard.id}.webp`} alt={targetCard.name} className="w-16 h-20 object-cover object-top rounded-lg border-2 border-purple-500/50" />
               <div className="text-left">
                 <div className="text-white font-bold text-lg">{getCardNameTranslated(targetCard.id)}</div>
-                <div className="text-2xl mb-2">{targetEmojis.join(' ')}</div>
-                <div className={`text-sm ${dayResult.won ? 'text-green-300/80' : 'text-red-300/80'}`}>{dayResult.won ? `🎉 Solved in ${dayResult.guesses} attempt${dayResult.guesses !== 1 ? 's' : ''}!` : 'Better luck next time!'}</div>
+                <div className="flex gap-2 text-2xl mb-2">{targetEmojis.map((e, i) => <span key={i}>{e}</span>)}</div>
+                <div className={`text-sm ${dayResult.won ? 'text-green-300/80' : 'text-red-300/80'}`}>{dayResult.won ? `🏆 Found in ${dayResult.guesses} attempt${dayResult.guesses !== 1 ? 's' : ''}!` : 'Better luck next time!'}</div>
               </div>
             </div>
             {dailyStreak && dailyStreak.currentStreak > 0 && activeDate === todayStr() && <div className="mt-3 flex items-center justify-center gap-2 text-amber-400"><Flame className="w-5 h-5" /><span className="font-bold">{dailyStreak.currentStreak} day streak</span>{dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>}</div>}
@@ -290,15 +290,17 @@ export default function EmojiRiddlePage() {
         {/* Game area */}
         {!dayCompleted && (
           <>
-            {/* Emoji display */}
-            <div className="text-center mb-8">
-              <h2 className="text-purple-300 text-xl font-bold mb-4">Guess this card:</h2>
-              <div className="text-6xl mb-4 tracking-wider">
-                {targetEmojis.join(' ')}
-              </div>
-              <div className="text-purple-400 text-sm">
-                {MAX_GUESSES - guesses.length} guesses remaining
-              </div>
+            {/* Emoji display - JJK style boxes */}
+            <div className="mb-6 flex justify-center gap-3 sm:gap-4">
+              {targetEmojis.map((emoji, i) => (
+                <div key={i} className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-xl text-2xl sm:text-3xl border-2 bg-purple-600/20 border-purple-500/50 scale-100 transition-all duration-300">
+                  {emoji}
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center text-sm text-purple-400 mb-4">
+              Attempt {guesses.length + 1} / {MAX_GUESSES}
             </div>
 
             {/* Search input */}
@@ -355,20 +357,16 @@ export default function EmojiRiddlePage() {
           </div>
         )}
 
-        {/* Game over - show target */}
-        {gameOver && targetCard && (
-          <div className="mt-8 text-center">
-            <h3 className="text-2xl font-bold text-purple-300 mb-4">
-              {won ? '🎉 Congratulations!' : '😔 Game Over!'}
-            </h3>
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <img src={`/images/cards/${targetCard.id}.webp`} alt={targetCard.name} className="w-20 h-24 object-cover rounded-lg border-2 border-purple-500/50" />
-              <div>
-                <div className="text-xl font-bold text-white">{getCardNameTranslated(targetCard.id)}</div>
-                <div className="text-2xl mb-2">{targetEmojis.join(' ')}</div>
-                <div className="text-purple-300">{targetCard.type} • {targetCard.rarity}</div>
-              </div>
+        {/* Game over - show target (non-daily fallback) */}
+        {gameOver && !dayCompleted && targetCard && (
+          <div className="max-w-sm mx-auto mb-6 p-6 rounded-2xl text-center border-2" style={{ borderColor: won ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)', background: won ? 'linear-gradient(145deg, rgba(22, 101, 52, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)' : 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)' }}>
+            {won ? <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-400" /> : <XCircle className="w-10 h-10 mx-auto mb-2 text-red-400" />}
+            <div className={`text-xl font-bold mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>{won ? 'Correct!' : 'Game Over!'}</div>
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <img src={`/images/cards/${targetCard.id}.webp`} alt={targetCard.name} className="w-14 h-14 object-cover object-top rounded-lg border-2 border-purple-500/50" />
+              <div className="text-lg font-bold text-white">{getCardNameTranslated(targetCard.id)}</div>
             </div>
+            <div className="flex justify-center gap-2 text-2xl mb-3">{targetEmojis.map((e, i) => <span key={i}>{e}</span>)}</div>
           </div>
         )}
       </div>
