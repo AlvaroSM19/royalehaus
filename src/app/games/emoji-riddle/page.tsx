@@ -1,215 +1,141 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import Link from 'next/link';
-import { baseCards } from '@/data';
-import { emojiRiddles } from '@/data/emoji-riddles';
-import { ClashCard } from '@/types/card';
-import { Home, Search, Sparkles, Trophy, HelpCircle, CheckCircle, XCircle, Clock, UserPlus, Flame, Calendar } from 'lucide-react';
-import { useLanguage } from '@/lib/useLanguage';
-import { recordEmojiRiddleSession } from '@/lib/progress';
-import { includesNormalized } from '@/lib/text-utils';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import Link from 'next/link'
+import { baseCards } from '@/data'
+import { emojiRiddles } from '@/data/emoji-riddles'
+import { ClashCard } from '@/types/card'
+import { recordEmojiRiddleSession } from '@/lib/progress'
+import { CheckCircle, Clock, Home, Flame, Calendar, XCircle } from 'lucide-react'
+import { useLanguage } from '@/lib/useLanguage'
+import { includesNormalized } from '@/lib/text-utils'
 import {
   seededRandom, todayStr, getTimeUntilReset,
   getDayResult, saveDayResult, isDayCompleted,
   getDailyStreakData, updateDailyStreak,
   buildDayOptions,
   type DailyResult, type DailyStreakData, type DayOption,
-} from '@/lib/daily-challenge';
+} from '@/lib/daily-challenge'
 
-const GAME_ID = 'emoji-riddle';
-const MAX_GUESSES = 5;
+const GAME_ID = 'emoji-riddle'
+const MAX_GUESSES = 5
 
-interface GuessEntry {
-  cardId: number;
-  cardName: string;
-  correct: boolean;
-}
+// Cards that have emoji riddles
+const availableCardIds = Object.keys(emojiRiddles).map(Number)
 
-// Daily target for any date
-function getTargetForDate(availableCardIds: number[], date: string): number {
-  const seed = date.split('-').reduce((acc, part) => acc + parseInt(part), 0) * 7731; // Different multiplier
-  return availableCardIds[Math.floor(seededRandom(seed) * availableCardIds.length)];
+/* ── deterministic daily target ── */
+function getTargetForDate(date: string): number {
+  const seed = date.split('-').reduce((acc, p) => acc + parseInt(p), 0) * 7731
+  return availableCardIds[Math.floor(seededRandom(seed) * availableCardIds.length)]
 }
 
 export default function EmojiRiddlePage() {
-  const { getCardNameTranslated } = useLanguage();
+  const { getCardNameTranslated } = useLanguage()
+  const all = useMemo(() => baseCards.filter(c => emojiRiddles[c.id]), [])
 
-  // Game state
-  const [targetCardId, setTargetCardId] = useState<number | null>(null);
-  const [targetEmojis, setTargetEmojis] = useState<string[]>([]);
-  const [guesses, setGuesses] = useState<GuessEntry[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [won, setWon] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
+  const [activeDate, setActiveDate] = useState(() => todayStr())
+  const [targetId, setTargetId] = useState<number | null>(null)
+  const [target, setTarget] = useState<ClashCard | null>(null)
+  const [emojis, setEmojis] = useState<string[]>([])
+  const [revealedCount, setRevealedCount] = useState(1)
+  const [input, setInput] = useState('')
+  const [filtered, setFiltered] = useState<ClashCard[]>([])
+  const [guesses, setGuesses] = useState<ClashCard[]>([])
+  const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>('playing')
+  const [showHelp, setShowHelp] = useState(false)
+  const recordedRef = useRef(false)
 
-  // Daily system state
-  const [activeDate, setActiveDate] = useState(todayStr());
-  const [dayCompleted, setDayCompleted] = useState(false);
-  const [dayResult, setDayResult] = useState<DailyResult | null>(null);
-  const [dailyStreak, setDailyStreak] = useState<DailyStreakData | null>(null);
-  const [countdown, setCountdown] = useState('');
-  const [dayOptions, setDayOptions] = useState<DayOption[]>([]);
-  const [showDayPicker, setShowDayPicker] = useState(false);
+  const [dayCompleted, setDayCompleted] = useState(false)
+  const [dayResult, setDayResult] = useState<DailyResult | null>(null)
+  const [dailyStreak, setDailyStreak] = useState<DailyStreakData | null>(null)
+  const [countdown, setCountdown] = useState('')
+  const [dayOptions, setDayOptions] = useState<DayOption[]>([])
+  const [showDayPicker, setShowDayPicker] = useState(false)
 
-  const recordedRef = useRef(false);
+  useEffect(() => { const u = () => setCountdown(getTimeUntilReset()); u(); const i = setInterval(u, 1000); return () => clearInterval(i) }, [])
 
-  // Cards that have emoji riddles
-  const availableCardIds = useMemo(() => Object.keys(emojiRiddles).map(Number), []);
-
-  useEffect(() => {
-    const updateCountdown = () => setCountdown(getTimeUntilReset());
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const refreshDayOptions = useCallback(() => {
-    setDayOptions(buildDayOptions(GAME_ID, 8));
-  }, []);
+  const refreshDayOptions = useCallback(() => { setDayOptions(buildDayOptions(GAME_ID, 8)) }, [])
 
   const initGame = useCallback((date: string) => {
-    if (availableCardIds.length === 0) return;
+    if (availableCardIds.length === 0) return
+    const tId = getTargetForDate(date)
+    setTargetId(tId)
+    setTarget(baseCards.find(c => c.id === tId) || null)
+    setEmojis(emojiRiddles[tId] || [])
+    setActiveDate(date)
+    recordedRef.current = false
 
-    const targetId = getTargetForDate(availableCardIds, date);
-    setTargetCardId(targetId);
-    setTargetEmojis(emojiRiddles[targetId] || []);
-    setActiveDate(date);
-    recordedRef.current = false;
-
-    const existing = getDayResult(GAME_ID, date);
+    const existing = getDayResult(GAME_ID, date)
     if (existing) {
-      setDayCompleted(true);
-      setDayResult(existing);
-      setDailyStreak(getDailyStreakData(GAME_ID));
-      setGameOver(true);
-      setWon(existing.won);
-      setGuesses([]);
+      setDayCompleted(true); setDayResult(existing); setDailyStreak(getDailyStreakData(GAME_ID))
+      setGameState(existing.won ? 'won' : 'lost')
+      setRevealedCount(5)
     } else {
-      setDayCompleted(false);
-      setDayResult(null);
-      setGuesses([]);
-      setSearchTerm('');
-      setGameOver(false);
-      setWon(false);
+      setDayCompleted(false); setDayResult(null)
+      setGuesses([]); setInput(''); setGameState('playing')
+      setRevealedCount(1)
     }
-    refreshDayOptions();
-  }, [refreshDayOptions, availableCardIds]);
+    refreshDayOptions()
+  }, [refreshDayOptions])
+
+  useEffect(() => { initGame(todayStr()) }, [initGame])
+
+  const guessedIds = useMemo(() => new Set(guesses.map(g => g.id)), [guesses])
 
   useEffect(() => {
-    initGame(todayStr());
-  }, [initGame]);
+    const term = input.trim().toLowerCase()
+    if (term.length < 2) { setFiltered([]); return }
+    setFiltered(all.filter(c => !guessedIds.has(c.id) && includesNormalized(getCardNameTranslated(c.id), term)).slice(0, 8))
+  }, [input, all, guessedIds, getCardNameTranslated])
 
-  const switchDay = (date: string) => {
-    setShowDayPicker(false);
-    initGame(date);
-  };
+  const submit = (c: ClashCard) => {
+    if (!targetId || gameState !== 'playing' || guessedIds.has(c.id) || dayCompleted) return
+    const newGuesses = [...guesses, c]
+    setGuesses(newGuesses)
+    setInput(''); setFiltered([])
 
-  const todayDone = typeof window !== 'undefined' ? isDayCompleted(GAME_ID, todayStr()) : false;
-
-  const guessedCardIds = useMemo(() => new Set(guesses.map(g => g.cardId)), [guesses]);
-
-  const getCardById = (id: number): ClashCard | undefined => {
-    return baseCards.find(card => card.id === id);
-  };
-
-  const filteredCards = useMemo(() => {
-    if (!searchTerm || searchTerm.length < 2) return [];
-    const term = searchTerm.toLowerCase();
-    return availableCardIds
-      .map(id => getCardById(id))
-      .filter((card): card is ClashCard => card !== undefined)
-      .filter(card => !guessedCardIds.has(card.id))
-      .filter(card => includesNormalized(getCardNameTranslated(card.id), term))
-      .slice(0, 8);
-  }, [searchTerm, availableCardIds, guessedCardIds, getCardNameTranslated]);
-
-  const handleGuess = (card: ClashCard) => {
-    if (gameOver || targetCardId === null) return;
-
-    const correct = card.id === targetCardId;
-    const newGuesses = [...guesses, {
-      cardId: card.id,
-      cardName: getCardNameTranslated(card.id),
-      correct
-    }];
-    setGuesses(newGuesses);
-    setSearchTerm('');
-    setShowSuggestions(false);
-
-    if (correct) {
-      setWon(true);
-      setGameOver(true);
-      
-      const dailyResult: DailyResult = {
-        won: true,
-        guesses: newGuesses.length,
-        targetId: targetCardId.toString(),
-        date: activeDate
-      };
-
-      saveDayResult(GAME_ID, dailyResult);
-      setDayResult(dailyResult);
-      setDayCompleted(true);
-
-      if (activeDate === todayStr()) {
-        setDailyStreak(updateDailyStreak(GAME_ID));
-      }
-
-      refreshDayOptions();
-
+    if (c.id === targetId) {
+      setGameState('won')
+      const result: DailyResult = { won: true, guesses: newGuesses.length, targetId, date: activeDate }
+      saveDayResult(GAME_ID, result); setDayCompleted(true); setDayResult(result)
+      if (activeDate === todayStr()) setDailyStreak(updateDailyStreak(GAME_ID))
+      setRevealedCount(5)
+      refreshDayOptions()
       if (!recordedRef.current) {
-        recordedRef.current = true;
-        recordEmojiRiddleSession(newGuesses.length, true);
+        recordedRef.current = true; recordEmojiRiddleSession(newGuesses.length, true)
+        fetch('/api/daily', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ gameType: 'emoji-riddle', won: true, attempts: newGuesses.length }) }).catch(() => {})
       }
-    } else if (newGuesses.length >= MAX_GUESSES) {
-      setGameOver(true);
-      
-      const dailyResult: DailyResult = {
-        won: false,
-        guesses: newGuesses.length,
-        targetId: targetCardId.toString(),
-        date: activeDate
-      };
-
-      saveDayResult(GAME_ID, dailyResult);
-      setDayResult(dailyResult);
-      setDayCompleted(true);
-
-      if (activeDate === todayStr()) {
-        setDailyStreak(updateDailyStreak(GAME_ID));
-      }
-
-      refreshDayOptions();
-
-      if (!recordedRef.current) {
-        recordedRef.current = true;
-        recordEmojiRiddleSession(newGuesses.length, false);
+    } else {
+      setRevealedCount(prev => Math.min(emojis.length, prev + 1))
+      if (newGuesses.length >= MAX_GUESSES) {
+        setGameState('lost')
+        const result: DailyResult = { won: false, guesses: newGuesses.length, targetId, date: activeDate }
+        saveDayResult(GAME_ID, result); setDayCompleted(true); setDayResult(result)
+        if (activeDate === todayStr()) setDailyStreak(getDailyStreakData(GAME_ID))
+        setRevealedCount(5)
+        refreshDayOptions()
+        if (!recordedRef.current) {
+          recordedRef.current = true; recordEmojiRiddleSession(newGuesses.length, false)
+          fetch('/api/daily', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ gameType: 'emoji-riddle', won: false, attempts: newGuesses.length }) }).catch(() => {})
+        }
       }
     }
-  };
+  }
 
-  const targetCard = targetCardId ? getCardById(targetCardId) : null;
+  const switchDay = (date: string) => { setShowDayPicker(false); initGame(date) }
+  const todayDone = typeof window !== 'undefined' ? isDayCompleted(GAME_ID, todayStr()) : false
 
   return (
     <div className="min-h-screen text-purple-100 flex flex-col relative">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0A051A] via-[#1A0F2E] to-[#0A051A] opacity-90" />
-      <div className="fixed inset-0 bg-[url('/images/wallpapers/clash-royale-arena.webp')] bg-cover bg-center opacity-10 pointer-events-none" />
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-black/65 via-black/55 to-black/70" />
 
-      {/* Navigation */}
-      <div className="relative z-20">
-        <div className="container mx-auto px-4 py-4">
+      {/* Header */}
+      <div className="border-b border-purple-700/40 bg-[#0c0520]/70 backdrop-blur-sm sticky top-0 z-40 shadow-lg shadow-black/40">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="p-2 rounded-lg hover:bg-purple-300/10 text-purple-300 transition">
-                <Home className="w-5 h-5" />
-              </Link>
-              <h1 className="text-lg sm:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-300 to-purple-400 bg-clip-text text-transparent drop-shadow flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-yellow-400" />
-                Emoji Riddle
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link href="/" className="flex items-center gap-1 text-purple-300/70 hover:text-purple-100 transition-colors"><Home className="w-4 h-4" /><span className="hidden sm:inline">Home</span></Link>
+              <h1 className="text-lg sm:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-300 to-purple-400 bg-clip-text text-transparent drop-shadow">Emoji Riddle
                 <span className="text-[10px] px-2 py-0.5 bg-fuchsia-500/20 border border-fuchsia-500/50 text-fuchsia-400 rounded-full font-bold ml-2">DAILY</span>
               </h1>
             </div>
@@ -236,7 +162,7 @@ export default function EmojiRiddlePage() {
                 <button key={opt.date} onClick={() => switchDay(opt.date)}
                   className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${opt.date === activeDate ? 'bg-fuchsia-600/30 border-fuchsia-500/60 text-fuchsia-300 ring-1 ring-fuchsia-400/40' : opt.completed ? 'bg-green-600/15 border-green-500/40 text-green-400 hover:bg-green-600/25' : 'bg-purple-600/15 border-purple-500/30 text-purple-300 hover:bg-purple-600/25'}`}>
                   <div>{opt.label}</div>
-                  {opt.completed && <div className="text-[10px] text-green-400">✓ Done</div>}
+                  {opt.completed && <div className="text-[9px] text-green-400 mt-0.5">✓ Done</div>}
                 </button>
               ))}
             </div>
@@ -244,8 +170,8 @@ export default function EmojiRiddlePage() {
         </div>
       )}
 
-      {/* Main content */}
-      <div className="flex-1 relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      <div className="w-full max-w-2xl mx-auto p-4 flex-1 flex flex-col relative z-10">
+        {/* Active date indicator */}
         {activeDate !== todayStr() && (
           <div className="mb-4 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm">
             <Calendar className="w-4 h-4" /><span>Playing: <strong>{dayOptions.find(o => o.date === activeDate)?.label || activeDate}</strong></span>
@@ -255,121 +181,106 @@ export default function EmojiRiddlePage() {
 
         {showHelp && (
           <div className="mb-6 p-4 rounded-lg bg-[#0c0520]/60 border border-purple-700/40 text-sm leading-relaxed shadow shadow-black/40">
-            Guess the Clash Royale card from the emoji clues! Each emoji represents something about the card.
-            <br /><br />
-            <span className="text-yellow-400 font-bold">💡 Tips:</span> Look for clues about the card's appearance, abilities, or theme.
-            <br /><br />
-            <span className="text-fuchsia-400 font-bold">📅 Daily System:</span> Complete today's riddle, then play the last 7 days using the calendar button!
+            Guess the Clash Royale card from the emoji clues! You have <strong className="text-fuchsia-300">{MAX_GUESSES} attempts</strong>. A new emoji clue is revealed with each wrong guess.
+            <br /><br /><span className="text-fuchsia-400 font-bold">📅 Daily System:</span> Complete today&apos;s challenge, then play the last 7 days using the calendar button!
           </div>
         )}
 
         {/* Completed Banner */}
-        {dayCompleted && dayResult && targetCard && (
-          <div className="relative mb-6 p-6 rounded-2xl bg-gradient-to-br from-[#1A0F2E]/90 to-[#0A051A]/90 border border-purple-700/50 shadow-2xl shadow-black/60">
-            <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-purple-400/60" />
-            <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-purple-400/60" />
-            <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-purple-400/60" />
-            <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-purple-400/60" />
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <h3 className="text-xl font-black text-green-400 uppercase tracking-wider">{activeDate === todayStr() ? 'Daily Completed!' : 'Challenge Completed!'}</h3>
-            </div>
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <img src={`/images/cards/${targetCard.id}.webp`} alt={targetCard.name} className="w-16 h-20 object-cover object-top rounded-lg border-2 border-purple-500/50" />
-              <div className="text-left">
-                <div className="text-white font-bold text-lg">{getCardNameTranslated(targetCard.id)}</div>
-                <div className="flex gap-2 text-2xl mb-2">{targetEmojis.map((e, i) => <span key={i}>{e}</span>)}</div>
-                <div className={`text-sm ${dayResult.won ? 'text-green-300/80' : 'text-red-300/80'}`}>{dayResult.won ? `🏆 Found in ${dayResult.guesses} attempt${dayResult.guesses !== 1 ? 's' : ''}!` : 'Better luck next time!'}</div>
+        {dayCompleted && dayResult && target && (
+          <div className="mb-8 max-w-md mx-auto">
+            <div className="relative rounded-2xl p-6 text-center overflow-hidden" style={{ background: 'linear-gradient(180deg, rgba(12, 5, 32, 0.95) 0%, rgba(20, 10, 50, 0.98) 100%)', border: `2px solid ${dayResult.won ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)'}` }}>
+              <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-purple-400/60" />
+              <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-purple-400/60" />
+              <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-purple-400/60" />
+              <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-purple-400/60" />
+              <div className="flex items-center justify-center gap-2 mb-3">
+                {dayResult.won ? <CheckCircle className="w-8 h-8 text-green-400" /> : <XCircle className="w-8 h-8 text-red-400" />}
+                <h3 className={`text-xl font-black uppercase tracking-wider ${dayResult.won ? 'text-green-400' : 'text-red-400'}`}>{dayResult.won ? (activeDate === todayStr() ? 'Daily Completed!' : 'Challenge Completed!') : 'Game Over'}</h3>
               </div>
+              {/* Show all emojis */}
+              <div className="flex justify-center gap-2 text-3xl mb-4">{emojis.map((e, i) => <span key={i}>{e}</span>)}</div>
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <img src={`/images/cards/${target.id}.webp`} alt={target.name} className="w-16 h-20 object-cover object-top rounded-lg border-2 border-purple-500/50" />
+                <div className="text-left">
+                  <div className="text-white font-bold text-lg">{getCardNameTranslated(target.id)}</div>
+                  <div className={`text-sm ${dayResult.won ? 'text-green-300/80' : 'text-red-300/80'}`}>{dayResult.won ? `🏆 Found in ${dayResult.guesses} attempt${dayResult.guesses !== 1 ? 's' : ''}!` : 'Better luck next time!'}</div>
+                </div>
+              </div>
+              {dailyStreak && dailyStreak.currentStreak > 0 && activeDate === todayStr() && dayResult.won && (
+                <div className="flex items-center justify-center gap-2 text-amber-400 mb-3"><Flame className="w-5 h-5" /><span className="font-bold">{dailyStreak.currentStreak} day streak</span>{dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>}</div>
+              )}
+              {activeDate === todayStr() && <div className="bg-[#0c0520]/50 rounded-xl p-4 border border-purple-700/50 mb-3"><div className="flex items-center justify-center gap-2 text-purple-400 text-sm"><Clock className="w-4 h-4" /><span>Next daily in {countdown}</span></div></div>}
+              {todayDone && <button onClick={() => setShowDayPicker(true)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold bg-gradient-to-br from-purple-600 via-fuchsia-500 to-purple-600 text-white shadow-lg shadow-purple-900/40 hover:brightness-110 transition text-sm"><Calendar className="w-4 h-4" /> Play Past Days</button>}
             </div>
-            {dailyStreak && dailyStreak.currentStreak > 0 && activeDate === todayStr() && <div className="mt-3 flex items-center justify-center gap-2 text-amber-400"><Flame className="w-5 h-5" /><span className="font-bold">{dailyStreak.currentStreak} day streak</span>{dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>}</div>}
-            {activeDate === todayStr() && <div className="mt-2 flex items-center justify-center gap-2 text-purple-400 text-sm"><Clock className="w-4 h-4" /><span>Next riddle in {countdown}</span></div>}
           </div>
         )}
 
         {/* Game area */}
         {!dayCompleted && (
           <>
-            {/* Emoji display - JJK style boxes */}
+            {/* Emoji display */}
             <div className="mb-6 flex justify-center gap-3 sm:gap-4">
-              {targetEmojis.map((emoji, i) => (
-                <div key={i} className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-xl text-2xl sm:text-3xl border-2 bg-purple-600/20 border-purple-500/50 scale-100 transition-all duration-300">
-                  {emoji}
+              {emojis.map((emoji, i) => (
+                <div key={i} className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center rounded-xl text-2xl sm:text-3xl border-2 transition-all duration-300 ${i < revealedCount ? 'bg-purple-600/20 border-purple-500/50 scale-100' : 'bg-[#0c0520]/60 border-purple-700/30 scale-90'}`}>
+                  {i < revealedCount ? emoji : '❓'}
                 </div>
               ))}
             </div>
 
             <div className="text-center text-sm text-purple-400 mb-4">
-              Attempt {guesses.length + 1} / {MAX_GUESSES}
+              Attempt {guesses.length + 1} / {MAX_GUESSES} · {revealedCount} / {emojis.length} clues revealed
             </div>
 
             {/* Search input */}
-            <div className="relative mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setShowSuggestions(e.target.value.length >= 2);
-                  }}
-                  onFocus={() => setShowSuggestions(searchTerm.length >= 2)}
-                  placeholder="Search for a card..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#1A0F2E]/60 border border-purple-700/40 text-purple-100 placeholder-purple-400/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
-                />
-              </div>
-
-              {/* Suggestions dropdown */}
-              {showSuggestions && filteredCards.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A0F2E]/95 border border-purple-700/40 rounded-xl shadow-lg z-50 backdrop-blur">
-                  {filteredCards.map((card) => (
-                    <button
-                      key={card.id}
-                      onClick={() => handleGuess(card)}
-                      className="w-full p-3 text-left hover:bg-purple-600/20 transition-colors border-b border-purple-700/20 last:border-b-0 flex items-center gap-3"
-                    >
-                      <img src={`/images/cards/${card.id}.webp`} alt={card.name} className="w-8 h-10 object-cover rounded" />
-                      <span className="text-purple-100">{getCardNameTranslated(card.id)}</span>
-                    </button>
-                  ))}
+            {gameState === 'playing' && (
+              <div className="mb-6 relative">
+                <div className="flex items-center gap-2 bg-[#0c0520]/60 border border-purple-700/40 rounded-lg px-3 py-2 shadow shadow-black/30">
+                  <span className="text-purple-300/80">🔍</span>
+                  <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && filtered.length > 0 && input.trim().length >= 2) submit(filtered[0]) }} placeholder="Type at least 2 characters..." className="flex-1 bg-transparent outline-none text-sm placeholder-zinc-500" />
                 </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Previous guesses */}
-        {guesses.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-purple-300 font-bold mb-3">Your guesses:</h3>
-            {guesses.map((guess, index) => (
-              <div key={index} className={`flex items-center gap-3 p-3 rounded-lg border ${guess.correct ? 'bg-green-500/10 border-green-500/40' : 'bg-red-500/10 border-red-500/40'}`}>
-                <img src={`/images/cards/${guess.cardId}.webp`} alt={guess.cardName} className="w-8 h-10 object-cover rounded" />
-                <span className="text-purple-100 flex-1">{guess.cardName}</span>
-                {guess.correct ? (
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-red-400" />
+                {filtered.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full bg-[#0c0520]/95 backdrop-blur border border-purple-600/50 rounded-xl shadow-2xl shadow-black/60 max-h-64 overflow-auto ring-1 ring-purple-400/20">
+                    <ul className="py-1 divide-y divide-purple-400/10">
+                      {filtered.map((c, i) => (
+                        <li key={c.id}><button onClick={() => submit(c)} className="w-full text-left px-3 py-2 text-sm hover:bg-purple-300/10 flex items-center gap-3 transition-colors">
+                          <img src={`/images/cards/${c.id}.webp`} alt={c.name} className="w-9 h-9 object-cover object-top rounded-lg ring-1 ring-purple-500/30" />
+                          <span className="font-medium tracking-wide text-purple-100/90">{getCardNameTranslated(c.id)}</span>
+                          {i === 0 && input.trim().length >= 2 && <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Enter</span>}
+                        </button></li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* Game over - show target (non-daily fallback) */}
-        {gameOver && !dayCompleted && targetCard && (
-          <div className="max-w-sm mx-auto mb-6 p-6 rounded-2xl text-center border-2" style={{ borderColor: won ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)', background: won ? 'linear-gradient(145deg, rgba(22, 101, 52, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)' : 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)' }}>
-            {won ? <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-400" /> : <XCircle className="w-10 h-10 mx-auto mb-2 text-red-400" />}
-            <div className={`text-xl font-bold mb-2 ${won ? 'text-green-400' : 'text-red-400'}`}>{won ? 'Correct!' : 'Game Over!'}</div>
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <img src={`/images/cards/${targetCard.id}.webp`} alt={targetCard.name} className="w-14 h-14 object-cover object-top rounded-lg border-2 border-purple-500/50" />
-              <div className="text-lg font-bold text-white">{getCardNameTranslated(targetCard.id)}</div>
-            </div>
-            <div className="flex justify-center gap-2 text-2xl mb-3">{targetEmojis.map((e, i) => <span key={i}>{e}</span>)}</div>
-          </div>
+            {/* Guess history */}
+            {guesses.length > 0 && (
+              <div className="space-y-2 mb-6">
+                {guesses.map(g => (
+                  <div key={g.id} className={`flex items-center gap-3 p-3 rounded-lg border ${g.id === targetId ? 'bg-green-600/15 border-green-500/40' : 'bg-red-600/10 border-red-500/30'}`}>
+                    <img src={`/images/cards/${g.id}.webp`} alt={g.name} className="w-10 h-10 object-cover object-top rounded-lg ring-1 ring-purple-500/30" />
+                    <span className="font-semibold text-sm flex-1">{getCardNameTranslated(g.id)}</span>
+                    {g.id === targetId ? <CheckCircle className="w-5 h-5 text-green-400" /> : <XCircle className="w-5 h-5 text-red-400" />}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Game over lost */}
+            {gameState === 'lost' && target && (
+              <div className="max-w-sm mx-auto mb-6 p-6 rounded-2xl text-center border-2 border-red-500/50" style={{ background: 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)' }}>
+                <XCircle className="w-10 h-10 mx-auto mb-2 text-red-400" />
+                <div className="text-xl font-bold text-red-400 mb-2">Game Over!</div>
+                <div className="flex items-center justify-center gap-3 mb-3"><img src={`/images/cards/${target.id}.webp`} alt={target.name} className="w-14 h-14 object-cover object-top rounded-lg border-2 border-purple-500/50" /><div className="text-lg font-bold text-white">{getCardNameTranslated(target.id)}</div></div>
+                <div className="flex justify-center gap-2 text-2xl mb-3">{emojis.map((e, i) => <span key={i}>{e}</span>)}</div>
+                {activeDate === todayStr() && <div className="flex items-center justify-center gap-2 text-purple-400 text-sm"><Clock className="w-4 h-4" /><span>Next daily in {countdown}</span></div>}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
-  );
+  )
 }
