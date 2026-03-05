@@ -1,0 +1,329 @@
+﻿'use client'
+
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import Link from 'next/link'
+import { getAllCharacters } from '@/data/characters'
+import { recordJjkdleSession } from '@/lib/progress'
+import { CheckCircle, Clock, Home, Flame, Calendar } from 'lucide-react'
+import { displayPowerLevel } from '@/types/character'
+import type { JJKCharacter } from '@/types/character'
+import {
+  seededRandom, todayStr, getTimeUntilReset,
+  getDayResult, saveDayResult, isDayCompleted,
+  getDailyStreakData, updateDailyStreak,
+  buildDayOptions,
+  type DailyResult, type DailyStreakData, type DayOption,
+} from '@/lib/daily-challenge'
+
+/* â”€â”€ types â”€â”€ */
+interface GuessEntry { character: JJKCharacter; result: AttributeResult }
+interface AttributeResult { species: boolean; gender: boolean; grade: 'match' | 'partial' | 'none'; affiliation: boolean; clan: boolean; arc: boolean; powerDir: 'up' | 'down' | 'equal' | 'unknown' }
+
+const GAME_ID = 'jjkdle'
+
+/* Grade hierarchy for partial matching */
+const GRADE_ORDER = ['special grade','special grade 1','grade 1','semi-grade 1','grade 2','semi-grade 2','grade 3','grade 4','ungraded']
+
+/* â”€â”€ Daily target for any date â”€â”€ */
+function getTargetForDate(all: JJKCharacter[], date: string): JJKCharacter {
+  const seed = date.split('-').reduce((acc, part) => acc + parseInt(part), 0) * 9973
+  return all[Math.floor(seededRandom(seed) * all.length)]
+}
+
+/* â”€â”€ page â”€â”€ */
+export default function JJKdlePage() {
+  const all = useMemo(() => getAllCharacters(), [])
+
+  const [activeDate, setActiveDate] = useState(() => todayStr())
+  const [target, setTarget] = useState<JJKCharacter | null>(null)
+  const [input, setInput] = useState('')
+  const [filtered, setFiltered] = useState<JJKCharacter[]>([])
+  const [guesses, setGuesses] = useState<GuessEntry[]>([])
+  const [gameState, setGameState] = useState<'playing' | 'won'>('playing')
+  const [showHelp, setShowHelp] = useState(false)
+  const [revealAffiliation, setRevealAffiliation] = useState(false)
+  const [revealPhoto, setRevealPhoto] = useState(false)
+  const [revealInitial, setRevealInitial] = useState(false)
+  const recordedRef = useRef(false)
+
+  const [dayCompleted, setDayCompleted] = useState(false)
+  const [dayResult, setDayResult] = useState<DailyResult | null>(null)
+  const [dailyStreak, setDailyStreak] = useState<DailyStreakData | null>(null)
+  const [countdown, setCountdown] = useState('')
+  const [dayOptions, setDayOptions] = useState<DayOption[]>([])
+  const [showDayPicker, setShowDayPicker] = useState(false)
+
+  useEffect(() => { const u = () => setCountdown(getTimeUntilReset()); u(); const i = setInterval(u, 1000); return () => clearInterval(i) }, [])
+
+  const refreshDayOptions = useCallback(() => { setDayOptions(buildDayOptions(GAME_ID, 8)) }, [])
+
+  const initGame = useCallback((date: string) => {
+    if (all.length === 0) return
+    setTarget(getTargetForDate(all, date))
+    setActiveDate(date)
+    recordedRef.current = false
+    const existing = getDayResult(GAME_ID, date)
+    if (existing) {
+      setDayCompleted(true); setDayResult(existing); setDailyStreak(getDailyStreakData(GAME_ID))
+      setGameState(existing.won ? 'won' : 'playing')
+    } else {
+      setDayCompleted(false); setDayResult(null)
+      setGuesses([]); setInput(''); setGameState('playing')
+      setRevealAffiliation(false); setRevealPhoto(false); setRevealInitial(false)
+    }
+    refreshDayOptions()
+  }, [all, refreshDayOptions])
+
+  useEffect(() => { initGame(todayStr()) }, [initGame])
+
+  const guessedIds = useMemo(() => new Set(guesses.map(g => g.character.id)), [guesses])
+
+  useEffect(() => {
+    const term = input.trim().toLowerCase()
+    if (term.length < 2) { setFiltered([]); return }
+    setFiltered(all.filter(c => !guessedIds.has(c.id) && c.name.toLowerCase().includes(term)).slice(0, 8))
+  }, [input, all, guessedIds])
+
+  const evaluate = (guess: JJKCharacter, t: JJKCharacter): AttributeResult => {
+    let gradeStatus: 'match' | 'partial' | 'none' = 'none'
+    const gG = (guess.grade || '').toLowerCase(); const tG = (t.grade || '').toLowerCase()
+    if (gG === tG) gradeStatus = 'match'
+    else { const gI = GRADE_ORDER.indexOf(gG); const tI = GRADE_ORDER.indexOf(tG); if (gI !== -1 && tI !== -1 && Math.abs(gI - tI) === 1) gradeStatus = 'partial' }
+    let powerDir: AttributeResult['powerDir'] = 'unknown'
+    const gP = guess.powerLevel; const tP = t.powerLevel
+    if (gP !== undefined && tP !== undefined) { if (gP === tP) powerDir = 'equal'; else if (tP > gP) powerDir = 'up'; else powerDir = 'down' }
+    return { species: (guess.species || '') === (t.species || ''), gender: (guess.gender || '') === (t.gender || ''), grade: gradeStatus, affiliation: (guess.affiliation || '') === (t.affiliation || ''), clan: (guess.clan || '') === (t.clan || ''), arc: (guess.arc || '') === (t.arc || ''), powerDir }
+  }
+
+  const submit = (c: JJKCharacter) => {
+    if (!target || gameState !== 'playing' || guessedIds.has(c.id) || dayCompleted) return
+    const res = evaluate(c, target)
+    const newGuesses = [{ character: c, result: res }, ...guesses]
+    setGuesses(newGuesses); setInput(''); setFiltered([])
+    if (c.id === target.id) {
+      setGameState('won')
+      const result: DailyResult = { won: true, guesses: newGuesses.length, targetId: target.id, date: activeDate }
+      saveDayResult(GAME_ID, result); setDayCompleted(true); setDayResult(result)
+      if (activeDate === todayStr()) setDailyStreak(updateDailyStreak(GAME_ID))
+      refreshDayOptions()
+      if (!recordedRef.current) {
+        recordedRef.current = true; recordJjkdleSession(newGuesses.length, true)
+        fetch('/api/daily-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gameId: 'jjkdle', score: Math.max(1, 20 - newGuesses.length), won: true, playData: { attempts: newGuesses.length, targetName: target.name } }) }).catch(() => {})
+      }
+    }
+  }
+
+  const switchDay = (date: string) => { setShowDayPicker(false); initGame(date) }
+  const todayDone = typeof window !== 'undefined' ? isDayCompleted(GAME_ID, todayStr()) : false
+
+  const attrBox = (label: string, value: string, match: boolean) => (
+    <div className={`px-3 py-2 rounded flex flex-col items-center justify-center min-w-[110px] ${match ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+      <span className="text-[10px] uppercase tracking-wide opacity-80 mb-1">{label}</span>
+      <span className="text-[11px] font-semibold text-center leading-tight line-clamp-2">{value || 'â€”'}</span>
+    </div>
+  )
+  const gradeBox = (guess: JJKCharacter, gradeStatus: AttributeResult['grade']) => {
+    const color = gradeStatus === 'match' ? 'bg-green-600 text-white' : gradeStatus === 'partial' ? 'bg-orange-500 text-white' : 'bg-red-600 text-white'
+    return (<div className={`px-3 py-2 rounded flex flex-col items-center justify-center min-w-[120px] ${color}`}><span className="text-[10px] uppercase tracking-wide opacity-80 mb-1">Grade</span><span className="text-[11px] font-semibold text-center leading-tight line-clamp-2">{guess.grade || 'â€”'}</span></div>)
+  }
+  const powerBox = (guess: JJKCharacter, dir: AttributeResult['powerDir']) => {
+    let color = 'bg-zinc-700 text-zinc-200'; let icon = ''
+    if (dir === 'up') { color = 'bg-green-600 text-white'; icon = 'â¬†ï¸' } else if (dir === 'down') { color = 'bg-red-600 text-white'; icon = 'â¬‡ï¸' } else if (dir === 'equal') { color = 'bg-green-700 text-white'; icon = 'âœ…' }
+    const ceValue = guess.powerLevel != null ? displayPowerLevel(guess.powerLevel).toLocaleString() : 'â€”'
+    return (<div className={`px-3 py-2 rounded flex flex-col items-center justify-center min-w-[120px] ${color}`}><span className="text-[10px] uppercase tracking-wide opacity-80 mb-1">Cursed Energy</span><div className="flex items-center gap-1 text-xs font-semibold"><span>{ceValue}</span>{icon && <span>{icon}</span>}</div></div>)
+  }
+
+  return (
+    <>
+      <div className="min-h-screen text-purple-100 flex flex-col relative">
+        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-gradient-to-b from-black/65 via-black/55 to-black/70" />
+
+        {/* Header */}
+        <div className="border-b border-purple-700/40 bg-[#0c0520]/70 backdrop-blur-sm sticky top-0 z-40 shadow-lg shadow-black/40">
+          <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <Link href="/" className="flex items-center gap-1 text-purple-300/70 hover:text-purple-100 transition-colors"><Home className="w-4 h-4" /><span className="hidden sm:inline">Home</span></Link>
+                <h1 className="text-lg sm:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-300 to-purple-400 bg-clip-text text-transparent drop-shadow">JJKdle
+                  <span className="text-[10px] px-2 py-0.5 bg-fuchsia-500/20 border border-fuchsia-500/50 text-fuchsia-400 rounded-full font-bold ml-2">DAILY</span>
+                </h1>
+              </div>
+              <div className="flex items-center gap-1 sm:gap-3 text-xs">
+                {todayDone && (
+                  <button onClick={() => setShowDayPicker(s => !s)} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-purple-600/20 border border-purple-500/40 text-purple-300 hover:bg-purple-600/30 transition text-xs">
+                    <Calendar className="w-3.5 h-3.5" /><span className="hidden sm:inline">Days</span>
+                  </button>
+                )}
+                {dayCompleted && <div className="flex items-center gap-1.5 text-purple-400 text-xs"><Clock className="w-3.5 h-3.5" /><span className="hidden sm:inline">{countdown}</span></div>}
+                <button onClick={() => setShowHelp(s => !s)} className="p-1 rounded hover:bg-purple-300/10 text-lg">â“</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Day picker */}
+        {showDayPicker && todayDone && (
+          <div className="sticky top-[57px] z-30 bg-[#0c0520]/95 backdrop-blur border-b border-purple-700/40 shadow-lg shadow-black/40">
+            <div className="container mx-auto px-2 sm:px-4 py-3">
+              <div className="flex items-center gap-2 mb-2 text-xs text-purple-400"><Calendar className="w-3.5 h-3.5" /><span className="font-bold uppercase tracking-wide">Play past days</span></div>
+              <div className="flex flex-wrap gap-2">
+                {dayOptions.map(opt => (
+                  <button key={opt.date} onClick={() => switchDay(opt.date)}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${opt.date === activeDate ? 'bg-fuchsia-600/30 border-fuchsia-500/60 text-fuchsia-300 ring-1 ring-fuchsia-400/40' : opt.completed ? 'bg-green-600/15 border-green-500/40 text-green-400 hover:bg-green-600/25' : 'bg-purple-600/15 border-purple-500/30 text-purple-300 hover:bg-purple-600/25'}`}>
+                    <div>{opt.label}</div>
+                    {opt.completed && <div className="text-[9px] text-green-400 mt-0.5">âœ“ Done</div>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="w-full max-w-4xl mx-auto p-4 flex-1 flex flex-col relative z-10">
+          {/* Active date indicator */}
+          {activeDate !== todayStr() && (
+            <div className="mb-4 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm">
+              <Calendar className="w-4 h-4" /><span>Playing: <strong>{dayOptions.find(o => o.date === activeDate)?.label || activeDate}</strong></span>
+              <button onClick={() => switchDay(todayStr())} className="ml-3 px-2 py-0.5 rounded bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs hover:bg-purple-600/40 transition">â† Today</button>
+            </div>
+          )}
+
+          {showHelp && (
+            <div className="mb-6 p-4 rounded-lg bg-[#0c0520]/60 border border-purple-700/40 text-sm leading-relaxed shadow shadow-black/40">
+              Guess the hidden Jujutsu Kaisen character! Each guess reveals how close your attributes are.
+              <span className="text-green-400 font-bold"> Green</span> = exact match,
+              <span className="text-orange-400 font-bold"> Orange</span> = partial match,
+              <span className="text-red-400 font-bold"> Red</span> = no match.
+              Cursed Energy shows arrows (â¬†ï¸ higher, â¬‡ï¸ lower). Hints unlock at 4, 8, and 12 guesses.
+              <br /><br /><span className="text-fuchsia-400 font-bold">ðŸ“… Daily System:</span> Complete today&apos;s challenge, then play the last 7 days using the calendar button!
+            </div>
+          )}
+
+          {/* Completed Banner */}
+          {dayCompleted && dayResult && target && (
+            <div className="mb-8 max-w-md mx-auto">
+              <div className="relative rounded-2xl p-6 text-center overflow-hidden" style={{ background: 'linear-gradient(180deg, rgba(12, 5, 32, 0.95) 0%, rgba(20, 10, 50, 0.98) 100%)', border: '2px solid rgba(168, 85, 247, 0.5)' }}>
+                <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-purple-400/60" />
+                <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-purple-400/60" />
+                <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-purple-400/60" />
+                <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-purple-400/60" />
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <CheckCircle className="w-8 h-8 text-green-400" />
+                  <h3 className="text-xl font-black text-green-400 uppercase tracking-wider">{activeDate === todayStr() ? 'Daily Completed!' : 'Challenge Completed!'}</h3>
+                </div>
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <img src={target.image_url} alt={target.name} className="w-16 h-20 object-cover object-top rounded-lg border-2 border-purple-500/50" />
+                  <div className="text-left">
+                    <div className="text-white font-bold text-lg">{target.name}</div>
+                    <div className={`text-sm ${dayResult.won ? 'text-green-300/80' : 'text-red-300/80'}`}>{dayResult.won ? `ðŸ† Found in ${dayResult.guesses} attempt${dayResult.guesses !== 1 ? 's' : ''}!` : 'Better luck next time!'}</div>
+                  </div>
+                </div>
+                {dailyStreak && dailyStreak.currentStreak > 0 && activeDate === todayStr() && (
+                  <div className="flex items-center justify-center gap-2 text-amber-400 mb-3"><Flame className="w-5 h-5" /><span className="font-bold">{dailyStreak.currentStreak} day streak</span>{dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>}</div>
+                )}
+                {activeDate === todayStr() && <div className="bg-[#0c0520]/50 rounded-xl p-4 border border-purple-700/50 mb-3"><div className="flex items-center justify-center gap-2 text-purple-400 text-sm"><Clock className="w-4 h-4" /><span>Next daily in {countdown}</span></div></div>}
+                {todayDone && <button onClick={() => setShowDayPicker(true)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold bg-gradient-to-br from-purple-600 via-fuchsia-500 to-purple-600 text-white shadow-lg shadow-purple-900/40 hover:brightness-110 transition text-sm"><Calendar className="w-4 h-4" /> Play Past Days</button>}
+              </div>
+            </div>
+          )}
+
+          {/* Legend */}
+          {!dayCompleted && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 text-sm md:text-base uppercase tracking-wide text-purple-100 font-bold">
+              <div className="flex items-center gap-3 flex-wrap"><span>Attempts: {guesses.length}</span>{gameState === 'won' && <span className="text-green-400 font-semibold">ðŸŽ‰ You found them!</span>}</div>
+              <div className="flex items-center gap-4 flex-wrap text-sm md:text-base normal-case font-semibold">
+                <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-sm bg-green-600 inline-block" /><span className="text-green-300">Match</span></div>
+                <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-sm bg-orange-500 inline-block" /><span className="text-orange-300">Partial</span></div>
+                <div className="flex items-center gap-2"><span className="w-4 h-4 rounded-sm bg-red-600 inline-block" /><span className="text-red-300">No Match</span></div>
+              </div>
+            </div>
+          )}
+
+          {/* Hints */}
+          {gameState === 'playing' && target && !dayCompleted && (
+            <div className="mb-4 flex flex-col gap-4">
+              <div className="flex items-start justify-center gap-4 sm:gap-6 md:gap-8 flex-nowrap">
+                <div className="w-24 sm:w-32 md:w-40 flex flex-col items-center">
+                  <div role="button" tabIndex={0} onClick={() => { if (guesses.length >= 4) setRevealAffiliation(true) }} className={`flex items-center justify-center h-20 w-24 sm:h-24 sm:w-32 md:h-28 md:w-40 rounded-lg border-2 border-purple-500/40 bg-[#0c0520]/60 select-none ${guesses.length < 4 ? 'opacity-40 grayscale pointer-events-none' : 'cursor-pointer hover:brightness-110 hover:scale-[1.02]'}`}><span className="text-4xl sm:text-5xl">ðŸ«</span></div>
+                  <div className={`mt-2 px-2 py-1 rounded-md text-center text-[11px] sm:text-xs font-bold tracking-wide border ${guesses.length < 4 ? 'bg-[#0c0520]/70 border-purple-700/40 text-purple-200/80' : 'bg-emerald-600/25 border-emerald-500/40 text-emerald-300'}`}>{guesses.length < 4 ? `${4 - guesses.length} to unlock` : 'Available'}</div>
+                </div>
+                <div className="w-24 sm:w-32 md:w-40 flex flex-col items-center">
+                  <div role="button" tabIndex={0} onClick={() => { if (guesses.length >= 8) setRevealPhoto(true) }} className={`flex items-center justify-center h-20 w-24 sm:h-24 sm:w-32 md:h-28 md:w-40 rounded-lg border-2 border-purple-500/40 bg-[#0c0520]/60 select-none ${guesses.length < 8 ? 'opacity-40 grayscale pointer-events-none' : 'cursor-pointer hover:brightness-110 hover:scale-[1.02]'}`}><span className="text-4xl sm:text-5xl">ðŸ“¸</span></div>
+                  <div className={`mt-2 px-2 py-1 rounded-md text-center text-[11px] sm:text-xs font-bold tracking-wide border ${guesses.length < 8 ? 'bg-[#0c0520]/70 border-purple-700/40 text-purple-200/80' : 'bg-emerald-600/25 border-emerald-500/40 text-emerald-300'}`}>{guesses.length < 8 ? `${8 - guesses.length} to unlock` : 'Available'}</div>
+                </div>
+                <div className="w-24 sm:w-32 md:w-40 flex flex-col items-center">
+                  <div role="button" tabIndex={0} onClick={() => { if (guesses.length >= 12) setRevealInitial(true) }} className={`flex items-center justify-center h-20 w-24 sm:h-24 sm:w-32 md:h-28 md:w-40 rounded-lg border-2 border-purple-500/40 bg-[#0c0520]/60 select-none ${guesses.length < 12 ? 'opacity-40 grayscale pointer-events-none' : 'cursor-pointer hover:brightness-110 hover:scale-[1.02]'}`}><span className="text-4xl sm:text-5xl">ðŸ”¤</span></div>
+                  <div className={`mt-2 px-2 py-1 rounded-md text-center text-[11px] sm:text-xs font-bold tracking-wide border ${guesses.length < 12 ? 'bg-[#0c0520]/70 border-purple-700/40 text-purple-200/80' : 'bg-emerald-600/25 border-emerald-500/40 text-emerald-300'}`}>{guesses.length < 12 ? `${12 - guesses.length} to unlock` : 'Available'}</div>
+                </div>
+              </div>
+              {revealAffiliation && <div className="px-5 py-3 text-center text-base md:text-lg rounded-lg bg-[#0c0520]/60 border border-purple-700/40 shadow shadow-black/30"><span className="text-purple-200/80 font-medium">Affiliation: </span><span className="font-extrabold text-purple-300">{target.affiliation || 'Unknown'}</span></div>}
+              {revealPhoto && <div className="relative w-64 h-64 md:w-72 md:h-72 mx-auto rounded-lg overflow-hidden ring-2 ring-purple-600/50"><img src={target.image_url} alt="Hint" className="w-full h-full object-cover object-top filter blur-md brightness-75" /></div>}
+              {revealInitial && <div className="px-5 py-3 text-center text-base md:text-lg rounded-lg bg-[#0c0520]/60 border border-purple-700/40 shadow shadow-black/30"><span className="text-purple-200/80 font-medium">First Letter: </span><span className="font-extrabold text-purple-300">{target.name.charAt(0).toUpperCase()}</span></div>}
+            </div>
+          )}
+
+          {/* Search input */}
+          {gameState === 'playing' && !dayCompleted && (
+            <div className="mb-6 relative">
+              <div className="flex items-center gap-2 bg-[#0c0520]/60 border border-purple-700/40 rounded-lg px-3 py-2 shadow shadow-black/30">
+                <span className="text-purple-300/80">ðŸ”</span>
+                <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && filtered.length > 0 && input.trim().length >= 2) submit(filtered[0]) }} placeholder="Type at least 2 characters..." className="flex-1 bg-transparent outline-none text-sm placeholder-zinc-500" />
+              </div>
+              {filtered.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-[#0c0520]/95 backdrop-blur border border-purple-600/50 rounded-xl shadow-2xl shadow-black/60 max-h-64 overflow-auto ring-1 ring-purple-400/20">
+                  <ul className="py-1 divide-y divide-purple-400/10">
+                    {filtered.map((c, i) => (
+                      <li key={c.id}><button onClick={() => submit(c)} className="w-full text-left px-3 py-2 text-sm hover:bg-purple-300/10 flex items-center gap-3 transition-colors">
+                        <img src={c.image_url} alt={c.name} className="w-9 h-9 object-cover object-top rounded-lg ring-1 ring-purple-500/30" />
+                        <span className="font-medium tracking-wide text-purple-100/90">{c.name}</span>
+                        {i === 0 && input.trim().length >= 2 && <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Enter</span>}
+                      </button></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Guess rows */}
+          {guesses.length > 0 && !dayCompleted && (
+            <div className="space-y-3 flex-1 overflow-y-auto pb-6">
+              {guesses.map(g => (
+                <div key={g.character.id} className="p-4 rounded-lg bg-[#0c0520]/55 border border-purple-700/40 flex flex-wrap items-center gap-3 shadow shadow-black/30">
+                  <div className="relative group flex-none">
+                    <img src={g.character.image_url} alt={g.character.name} className="w-16 h-16 object-cover object-top rounded ring-1 ring-purple-600/40" />
+                    <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 -top-1 -translate-y-full opacity-0 group-hover:opacity-100 group-hover:-translate-y-[6px] transition-all duration-200 bg-[#0c0520]/95 border border-purple-600/50 px-2 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap shadow shadow-black/50">{g.character.name}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center flex-1">
+                    {[attrBox('Species', g.character.species, g.result.species), attrBox('Gender', g.character.gender, g.result.gender), gradeBox(g.character, g.result.grade), attrBox('Affiliation', g.character.affiliation, g.result.affiliation), attrBox('Clan', g.character.clan, g.result.clan), attrBox('Arc', g.character.arc, g.result.arc), powerBox(g.character, g.result.powerDir)].map((box, i) => (
+                      <div key={i} className="attr-reveal" style={{ animationDelay: `${i * 140}ms` }}>{box}</div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Win Card */}
+          {gameState === 'won' && target && !dayCompleted && (
+            <div className="max-w-sm mx-auto mb-6 relative rounded-2xl p-6 text-center overflow-hidden border-2 border-green-500/50" style={{ background: 'linear-gradient(145deg, rgba(22, 101, 52, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)', animation: 'fadeIn 0.4s ease-out' }}>
+              <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-green-400/60" /><div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-green-400/60" /><div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-green-400/60" /><div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-green-400/60" />
+              <CheckCircle className="w-10 h-10 mx-auto mb-1 text-green-400" />
+              <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">Correct!</div>
+              <div className="flex items-center justify-center gap-3 mb-3"><img src={target.image_url} alt={target.name} className="w-14 h-14 sm:w-16 sm:h-16 object-cover object-top rounded-lg bg-purple-950/50 p-0.5 border border-purple-600/50" /><div className="text-lg sm:text-xl font-bold text-white">{target.name}</div></div>
+              <div className="text-sm text-purple-300">Guessed in {guesses.length} attempt{guesses.length !== 1 ? 's' : ''}</div>
+              {dailyStreak && dailyStreak.currentStreak > 0 && activeDate === todayStr() && <div className="mt-3 flex items-center justify-center gap-2 text-amber-400"><Flame className="w-5 h-5" /><span className="font-bold">{dailyStreak.currentStreak} day streak</span>{dailyStreak.currentStreak === dailyStreak.bestStreak && dailyStreak.currentStreak > 1 && <span className="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">Best!</span>}</div>}
+              {activeDate === todayStr() && <div className="mt-2 flex items-center justify-center gap-2 text-purple-400 text-sm"><Clock className="w-4 h-4" /><span>Next daily in {countdown}</span></div>}
+            </div>
+          )}
+        </div>
+      </div>
+      <style jsx>{`
+        @keyframes attrIn { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        .attr-reveal { opacity:0; animation: attrIn .35s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      `}</style>
+    </>
+  )
+}
+
