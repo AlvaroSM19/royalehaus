@@ -187,7 +187,7 @@ export default function EmojiRiddlePage() {
         )}
 
         {/* Completed Banner */}
-        {dayCompleted && dayResult && target && (
+        {dayCompleted && dayResult && (gameState === 'won' || gameState === 'lost') && (
           <div className="mb-8 max-w-md mx-auto">
             <div className="relative rounded-2xl p-6 text-center overflow-hidden" style={{ background: 'linear-gradient(180deg, rgba(12, 5, 32, 0.95) 0%, rgba(20, 10, 50, 0.98) 100%)', border: `2px solid ${dayResult.won ? 'rgba(74, 222, 128, 0.5)' : 'rgba(248, 113, 113, 0.5)'}` }}>
               <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-purple-400/60" />
@@ -201,9 +201,9 @@ export default function EmojiRiddlePage() {
               {/* Show all emojis */}
               <div className="flex justify-center gap-2 text-3xl mb-4">{emojis.map((e, i) => <span key={i}>{e}</span>)}</div>
               <div className="flex items-center justify-center gap-4 mb-4">
-                <img src={`/images/cards/${target.id}.webp`} alt={target.name} className="w-16 h-20 object-cover object-top rounded-lg border-2 border-purple-500/50" />
+                <img src={`/images/cards/${dayResult.targetId}.webp`} alt={getCardNameTranslated(Number(dayResult.targetId))} className="w-16 h-20 object-cover object-top rounded-lg border-2 border-purple-500/50" />
                 <div className="text-left">
-                  <div className="text-white font-bold text-lg">{getCardNameTranslated(target.id)}</div>
+                  <div className="text-white font-bold text-lg">{getCardNameTranslated(Number(dayResult.targetId))}</div>
                   <div className={`text-sm ${dayResult.won ? 'text-green-300/80' : 'text-red-300/80'}`}>{dayResult.won ? `🏆 Found in ${dayResult.guesses} attempt${dayResult.guesses !== 1 ? 's' : ''}!` : 'Better luck next time!'}</div>
                 </div>
               </div>
@@ -216,8 +216,8 @@ export default function EmojiRiddlePage() {
           </div>
         )}
 
-        {/* Game area */}
-        {!dayCompleted && (
+        {/* Game area - playing */}
+        {gameState === 'playing' && !dayCompleted && (
           <>
             {/* Emoji display */}
             <div className="mb-6 flex justify-center gap-3 sm:gap-4">
@@ -233,27 +233,25 @@ export default function EmojiRiddlePage() {
             </div>
 
             {/* Search input */}
-            {gameState === 'playing' && (
-              <div className="mb-6 relative">
-                <div className="flex items-center gap-2 bg-[#0c0520]/60 border border-purple-700/40 rounded-lg px-3 py-2 shadow shadow-black/30">
-                  <span className="text-purple-300/80">🔍</span>
-                  <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && filtered.length > 0 && input.trim().length >= 2) submit(filtered[0]) }} placeholder="Type at least 2 characters..." className="flex-1 bg-transparent outline-none text-sm placeholder-zinc-500" />
-                </div>
-                {filtered.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-[#0c0520]/95 backdrop-blur border border-purple-600/50 rounded-xl shadow-2xl shadow-black/60 max-h-64 overflow-auto ring-1 ring-purple-400/20">
-                    <ul className="py-1 divide-y divide-purple-400/10">
-                      {filtered.map((c, i) => (
-                        <li key={c.id}><button onClick={() => submit(c)} className="w-full text-left px-3 py-2 text-sm hover:bg-purple-300/10 flex items-center gap-3 transition-colors">
-                          <img src={`/images/cards/${c.id}.webp`} alt={c.name} className="w-9 h-9 object-cover object-top rounded-lg ring-1 ring-purple-500/30" />
-                          <span className="font-medium tracking-wide text-purple-100/90">{getCardNameTranslated(c.id)}</span>
-                          {i === 0 && input.trim().length >= 2 && <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Enter</span>}
-                        </button></li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+            <div className="mb-6 relative">
+              <div className="flex items-center gap-2 bg-[#0c0520]/60 border border-purple-700/40 rounded-lg px-3 py-2 shadow shadow-black/30">
+                <span className="text-purple-300/80">🔍</span>
+                <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && filtered.length > 0 && input.trim().length >= 2) submit(filtered[0]) }} placeholder="Type at least 2 characters..." className="flex-1 bg-transparent outline-none text-sm placeholder-zinc-500" />
               </div>
-            )}
+              {filtered.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full bg-[#0c0520]/95 backdrop-blur border border-purple-600/50 rounded-xl shadow-2xl shadow-black/60 max-h-64 overflow-auto ring-1 ring-purple-400/20">
+                  <ul className="py-1 divide-y divide-purple-400/10">
+                    {filtered.map((c, i) => (
+                      <li key={c.id}><button onClick={() => submit(c)} className="w-full text-left px-3 py-2 text-sm hover:bg-purple-300/10 flex items-center gap-3 transition-colors">
+                        <img src={`/images/cards/${c.id}.webp`} alt={c.name} className="w-9 h-9 object-cover object-top rounded-lg ring-1 ring-purple-500/30" />
+                        <span className="font-medium tracking-wide text-purple-100/90">{getCardNameTranslated(c.id)}</span>
+                        {i === 0 && input.trim().length >= 2 && <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Enter</span>}
+                      </button></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             {/* Guess history */}
             {guesses.length > 0 && (
@@ -265,17 +263,6 @@ export default function EmojiRiddlePage() {
                     {g.id === targetId ? <CheckCircle className="w-5 h-5 text-green-400" /> : <XCircle className="w-5 h-5 text-red-400" />}
                   </div>
                 ))}
-              </div>
-            )}
-
-            {/* Game over lost */}
-            {gameState === 'lost' && target && (
-              <div className="max-w-sm mx-auto mb-6 p-6 rounded-2xl text-center border-2 border-red-500/50" style={{ background: 'linear-gradient(145deg, rgba(127, 29, 29, 0.3) 0%, rgba(12, 5, 32, 0.95) 100%)' }}>
-                <XCircle className="w-10 h-10 mx-auto mb-2 text-red-400" />
-                <div className="text-xl font-bold text-red-400 mb-2">Game Over!</div>
-                <div className="flex items-center justify-center gap-3 mb-3"><img src={`/images/cards/${target.id}.webp`} alt={target.name} className="w-14 h-14 object-cover object-top rounded-lg border-2 border-purple-500/50" /><div className="text-lg font-bold text-white">{getCardNameTranslated(target.id)}</div></div>
-                <div className="flex justify-center gap-2 text-2xl mb-3">{emojis.map((e, i) => <span key={i}>{e}</span>)}</div>
-                {activeDate === todayStr() && <div className="flex items-center justify-center gap-2 text-purple-400 text-sm"><Clock className="w-4 h-4" /><span>Next daily in {countdown}</span></div>}
               </div>
             )}
           </>
