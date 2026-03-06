@@ -242,30 +242,32 @@ export default function TapOneGame() {
         key={cat.id}
         onClick={() => handleSelect(catIndex)}
         disabled={!clickable}
-        className={`tapone-mobile-card group relative rounded-xl sm:rounded-2xl p-[2px] transition-transform duration-200 ${clickable ? 'hover:scale-[1.02] active:scale-95 cursor-pointer' : ''}`}
+        className={`tapone-mobile-card group relative rounded-xl sm:rounded-2xl p-[2px] transition-transform duration-200 ${clickable ? 'hover:scale-[1.03] cursor-pointer' : ''}`}
         aria-label={`Select ${cat.label}`}
         style={{
           boxShadow: locked[catIndex]
             ? '0 0 0 2px rgba(139,92,246,0.65), 0 4px 12px rgba(139,92,246,0.25)'
-            : '0 6px 16px rgba(0,0,0,0.35)',
+            : clickable
+              ? '0 0 15px rgba(139,92,246,0.3), 0 0 0 1px rgba(139,92,246,0.4)'
+              : '0 6px 16px rgba(0,0,0,0.35)',
         }}
       >
         <div className={`rounded-xl sm:rounded-2xl bg-gradient-to-br ${locked[catIndex] ? 'from-violet-500/80 via-fuchsia-500/70 to-pink-500/70' : 'from-slate-600/50 via-slate-700/50 to-slate-800/50'}`}>
           <div className={`rounded-[10px] sm:rounded-[14px] bg-slate-900/70 backdrop-blur-md overflow-hidden flex flex-col items-center justify-between ${h}`}>
-            <div className="w-full flex-1 flex items-center justify-center">
+            <div className="w-full flex-1 flex items-center justify-center p-1">
               {phase === 'spinning' && !locked[catIndex] ? (
                 <img
                   src={`/images/cards/${spinCardIds[catIndex]}.webp`}
                   alt=""
                   decoding="async"
                   loading="eager"
-                  className="w-full max-w-[120px] sm:max-w-[180px] md:max-w-[200px] h-[70px] sm:h-[110px] md:h-[130px] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] transition-opacity duration-100"
+                  className="max-w-[100px] sm:max-w-[140px] max-h-[80px] sm:max-h-[110px] object-contain opacity-60 transition-opacity duration-100"
                 />
               ) : (
                 <img
                   src={`/images/cards/${el.id}.webp`}
                   alt={getCardNameTranslated(el.id)}
-                  className="w-full max-w-[120px] sm:max-w-[180px] md:max-w-[200px] h-[70px] sm:h-[110px] md:h-[130px] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] opacity-0 animate-fade-in"
+                  className="max-w-[100px] sm:max-w-[140px] max-h-[80px] sm:max-h-[110px] object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)] opacity-0 animate-fade-in"
                   draggable={false}
                 />
               )}
@@ -276,10 +278,10 @@ export default function TapOneGame() {
           </div>
         </div>
         {locked[catIndex] && (
-          <span className="absolute top-2 right-2 inline-flex items-center gap-1 bg-violet-600 text-white text-[11px] px-2 py-1 rounded-xl shadow-md">✓</span>
+          <span className="absolute top-1 right-1 sm:top-2 sm:right-2 inline-flex items-center gap-1 bg-violet-600 text-white text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-xl shadow-md">✓</span>
         )}
         {clickable && (
-          <span className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-violet-400/60 group-hover:ring-violet-300/80" />
+          <span className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-violet-400/60 group-hover:ring-violet-300/80 animate-pulse" />
         )}
       </button>
     );
@@ -291,25 +293,41 @@ export default function TapOneGame() {
 
       {/* Header */}
       <div className="tapone-header border-b border-amber-700/40 bg-[#042836]/70 backdrop-blur-sm sticky top-0 z-40 shadow-lg shadow-black/40">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <Home className="w-5 h-5" />
-                Home
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-gray-400 hover:text-white transition-colors text-xs">
+                <Home className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Home</span>
               </Link>
-              <h1 className="text-2xl font-extrabold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow">TAP ONE</h1>
+              <h1 className="text-base sm:text-lg md:text-2xl font-extrabold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow">☝️ TAP ONE</h1>
             </div>
-            <button onClick={handleRestart} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 text-black font-semibold shadow shadow-black/40 hover:brightness-110 transition">
-              <RotateCcw className="w-4 h-4" />
-              New Game
-            </button>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="text-gray-400 text-[10px] sm:text-xs flex items-center gap-1 sm:gap-1.5">
+                {phase === 'spinning' && !finished && (
+                  <>
+                    <span className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                    <span className="hidden sm:inline">Spinning...</span>
+                  </>
+                )}
+                {phase === 'reveal' && !finished && (
+                  <span className="text-amber-300 font-semibold">TAP! ({round + 1}/{categories.length})</span>
+                )}
+                {finished && (
+                  <span className="text-green-400 font-semibold">Complete!</span>
+                )}
+              </div>
+              <button onClick={handleRestart} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 text-black font-semibold rounded-lg hover:brightness-110 transition text-xs shadow shadow-black/40">
+                <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">New Game</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Status pill */}
-      <section className="tapone-status max-w-7xl mx-auto px-2 sm:px-4 mt-2 sm:mt-4">
+      {/* Status pill — hidden on mobile (info shown in header) */}
+      <section className="tapone-status hidden sm:block max-w-7xl mx-auto px-2 sm:px-4 mt-2 sm:mt-4">
         <div className="rounded-xl border border-violet-400/20 bg-violet-600/10 px-3 sm:px-4 py-2 text-violet-200/90 text-xs sm:text-sm">
           {finished ? (
             <span>Game completed! All {categories.length} categories selected.</span>
@@ -321,40 +339,41 @@ export default function TapOneGame() {
         </div>
       </section>
 
-      {/* Grid: 3 rows x 4 columns */}
-      <div className="tapone-card-container mx-auto max-w-6xl px-1 sm:px-0 mt-2 lg:mt-3">
-        {/* Row 1: tanks, win-conditions, spells, buildings */}
-        <div className="tapone-mobile-grid grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 px-1 sm:px-2 mb-2 sm:mb-3 lg:mb-4">
-          {[0, 1, 2, 3].map(i => renderCategoryCard(i, 'h-[140px] sm:h-[170px] lg:h-[180px]'))}
-        </div>
-
-        {/* Row 2: cycle, splash, legendary, goblins */}
-        <div className="tapone-mobile-grid grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 px-1 sm:px-2 mb-2 sm:mb-3 lg:mb-4">
-          {[4, 5, 6, 7].map(i => renderCategoryCard(i))}
-        </div>
-
-        {/* Row 3 Mobile: air + swarm */}
-        <div className="grid grid-cols-2 gap-2 sm:hidden px-1 mb-2">
-          {renderCategoryCard(8, 'h-[200px]')}
-          {renderCategoryCard(9, 'h-[200px]')}
-        </div>
-
-        {/* Best Rank mobile */}
-        <div className="sm:hidden px-1 mb-2">
-          <div className="relative rounded-2xl p-[2px] bg-gradient-to-br from-amber-500/60 via-yellow-500/60 to-orange-500/60">
-            <div className="rounded-[14px] bg-slate-900/70 backdrop-blur-md overflow-hidden h-auto min-h-[140px] flex flex-col items-center py-4 px-4">
-              <h3 className="text-sm font-semibold text-amber-300 flex items-center gap-1 mb-2"><span>🏆</span><span>Best Rank</span></h3>
-              {bestRank ? (
-                <div className="text-center space-y-1">
-                  <div className="text-3xl font-extrabold text-amber-200 drop-shadow">#{bestRank.rank}</div>
-                  <div className="text-[10px] text-amber-100/90 font-bold leading-snug max-w-[200px]">{bestRank.title}</div>
-                  <div className="text-[10px] text-emerald-300 font-extrabold tracking-wide">{bestRank.trophies.toLocaleString()} TROPHIES</div>
-                </div>
-              ) : (
-                <p className="text-xs text-amber-200/90">Play to get ranked!</p>
-              )}
+      {/* Best Rank Bar — Mobile compact */}
+      <div className="sm:hidden px-2 mt-2">
+        <div className="bg-[#042836]/80 border border-amber-700/30 rounded-xl px-3 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <span className="text-amber-300/80 text-xs font-medium">Best:</span>
             </div>
+            {bestRank ? (
+              <div className="flex items-center gap-2">
+                <span className="text-white font-black text-sm">🏆 #{bestRank.rank}</span>
+                <span className="text-amber-400/70 text-[10px] uppercase">{bestRank.title.replace(/^[^\s]+\s/, '')}</span>
+              </div>
+            ) : (
+              <span className="text-gray-500 text-xs">Play to rank!</span>
+            )}
           </div>
+        </div>
+      </div>
+
+      {/* Game Grid */}
+      <div className="tapone-card-container mx-auto max-w-6xl px-1 sm:px-0 mt-2 lg:mt-3">
+        {/* Mobile: 2-column grid */}
+        <div className="sm:hidden grid grid-cols-2 gap-2 px-1 mb-2">
+          {categories.map((_, i) => renderCategoryCard(i))}
+        </div>
+
+        {/* Desktop: Row 1 — first 4 categories */}
+        <div className="hidden sm:grid grid-cols-4 gap-3 lg:gap-4 px-2 mb-3 lg:mb-4">
+          {[0, 1, 2, 3].map(i => renderCategoryCard(i, 'h-[170px] lg:h-[180px]'))}
+        </div>
+
+        {/* Desktop: Row 2 — next 4 categories */}
+        <div className="hidden sm:grid grid-cols-4 gap-3 lg:gap-4 px-2 mb-3 lg:mb-4">
+          {[4, 5, 6, 7].map(i => renderCategoryCard(i))}
         </div>
 
         {/* Row 3 Desktop: air, Best Rank (span 2), swarm */}
@@ -402,8 +421,8 @@ export default function TapOneGame() {
         </div>
       </div>
 
-      {/* Bottom Controls */}
-      <div className="flex justify-center mt-8 gap-4">
+      {/* Bottom Controls — desktop only */}
+      <div className="hidden sm:flex justify-center mt-8 gap-4">
         {finished ? (
           <button onClick={handleRestart} className="px-6 py-2 rounded-xl font-semibold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg hover:from-emerald-400 hover:to-emerald-600 transition-colors">
             New Game

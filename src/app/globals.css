@@ -307,25 +307,6 @@ body.has-custom-bg .homepage-flag-bg {
     display: none !important;
   }
 
-  /* Tap One - Fix z-index and layout */
-  .tapone-mobile-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.5rem !important;
-  }
-
-  .tapone-mobile-card {
-    height: 160px !important;
-  }
-
-  .tapone-mobile-card img {
-    max-height: 90px !important;
-  }
-
-  .tapone-mobile-label {
-    font-size: 0.625rem !important;
-    padding: 0.375rem !important;
-  }
-
   /* Fix z-index hierarchy for Tap One */
   .tapone-header {
     z-index: 40 !important;
@@ -344,6 +325,22 @@ body.has-custom-bg .homepage-flag-bg {
   .tapone-status {
     z-index: 30 !important;
     position: relative;
+  }
+}
+
+/* Tap One - Card sizing only below sm breakpoint (mobile grid) */
+@media (max-width: 639px) {
+  .tapone-mobile-card {
+    height: 160px !important;
+  }
+
+  .tapone-mobile-card img {
+    max-height: 90px !important;
+  }
+
+  .tapone-mobile-label {
+    font-size: 0.625rem !important;
+    padding: 0.375rem !important;
   }
 }
 
