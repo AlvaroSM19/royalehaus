@@ -8,6 +8,7 @@ import FeedbackModal from '@/components/FeedbackModal'
 import LanguageSelector from '@/components/LanguageSelector'
 import VisitCounter from '@/components/VisitCounter'
 import MobileMenu from '@/components/MobileMenu'
+import CookieNotice from '@/components/CookieNotice'
 import { LanguageProvider } from '@/lib/useLanguage'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/schema'
 
@@ -243,6 +244,7 @@ export default function RootLayout({
             </div>
           </footer>
         </div>
+        <CookieNotice />
         </LanguageProvider>
       </body>
     </html>
