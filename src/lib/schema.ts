@@ -29,13 +29,13 @@ export function generateGameSchema(props: GameSchemaProps) {
     },
     author: {
       '@type': 'Organization',
-      name: 'RoyaleHaus',
-      url: 'https://royalehaus.com',
+      name: 'Clash Royale',
+      url: 'https://clashroyaledle.net',
     },
     publisher: {
       '@type': 'Organization',
-      name: 'RoyaleHaus',
-      url: 'https://royalehaus.com',
+      name: 'Clash Royale',
+      url: 'https://clashroyaledle.net',
     },
     inLanguage: ['en', 'es'],
     isAccessibleForFree: true,
@@ -46,26 +46,26 @@ export function generateWebsiteSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'RoyaleHaus',
-    alternateName: 'Royale Haus',
-    url: 'https://royalehaus.com',
-    description: 'Free Clash Royale mini-games, quizzes, and complete card wiki. Part of the Haus Universe.',
+    name: 'Clash Royale',
+    alternateName: 'ClashRoyaleDle',
+    url: 'https://clashroyaledle.net',
+    description: 'Free Clash Royale mini-games, quizzes, and complete card wiki.',
     inLanguage: ['en', 'es'],
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://royalehaus.com/cards?search={search_term_string}',
+        urlTemplate: 'https://clashroyaledle.net/cards?search={search_term_string}',
       },
       'query-input': 'required name=search_term_string',
     },
     publisher: {
       '@type': 'Organization',
-      name: 'RoyaleHaus',
-      url: 'https://royalehaus.com',
+      name: 'Clash Royale',
+      url: 'https://clashroyaledle.net',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://royalehaus.com/favicon-cr.png',
+        url: 'https://clashroyaledle.net/images/iconos/cr-icon.jpg',
       },
     },
   };
@@ -75,9 +75,9 @@ export function generateOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'RoyaleHaus',
-    url: 'https://royalehaus.com',
-    logo: 'https://royalehaus.com/favicon-cr.png',
+    name: 'Clash Royale',
+    url: 'https://clashroyaledle.net',
+    logo: 'https://clashroyaledle.net/images/iconos/cr-icon.jpg',
     description: 'Free Clash Royale mini-games platform with quizzes and card wiki.',
     sameAs: [],
     contactPoint: {
@@ -121,63 +121,63 @@ export const GAME_SCHEMAS = {
   royaledle: generateGameSchema({
     name: 'Royaledle - Clash Royale Card Guessing Game',
     description: 'Guess the mystery Clash Royale card by comparing attributes. Daily challenge and unlimited practice mode available.',
-    url: 'https://royalehaus.com/games/royaledle',
-    image: 'https://royalehaus.com/images/games/1.webp',
+    url: 'https://clashroyaledle.net/games/royaledle',
+    image: 'https://clashroyaledle.net/images/games/1.webp',
   }),
   
   'higher-lower': generateGameSchema({
     name: 'Higher or Lower - Clash Royale Elixir Game',
     description: 'Compare Clash Royale cards and guess if the next one costs more or less elixir. Build your streak!',
-    url: 'https://royalehaus.com/games/higher-lower',
-    image: 'https://royalehaus.com/images/games/2.webp',
+    url: 'https://clashroyaledle.net/games/higher-lower',
+    image: 'https://clashroyaledle.net/images/games/2.webp',
   }),
   
   impostor: generateGameSchema({
     name: 'Find the Impostor - Clash Royale Quiz',
     description: 'Spot the fake card among real Clash Royale cards. Test your knowledge of card attributes!',
-    url: 'https://royalehaus.com/games/impostor',
-    image: 'https://royalehaus.com/images/games/3.webp',
+    url: 'https://clashroyaledle.net/games/impostor',
+    image: 'https://clashroyaledle.net/images/games/3.webp',
   }),
   
   wordle: generateGameSchema({
     name: 'Clash Royale Wordle',
     description: 'Guess the Clash Royale card name letter by letter. Green, yellow, and gray hints guide you!',
-    url: 'https://royalehaus.com/games/wordle',
-    image: 'https://royalehaus.com/images/games/4.webp',
+    url: 'https://clashroyaledle.net/games/wordle',
+    image: 'https://clashroyaledle.net/images/games/4.webp',
   }),
   
   tapone: generateGameSchema({
     name: 'Tap One - Speed Card Game',
     description: 'Tap the correct Clash Royale card before time runs out! Test your reflexes and card knowledge.',
-    url: 'https://royalehaus.com/games/tapone',
-    image: 'https://royalehaus.com/images/games/5.webp',
+    url: 'https://clashroyaledle.net/games/tapone',
+    image: 'https://clashroyaledle.net/images/games/5.webp',
   }),
   
   'pixel-royale': generateGameSchema({
     name: 'Pixel Royale - Guess the Pixelated Card',
     description: 'Guess the Clash Royale card from a pixelated/blurred image. Each guess reveals more clarity!',
-    url: 'https://royalehaus.com/games/pixel-royale',
-    image: 'https://royalehaus.com/images/games/6.webp',
+    url: 'https://clashroyaledle.net/games/pixel-royale',
+    image: 'https://clashroyaledle.net/images/games/6.webp',
   }),
   
   'emoji-riddle': generateGameSchema({
     name: 'Emoji Riddle - Decode the Card',
     description: 'Decode which Clash Royale card the emojis represent. Wrong guesses reveal more clues!',
-    url: 'https://royalehaus.com/games/emoji-riddle',
-    image: 'https://royalehaus.com/images/games/7.webp',
+    url: 'https://clashroyaledle.net/games/emoji-riddle',
+    image: 'https://clashroyaledle.net/images/games/7.webp',
   }),
   
   'sound-quiz': generateGameSchema({
     name: 'Sound Quiz - Guess by Audio',
     description: 'Listen to the sound and guess which Clash Royale card it belongs to!',
-    url: 'https://royalehaus.com/games/sound-quiz',
-    image: 'https://royalehaus.com/images/games/8.webp',
+    url: 'https://clashroyaledle.net/games/sound-quiz',
+    image: 'https://clashroyaledle.net/images/games/8.webp',
   }),
   
   royaleGuesser: generateGameSchema({
     name: 'Royale Guesser - Find All Matching Cards',
     description: 'Given 3 conditions, find all Clash Royale cards that match. Test your knowledge of card types, rarities, and more!',
-    url: 'https://royalehaus.com/games/royale-guesser',
-    image: 'https://royalehaus.com/images/games/royale-guesser.webp',
+    url: 'https://clashroyaledle.net/games/royale-guesser',
+    image: 'https://clashroyaledle.net/images/games/royale-guesser.webp',
   }),
 };

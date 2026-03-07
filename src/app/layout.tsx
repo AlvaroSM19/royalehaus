@@ -20,44 +20,64 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'RoyaleHaus - Clash Royale Mini-Games, Quizzes & Card Wiki',
-    template: '%s | RoyaleHaus'
+    default: 'Clash Royale – Clash Royale Mini Games & Quizzes | Free Online',
+    template: '%s | Clash Royale'
   },
-  description: 'Play free Clash Royale mini-games: Wordle, Higher or Lower, Impostor, and Royaledle. Complete card wiki with 168+ cards. Track progress, compete on leaderboards, and level up. Part of the Haus Universe.',
+  description: 'Play free Clash Royale mini games online: Higher or Lower elixir game, Card Quiz, Connections, Royale Wordle, Memory Cards, Royaledle, and Impostor. Test your knowledge of troops, spells, champions, elixir costs and rarities.',
   keywords: [
-    'clash royale', 'supercell', 'clash royale cards', 'clash royale quiz', 
-    'clash royale wordle', 'clash royale game', 'clash royale trivia',
-    'clash royale wiki', 'higher or lower', 'troops', 'spells', 'champions',
-    'clash royale leaderboard', 'royalehaus', 'haus universe'
+    // Primary keywords
+    'clash royale games', 'clash royale mini games', 'clash royale games online free',
+    // Higher or Lower specific
+    'clash royale higher lower', 'clash royale higher or lower', 'clash royale elixir game', 'guess the elixir clash royale', 'clash royale elixir higher lower',
+    // Quiz keywords
+    'clash royale quiz', 'clash royale trivia', 'clash royale card quiz', 'clash royale quizzes',
+    // Wordle keywords
+    'clash royale wordle', 'royaledle', 'clash royale guessing game', 'guess the clash royale card',
+    // Connections keywords
+    'clash royale connections', 'clash royale puzzle game', 'clash royale card connections',
+    // Memory game keywords
+    'clash royale memory game', 'clash royale matching game', 'clash royale memory cards',
+    // Impostor keywords
+    'clash royale impostor', 'clash royale odd one out', 'clash royale spot the fake',
+    // Card keywords
+    'troops', 'spells', 'champions', 'buildings', 'legendary', 'epic', 'rare', 'common',
+    // Feature keywords
+    'elixir cost game', 'card rarity quiz', 'clash royale cards', 'supercell'
   ],
-  authors: [{ name: 'RoyaleHaus Team' }],
-  creator: 'RoyaleHaus',
-  publisher: 'RoyaleHaus',
-  metadataBase: new URL('https://royalehaus.com'),
+  authors: [{ name: 'Clash Royale Team' }],
+  creator: 'Clash Royale',
+  publisher: 'Clash Royale',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://clashroyaledle.net'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://royalehaus.com',
-    siteName: 'RoyaleHaus',
-    title: 'RoyaleHaus - Clash Royale Mini-Games & Wiki',
-    description: 'Play free Clash Royale mini-games: Wordle, Higher or Lower, Impostor, and Royaledle. Complete card wiki with 168+ cards. Part of the Haus Universe.',
+    url: 'https://clashroyaledle.net',
+    title: 'Clash Royale – Clash Royale Mini Games & Quizzes',
+    description: 'Practice cards, elixir costs, rarities & card types while playing fast mini games.',
+    siteName: 'Clash Royale',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'RoyaleHaus - Clash Royale Mini-Games',
+        alt: 'Clash Royale – Clash Royale Mini Games & Quizzes',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RoyaleHaus - Clash Royale Mini-Games & Wiki',
-    description: 'Play free Clash Royale mini-games: Wordle, Higher or Lower, Impostor, and Royaledle. Complete card wiki with 168+ cards.',
+    title: 'Clash Royale – Clash Royale Mini Games & Quizzes',
+    description: 'Play interactive Clash Royale themed mini games: Wordle, Connections, Memory Cards & more.',
     images: ['/og-image.png'],
+    creator: '@clashroyale',
   },
   robots: {
     index: true,
@@ -72,10 +92,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon-cr.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/images/iconos/cr-icon.jpg', sizes: '32x32', type: 'image/jpeg' },
+      { url: '/images/iconos/cr-icon.jpg', sizes: '16x16', type: 'image/jpeg' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/images/iconos/cr-icon.jpg',
   },
   manifest: '/manifest.json',
 }
@@ -121,7 +141,7 @@ export default function RootLayout({
               <div className="mr-4 hidden md:flex">
                 <a className="mr-6 flex items-center space-x-2" href="/">
                   <span className="hidden font-extrabold sm:inline-block text-xl tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent drop-shadow">
-                    ROYALEHAUS
+                    CLASH ROYALE
                   </span>
                 </a>
                 <nav className="flex items-center space-x-6 text-sm font-semibold tracking-wide">
@@ -158,7 +178,7 @@ export default function RootLayout({
               <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
                 <div className="w-full flex-1 md:w-auto md:flex-none">
                   <a className="inline-flex items-center rounded-lg font-extrabold text-sm tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground py-2 px-4 bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent md:hidden" href="/">
-                    ROYALEHAUS
+                    CLASH ROYALE
                   </a>
                 </div>
                 {/* Desktop: all icons, Mobile: only wallpaper */}
@@ -178,38 +198,52 @@ export default function RootLayout({
           <div className="w-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-amber-900/30 overflow-hidden">
             <div className="container flex items-center justify-center gap-3 py-1.5 px-2 sm:px-4">
               <div className="haus-bar-links flex items-center gap-2 sm:gap-3 whitespace-nowrap">
-                {/* OnePieceHaus */}
+                {/* ONE PIECE */}
                 <a 
                   href="https://onepiecehaus.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md hover:bg-amber-500/10 transition group"
                 >
-                  <img src="/images/onepiece-logo.svg" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent group-hover:from-amber-200 group-hover:to-yellow-100">ONEPIECEHAUS</span>
+                  <img src="/images/iconos/op-icon.png" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent group-hover:from-amber-200 group-hover:to-yellow-100">ONE PIECE</span>
                 </a>
                 
                 <span className="text-amber-700/50 text-xs">•</span>
                 
-                {/* RoyaleHaus (current) */}
+                {/* CLASH ROYALE (current) */}
                 <a 
                   href="/"
                   className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/25"
                 >
-                  <img src="/favicon-cr.png" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">ROYALEHAUS</span>
+                  <img src="/images/iconos/cr-icon.jpg" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent">CLASH ROYALE</span>
                 </a>
 
                 <span className="text-amber-700/50 text-xs">•</span>
 
-                {/* JJKHaus */}
+                {/* JJK */}
                 <a 
-                  href="https://jujutsukaisenhaus-jujutsu-f3r2po-cddd1f-72-62-237-156.traefik.me/"
+                  href="https://jjkdle.net"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md hover:bg-purple-500/15 transition group"
                 >
-                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-200 to-purple-400 bg-clip-text text-transparent group-hover:from-purple-200 group-hover:to-fuchsia-100">JJKHAUS</span>
+                  <img src="/images/iconos/jjk-icon.jpg" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-purple-300 via-fuchsia-200 to-purple-400 bg-clip-text text-transparent group-hover:from-purple-200 group-hover:to-fuchsia-100">JJK</span>
+                </a>
+
+                <span className="text-amber-700/50 text-xs">•</span>
+
+                {/* GAME OF THRONES */}
+                <a 
+                  href="https://gameofthronesdle.net"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md hover:bg-red-500/15 transition group"
+                >
+                  <img src="/images/iconos/got-icon.jpg" alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-wide bg-gradient-to-r from-red-300 via-orange-200 to-red-400 bg-clip-text text-transparent group-hover:from-red-200 group-hover:to-orange-100">GAME OF THRONES</span>
                 </a>
               </div>
             </div>
@@ -224,12 +258,12 @@ export default function RootLayout({
               <p className="text-center text-xs sm:text-sm leading-loose text-muted-foreground md:text-left">
                 Built by{" "}
                 <a
-                  href="https://github.com/royalehaus"
+                  href="https://github.com/clashroyale"
                   target="_blank"
                   rel="noreferrer"
                   className="font-medium underline underline-offset-4"
                 >
-                  RoyaleHaus Team
+                  Clash Royale Team
                 </a>
                 . Fan project - Not affiliated with Supercell.
               </p>

@@ -484,7 +484,7 @@ export default function TapOneGame() {
                   <div className="inline-block mt-1 px-4 sm:px-6 py-1 sm:py-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/40">
                     <span className="text-cyan-400 text-xs sm:text-sm font-bold tracking-wide">🏆 {playerRank.trophies.toLocaleString()} TROPHIES</span>
                   </div>
-                  <div className="mt-2"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-extrabold tracking-[0.3em] text-amber-900/50 select-none">ROYALEHAUS.COM</div></div>
+                  <div className="mt-2"><div className="text-[8px] sm:text-[9px] lg:text-[10px] font-extrabold tracking-[0.3em] text-amber-900/50 select-none">CLASHROYALEDLE.NET</div></div>
                 </div>
               </div>
             </div>

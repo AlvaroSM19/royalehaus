@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://royalehaus.com';
+  const baseUrl = 'https://clashroyaledle.net';
   const currentDate = new Date().toISOString();
 
   // Static pages

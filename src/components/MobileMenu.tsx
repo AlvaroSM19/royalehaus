@@ -73,7 +73,7 @@ export default function MobileMenu() {
                 onClick={close}
                 className="font-extrabold tracking-wide text-sm bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-400 bg-clip-text text-transparent"
               >
-                ROYALEHAUS
+                CLASH ROYALE
               </Link>
               <button
                 aria-label="Close menu"
