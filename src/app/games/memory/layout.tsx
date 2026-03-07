@@ -2,14 +2,14 @@ import type { Metadata } from 'next'
 import { generateGameSchema, generateBreadcrumbSchema } from '@/lib/schema'
 
 export const metadata: Metadata = {
-  title: 'Royale Memory - Match Card Pairs | RoyaleHaus',
+  title: 'Royale Memory - Match Clash Royale Card Pairs',
   description: 'Test your memory matching Clash Royale card pairs! Find counters, evolutions, and synergies in this challenging memory game.',
   keywords: ['Clash Royale', 'memory game', 'card matching', 'counters', 'evolutions', 'brain game', 'puzzle'],
   openGraph: {
-    title: 'Royale Memory - Match Card Pairs',
+    title: 'Royale Memory - Match Card Pairs | Clash Royale',
     description: 'Test your memory matching Clash Royale card pairs! Find counters, evolutions, and synergies.',
     type: 'website',
-    siteName: 'RoyaleHaus',
+    siteName: 'Clash Royale',
     images: ['/images/games/7.webp'],
   },
   twitter: {
@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     title: 'Royale Memory - Match Card Pairs',
     description: 'Test your memory matching Clash Royale card pairs!',
     images: ['/images/games/7.webp'],
+  },
+  alternates: {
+    canonical: '/games/memory',
   },
 }
 
@@ -42,9 +45,9 @@ export default function MemoryLayout({
   }
   
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://royalehaus.com' },
-    { name: 'Games', url: 'https://royalehaus.com/games' },
-    { name: 'Royale Memory', url: 'https://royalehaus.com/games/memory' },
+    { name: 'Home', url: 'https://clashroyaledle.net' },
+    { name: 'Games', url: 'https://clashroyaledle.net/games' },
+    { name: 'Royale Memory', url: 'https://clashroyaledle.net/games/memory' },
   ])
 
   return (

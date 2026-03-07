@@ -2,19 +2,19 @@ import { Metadata } from 'next';
 import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Emoji Riddle - Descifra la Carta con Emojis',
-  description: 'Descifra qué carta de Clash Royale representan los emojis. ¡Cada emoji incorrecto revela una nueva pista!',
-  keywords: ['emoji riddle', 'emoji game', 'clash royale emoji', 'emoji quiz', 'card guessing'],
+  title: 'Emoji Riddle - Decode the Clash Royale Card from Emojis',
+  description: 'Decode which Clash Royale card the emojis represent! Each wrong guess reveals a new emoji clue. Daily challenge with 5 attempts.',
+  keywords: ['emoji riddle', 'emoji game', 'clash royale emoji', 'emoji quiz', 'card guessing', 'daily challenge'],
   openGraph: {
-    title: 'Emoji Riddle - Descifra la Carta con Emojis | RoyaleHaus',
-    description: 'Descifra qué carta de Clash Royale representan los emojis. ¡Pistas emoji!',
-    url: 'https://royalehaus.com/games/emoji-riddle',
+    title: 'Emoji Riddle - Decode the Card from Emojis | Clash Royale',
+    description: 'Decode which Clash Royale card the emojis represent! Each wrong guess reveals a new clue.',
+    url: 'https://clashroyaledle.net/games/emoji-riddle',
     images: ['/images/games/8.webp'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Emoji Riddle - Descifra la Carta con Emojis',
-    description: 'Descifra qué carta representan los emojis!',
+    title: 'Emoji Riddle - Decode the Card from Emojis',
+    description: 'Decode which Clash Royale card the emojis represent!',
     images: ['/images/games/8.webp'],
   },
   alternates: {
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 };
 
 const breadcrumbs = generateBreadcrumbSchema([
-  { name: 'Home', url: 'https://royalehaus.com' },
-  { name: 'Games', url: 'https://royalehaus.com/#games' },
-  { name: 'Emoji Riddle', url: 'https://royalehaus.com/games/emoji-riddle' },
+  { name: 'Home', url: 'https://clashroyaledle.net' },
+  { name: 'Games', url: 'https://clashroyaledle.net/#games' },
+  { name: 'Emoji Riddle', url: 'https://clashroyaledle.net/games/emoji-riddle' },
 ]);
 
 export default function EmojiRiddleLayout({

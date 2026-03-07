@@ -85,19 +85,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${baseUrl}/games/pixel-royale`,
       lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.85,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/games/emoji-riddle`,
       lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
-      priority: 0.85,
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/games/sound-quiz`,
       lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'daily' as const,
       priority: 0.85,
     },
     {
@@ -107,12 +107,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     },
     {
-      url: `${baseUrl}/games/stat-battle`,
+      url: `${baseUrl}/games/royale-guesser`,
       lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.85,
     },
   ];
 
-  return [...staticPages, ...gamePages];
+  // Additional content pages
+  const contentPages = [
+    {
+      url: `${baseUrl}/cards/flashcards`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
+  ];
+
+  return [...staticPages, ...gamePages, ...contentPages];
 }

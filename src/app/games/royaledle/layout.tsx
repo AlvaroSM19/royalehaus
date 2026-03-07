@@ -4,11 +4,11 @@ import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 export const metadata: Metadata = {
   title: 'Royaledle - Guess the Clash Royale Card',
   description: 'Play Royaledle and guess the mystery Clash Royale card! Compare attributes like elixir, type, rarity, and year. Daily challenge + unlimited practice mode.',
-  keywords: ['royaledle', 'clash royale wordle', 'clash royale guessing game', 'card quiz', 'daily challenge'],
+  keywords: ['royaledle', 'clash royale wordle', 'clash royale guessing game', 'card quiz', 'daily challenge', 'guess the card'],
   openGraph: {
-    title: 'Royaledle - Guess the Clash Royale Card | RoyaleHaus',
+    title: 'Royaledle - Guess the Clash Royale Card | Clash Royale',
     description: 'Play Royaledle and guess the mystery Clash Royale card! Compare attributes like elixir, type, rarity, and year.',
-    url: 'https://royalehaus.com/games/royaledle',
+    url: 'https://clashroyaledle.net/games/royaledle',
     images: ['/images/games/1.webp'],
   },
   twitter: {
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 };
 
 const breadcrumbs = generateBreadcrumbSchema([
-  { name: 'Home', url: 'https://royalehaus.com' },
-  { name: 'Games', url: 'https://royalehaus.com/#games' },
-  { name: 'Royaledle', url: 'https://royalehaus.com/games/royaledle' },
+  { name: 'Home', url: 'https://clashroyaledle.net' },
+  { name: 'Games', url: 'https://clashroyaledle.net/#games' },
+  { name: 'Royaledle', url: 'https://clashroyaledle.net/games/royaledle' },
 ]);
 
 export default function RoyaledleLayout({

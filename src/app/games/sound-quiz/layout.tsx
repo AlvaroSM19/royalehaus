@@ -2,13 +2,13 @@ import { Metadata } from 'next';
 import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Sound Quiz - Guess the Card by Sound',
-  description: 'Test your Clash Royale knowledge by guessing cards from their sound effects!',
-  keywords: ['sound quiz', 'audio game', 'clash royale sounds', 'card sounds', 'audio recognition'],
+  title: 'Sound Quiz - Guess the Clash Royale Card by Sound',
+  description: 'Test your Clash Royale knowledge by guessing cards from their sound effects! Listen to deploy, attack and death sounds. Daily challenge mode.',
+  keywords: ['sound quiz', 'audio game', 'clash royale sounds', 'card sounds', 'audio recognition', 'daily challenge'],
   openGraph: {
-    title: 'Sound Quiz - Guess the Card by Sound | RoyaleHaus',
+    title: 'Sound Quiz - Guess the Card by Sound | Clash Royale',
     description: 'Test your Clash Royale knowledge by guessing cards from their sound effects!',
-    url: 'https://royalehaus.com/games/sound-quiz',
+    url: 'https://clashroyaledle.net/games/sound-quiz',
     images: ['/images/games/9.webp'],
   },
   twitter: {
@@ -37,9 +37,9 @@ export default function SoundQuizLayout({
   };
   
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://royalehaus.com' },
-    { name: 'Games', url: 'https://royalehaus.com/games' },
-    { name: 'Sound Quiz', url: 'https://royalehaus.com/games/sound-quiz' },
+    { name: 'Home', url: 'https://clashroyaledle.net' },
+    { name: 'Games', url: 'https://clashroyaledle.net/games' },
+    { name: 'Sound Quiz', url: 'https://clashroyaledle.net/games/sound-quiz' },
   ]);
 
   return (

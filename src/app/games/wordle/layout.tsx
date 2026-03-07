@@ -4,11 +4,11 @@ import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 export const metadata: Metadata = {
   title: 'Clash Royale Wordle - Guess the Card Name',
   description: 'Play Wordle with Clash Royale card names! Guess the hidden card name letter by letter. Green, yellow, and gray hints guide you.',
-  keywords: ['clash royale wordle', 'wordle game', 'card name game', 'word puzzle', 'letter guessing'],
+  keywords: ['clash royale wordle', 'wordle game', 'card name game', 'word puzzle', 'letter guessing', 'clash royale game'],
   openGraph: {
-    title: 'Clash Royale Wordle - Guess the Card Name | RoyaleHaus',
+    title: 'Clash Royale Wordle - Guess the Card Name | Clash Royale',
     description: 'Play Wordle with Clash Royale card names! Guess the hidden card name letter by letter.',
-    url: 'https://royalehaus.com/games/wordle',
+    url: 'https://clashroyaledle.net/games/wordle',
     images: ['/images/games/4.webp'],
   },
   twitter: {
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 };
 
 const breadcrumbs = generateBreadcrumbSchema([
-  { name: 'Home', url: 'https://royalehaus.com' },
-  { name: 'Games', url: 'https://royalehaus.com/#games' },
-  { name: 'Wordle', url: 'https://royalehaus.com/games/wordle' },
+  { name: 'Home', url: 'https://clashroyaledle.net' },
+  { name: 'Games', url: 'https://clashroyaledle.net/#games' },
+  { name: 'Wordle', url: 'https://clashroyaledle.net/games/wordle' },
 ]);
 
 export default function WordleLayout({

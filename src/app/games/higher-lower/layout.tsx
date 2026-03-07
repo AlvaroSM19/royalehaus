@@ -4,11 +4,11 @@ import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 export const metadata: Metadata = {
   title: 'Higher or Lower - Clash Royale Elixir Game',
   description: 'Play Higher or Lower with Clash Royale cards! Guess if the next card costs more or less elixir. How long can you keep your streak going?',
-  keywords: ['higher or lower', 'clash royale elixir', 'elixir game', 'card comparison', 'streak game'],
+  keywords: ['higher or lower', 'clash royale elixir', 'elixir game', 'card comparison', 'streak game', 'clash royale quiz'],
   openGraph: {
-    title: 'Higher or Lower - Clash Royale Elixir Game | RoyaleHaus',
+    title: 'Higher or Lower - Clash Royale Elixir Game | Clash Royale',
     description: 'Guess if the next Clash Royale card costs more or less elixir. Challenge your knowledge!',
-    url: 'https://royalehaus.com/games/higher-lower',
+    url: 'https://clashroyaledle.net/games/higher-lower',
     images: ['/images/games/2.webp'],
   },
   twitter: {
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 };
 
 const breadcrumbs = generateBreadcrumbSchema([
-  { name: 'Home', url: 'https://royalehaus.com' },
-  { name: 'Games', url: 'https://royalehaus.com/#games' },
-  { name: 'Higher or Lower', url: 'https://royalehaus.com/games/higher-lower' },
+  { name: 'Home', url: 'https://clashroyaledle.net' },
+  { name: 'Games', url: 'https://clashroyaledle.net/#games' },
+  { name: 'Higher or Lower', url: 'https://clashroyaledle.net/games/higher-lower' },
 ]);
 
 export default function HigherLowerLayout({

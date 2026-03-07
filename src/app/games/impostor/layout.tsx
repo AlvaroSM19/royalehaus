@@ -4,11 +4,11 @@ import { GAME_SCHEMAS, generateBreadcrumbSchema } from '@/lib/schema';
 export const metadata: Metadata = {
   title: 'Find the Impostor - Clash Royale Quiz',
   description: 'Spot the fake card among real Clash Royale cards! Test your knowledge of card attributes in this fast-paced quiz game.',
-  keywords: ['impostor game', 'clash royale quiz', 'find the fake', 'card quiz', 'trivia game'],
+  keywords: ['impostor game', 'clash royale quiz', 'find the fake', 'card quiz', 'trivia game', 'odd one out'],
   openGraph: {
-    title: 'Find the Impostor - Clash Royale Quiz | RoyaleHaus',
+    title: 'Find the Impostor - Clash Royale Quiz | Clash Royale',
     description: 'Spot the fake card among real Clash Royale cards! Test your knowledge in this quiz.',
-    url: 'https://royalehaus.com/games/impostor',
+    url: 'https://clashroyaledle.net/games/impostor',
     images: ['/images/games/3.webp'],
   },
   twitter: {
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 };
 
 const breadcrumbs = generateBreadcrumbSchema([
-  { name: 'Home', url: 'https://royalehaus.com' },
-  { name: 'Games', url: 'https://royalehaus.com/#games' },
-  { name: 'Impostor', url: 'https://royalehaus.com/games/impostor' },
+  { name: 'Home', url: 'https://clashroyaledle.net' },
+  { name: 'Games', url: 'https://clashroyaledle.net/#games' },
+  { name: 'Impostor', url: 'https://clashroyaledle.net/games/impostor' },
 ]);
 
 export default function ImpostorLayout({
