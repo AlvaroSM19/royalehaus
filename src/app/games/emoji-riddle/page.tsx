@@ -20,8 +20,13 @@ import {
 const GAME_ID = 'emoji-riddle'
 const MAX_GUESSES = 5
 
-// Cards that have emoji riddles
-const availableCardIds = Object.keys(emojiRiddles).map(Number)
+// Cards that have emoji riddles (excluding evolutions)
+const availableCardIds = Object.keys(emojiRiddles)
+  .map(Number)
+  .filter(id => {
+    const card = baseCards.find(c => c.id === id)
+    return card && card.type !== 'Evolution'
+  })
 
 /* ── deterministic daily target ── */
 function getTargetForDate(date: string): number {
