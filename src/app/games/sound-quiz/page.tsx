@@ -117,10 +117,19 @@ interface SoundHint {
   url: string;
 }
 
-// Daily target for any date (deterministic, picks from cards with sounds)
+// Daily target for any date (deterministic, no consecutive repeats, picks from cards with sounds)
 function getTargetForDate(pool: ClashCard[], date: string): ClashCard {
-  const seed = date.split('-').reduce((acc, part) => acc + parseInt(part), 0) * 13337;
-  const idx = Math.floor(seededRandom(seed) * pool.length);
+  const parts = date.split('-').map(Number);
+  const seed = (parts[0] * 10000 + parts[1] * 100 + parts[2]) * 13337;
+  let idx = Math.floor(seededRandom(seed) * pool.length);
+  // Prevent same target as previous day
+  const prev = new Date(date);
+  prev.setDate(prev.getDate() - 1);
+  const prevStr = prev.toISOString().slice(0, 10);
+  const prevParts = prevStr.split('-').map(Number);
+  const prevSeed = (prevParts[0] * 10000 + prevParts[1] * 100 + prevParts[2]) * 13337;
+  const prevIdx = Math.floor(seededRandom(prevSeed) * pool.length);
+  if (idx === prevIdx) idx = (idx + 1) % pool.length;
   return pool[idx];
 }
 

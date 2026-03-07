@@ -20,10 +20,20 @@ const GAME_ID = 'pixel-royale'
 const MAX_GUESSES = 6
 const BLUR_STEPS = [40, 32, 24, 16, 8, 0, 0]
 
-/* ── deterministic daily target ── */
+/* ── deterministic daily target (no consecutive repeats) ── */
 function getTargetForDate(date: string): ClashCard {
-  const seed = date.split('-').reduce((acc, p) => acc + parseInt(p), 0) * 31337
-  return baseCards[Math.floor(seededRandom(seed) * baseCards.length)]
+  const parts = date.split('-').map(Number)
+  const seed = (parts[0] * 10000 + parts[1] * 100 + parts[2]) * 31337
+  let idx = Math.floor(seededRandom(seed) * baseCards.length)
+  // Prevent same target as previous day
+  const prev = new Date(date)
+  prev.setDate(prev.getDate() - 1)
+  const prevStr = prev.toISOString().slice(0, 10)
+  const prevParts = prevStr.split('-').map(Number)
+  const prevSeed = (prevParts[0] * 10000 + prevParts[1] * 100 + prevParts[2]) * 31337
+  const prevIdx = Math.floor(seededRandom(prevSeed) * baseCards.length)
+  if (idx === prevIdx) idx = (idx + 1) % baseCards.length
+  return baseCards[idx]
 }
 
 export default function PixelRoyalePage() {

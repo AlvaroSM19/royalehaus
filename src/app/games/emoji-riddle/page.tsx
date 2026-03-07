@@ -28,10 +28,20 @@ const availableCardIds = Object.keys(emojiRiddles)
     return card && card.type !== 'Evolution'
   })
 
-/* ── deterministic daily target ── */
+/* ── deterministic daily target (no consecutive repeats) ── */
 function getTargetForDate(date: string): number {
-  const seed = date.split('-').reduce((acc, p) => acc + parseInt(p), 0) * 7731
-  return availableCardIds[Math.floor(seededRandom(seed) * availableCardIds.length)]
+  const parts = date.split('-').map(Number)
+  const seed = (parts[0] * 10000 + parts[1] * 100 + parts[2]) * 7731
+  let idx = Math.floor(seededRandom(seed) * availableCardIds.length)
+  // Prevent same target as previous day
+  const prev = new Date(date)
+  prev.setDate(prev.getDate() - 1)
+  const prevStr = prev.toISOString().slice(0, 10)
+  const prevParts = prevStr.split('-').map(Number)
+  const prevSeed = (prevParts[0] * 10000 + prevParts[1] * 100 + prevParts[2]) * 7731
+  const prevIdx = Math.floor(seededRandom(prevSeed) * availableCardIds.length)
+  if (idx === prevIdx) idx = (idx + 1) % availableCardIds.length
+  return availableCardIds[idx]
 }
 
 export default function EmojiRiddlePage() {
