@@ -603,6 +603,13 @@ export default function RoyaledlePage() {
                     Play Again (Admin)
                   </button>
                 )}
+
+                {/* Play Past Days button */}
+                {todayDone && (
+                  <button onClick={() => setShowDayPicker(true)} className="mt-3 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold bg-gradient-to-br from-cyan-600 via-teal-500 to-cyan-600 text-white shadow-lg shadow-cyan-900/40 hover:brightness-110 transition text-sm">
+                    <Calendar className="w-4 h-4" /> Play Past Days
+                  </button>
+                )}
                 
                 {/* Account Creation Reminder */}
                 {!user && (
